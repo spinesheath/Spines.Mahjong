@@ -1,0 +1,8 @@
+﻿meldId:
+	0-6 for chii of 123-789; 7-15 for pon or kan of 111-999
+
+
+arrangement:
+	A set of possible interpretations of the tiles of a suit in terms of complete or partial groups, like a pair, a triplet or a kanchan shape.
+    There only is a small number of unique arrangements, so each is identified by an integer.
+
