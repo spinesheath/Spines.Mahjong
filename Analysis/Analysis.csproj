@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>Spines.Mahjong.Analysis</AssemblyName>
+    <RootNamespace>Spines.Mahjong.Analysis</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\ArrangementTransitions.txt" />
+    <None Remove="Resources\ProgressiveHonorStateMachine.txt" />
+    <None Remove="Resources\SuitFirstPhase.txt" />
+    <None Remove="Resources\SuitSecondPhase0.txt" />
+    <None Remove="Resources\SuitSecondPhase1.txt" />
+    <None Remove="Resources\SuitSecondPhase2.txt" />
+    <None Remove="Resources\SuitSecondPhase3.txt" />
+    <None Remove="Resources\SuitSecondPhase4.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\ArrangementTransitions.txt" />
+    <EmbeddedResource Include="Resources\ProgressiveHonorStateMachine.txt" />
+    <EmbeddedResource Include="Resources\SuitFirstPhase.txt" />
+    <EmbeddedResource Include="Resources\SuitSecondPhase0.txt" />
+    <EmbeddedResource Include="Resources\SuitSecondPhase1.txt" />
+    <EmbeddedResource Include="Resources\SuitSecondPhase2.txt" />
+    <EmbeddedResource Include="Resources\SuitSecondPhase3.txt" />
+    <EmbeddedResource Include="Resources\SuitSecondPhase4.txt" />
+  </ItemGroup>
+
+</Project>
