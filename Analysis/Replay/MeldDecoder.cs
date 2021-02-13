@@ -21,6 +21,8 @@ namespace Spines.Mahjong.Analysis.Replay
 
     public int CalledTile => Tiles[_calledTileIndex];
 
+    public int LowestTile { get; private set; }
+
     private readonly int _meldCode;
     private int _baseIndex;
     private int _koutsuUnusedTileNumber;
@@ -79,6 +81,7 @@ namespace Spines.Mahjong.Analysis.Replay
       }
       
       Tiles = ids;
+      LowestTile = ids[0];
     }
 
     private MeldType GetMeldType()

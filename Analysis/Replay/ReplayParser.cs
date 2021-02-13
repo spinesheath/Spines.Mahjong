@@ -73,7 +73,7 @@ namespace Spines.Mahjong.Analysis.Replay
             var playerId = ToInt(e.Attribute("who")?.Value);
             var decoder = new MeldDecoder(e.Attribute("m")?.Value);
 
-            var tileType = TileType.FromTileId(decoder.Tiles.Min());
+            var tileType = TileType.FromTileId(decoder.LowestTile);
             var calledTileType = TileType.FromTileId(decoder.CalledTile);
 
             switch (decoder.MeldType)
