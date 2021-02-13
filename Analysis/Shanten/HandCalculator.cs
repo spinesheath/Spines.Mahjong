@@ -152,7 +152,7 @@ namespace Spines.Mahjong.Analysis.Shanten
 
     public void Draw(TileType tileType)
     {
-      Debug.Assert(_tilesInHand == 13, "Can't draw with a 14 tile hand.");
+      Debug.Assert(_tilesInHand == 13, "Can only draw with a 13 tile hand.");
       Debug.Assert(_inHandByType[tileType.TileTypeId] < 4, "Can't draw a tile with 4 of that tile in hand.");
 
       InternalDraw(tileType);

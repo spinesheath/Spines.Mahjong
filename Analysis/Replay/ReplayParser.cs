@@ -2,24 +2,31 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Xml.Linq;
+using System.Xml;
 using Spines.Mahjong.Analysis.Shanten;
 
 namespace Spines.Mahjong.Analysis.Replay
 {
   public static class ReplayParser
   {
-    public static int Parse(XElement xml)
+    public static int Parse(XmlReader xml)
     {
       var shantenCalculators = new List<HandCalculator>();
 
       var sum = 0;
 
-      foreach (var e in xml.Elements())
+      while (!xml.EOF)
       {
-        var name = e.Name.LocalName;
+        xml.Read();
+        if (xml.NodeType != XmlNodeType.Element)
+        {
+          continue;
+        }
+
+        var name = xml.LocalName;
         switch (name)
         {
+          case "mjloggm":
           case "SHUFFLE":
           case "TAIKYOKU":
           case "GO":
@@ -36,19 +43,21 @@ namespace Spines.Mahjong.Analysis.Replay
             for (var playerId = 0; playerId < 4; playerId++)
             {
               shantenCalculators.Add(new HandCalculator());
-              var hai = e.Attribute($"hai{playerId}");
-              if (hai != null)
+              if (xml.MoveToAttribute($"hai{playerId}"))
               {
-                shantenCalculators[playerId].Init(ToInts(hai.Value).Select(TileType.FromTileId));
+                shantenCalculators[playerId].Init(ToInts(xml.Value).Select(TileType.FromTileId));
                 sum += shantenCalculators[playerId].Shanten < 100 ? 1 : 0;
               }
             }
+
             break;
           }
           case "N":
           {
-            var playerId = ToInt(e.Attribute("who")?.Value);
-            var decoder = new MeldDecoder(e.Attribute("m")?.Value);
+            xml.MoveToAttribute("who");
+            var playerId = xml.ReadContentAsInt();
+            xml.MoveToAttribute("m");
+            var decoder = new MeldDecoder(xml.Value);
 
             var tileType = TileType.FromTileId(decoder.LowestTile);
             var calledTileType = TileType.FromTileId(decoder.CalledTile);
@@ -71,6 +80,7 @@ namespace Spines.Mahjong.Analysis.Replay
                 shantenCalculators[playerId].Ankan(tileType);
                 break;
             }
+
             sum += shantenCalculators[playerId].Shanten < 100 ? 1 : 0;
             break;
           }
@@ -92,7 +102,7 @@ namespace Spines.Mahjong.Analysis.Replay
               continue;
             }
 
-            throw new NotImplementedException(e.ToString());
+            break;
           }
         }
       }
