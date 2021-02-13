@@ -8,12 +8,12 @@ namespace Benchmark
 {
   public class Shanten
   {
-    private const string ReplaysFolder = @".\..\..\..\..\Data\tenhou";
+    private const string ReplaysFolder = @".\..\..\..\..\..\..\..\..\Data\tenhou";
     private readonly List<string> _files;
 
     public Shanten()
     {
-      _files = Directory.EnumerateFiles(ReplaysFolder).Take(1000).Select(File.ReadAllText).ToList();
+      _files = Directory.EnumerateFiles(ReplaysFolder).Take(10000).Select(File.ReadAllText).ToList();
     }
 
     private int RunShanten1()

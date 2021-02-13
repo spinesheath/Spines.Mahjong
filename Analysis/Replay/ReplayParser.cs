@@ -26,7 +26,7 @@ namespace Spines.Mahjong.Analysis.Replay
         {
           var tileId = ToInt(drawMatch.Groups[2].Value);
           var playerId = drawMatch.Groups[1].Value[0] - 'T';
-          shantenCalculators[playerId].Draw(tileId / 4);
+          shantenCalculators[playerId].Draw(TileType.FromTileId(tileId));
           sum += shantenCalculators[playerId].Shanten < 100 ? 1 : 0;
           continue;
         }
@@ -36,7 +36,7 @@ namespace Spines.Mahjong.Analysis.Replay
         {
           var tileId = ToInt(discardMatch.Groups[2].Value);
           var playerId = discardMatch.Groups[1].Value[0] - 'D';
-          shantenCalculators[playerId].Discard(Tile.FromTileTypeId(tileId / 4));
+          shantenCalculators[playerId].Discard(TileType.FromTileId(tileId));
           sum += shantenCalculators[playerId].Shanten < 100 ? 1 : 0;
           continue;
         }
@@ -62,7 +62,7 @@ namespace Spines.Mahjong.Analysis.Replay
               var hai = e.Attribute($"hai{playerId}");
               if (hai != null)
               {
-                shantenCalculators[playerId].Init(ToInts(hai.Value).Select(t => t / 4));
+                shantenCalculators[playerId].Init(ToInts(hai.Value).Select(TileType.FromTileId));
                 sum += shantenCalculators[playerId].Shanten < 100 ? 1 : 0;
               }
             }
@@ -72,26 +72,26 @@ namespace Spines.Mahjong.Analysis.Replay
           {
             var playerId = ToInt(e.Attribute("who")?.Value);
             var decoder = new MeldDecoder(e.Attribute("m")?.Value);
-            var tiles = decoder.Tiles.ToList();
 
-            var suit = tiles[0] / 4 / 9;
-            var index = tiles.Min(t => t / 4 % 9);
+            var tileType = TileType.FromTileId(decoder.Tiles.Min());
+            var calledTileType = TileType.FromTileId(decoder.CalledTile);
+
             switch (decoder.MeldType)
             {
               case MeldType.Shuntsu:
-                shantenCalculators[playerId].Chii(suit, index, decoder.CalledTile / 4 % 9);
+                shantenCalculators[playerId].Chii(tileType, calledTileType);
                 break;
               case MeldType.Koutsu:
-                shantenCalculators[playerId].Pon(suit, index);
+                shantenCalculators[playerId].Pon(tileType);
                 break;
               case MeldType.CalledKan:
-                shantenCalculators[playerId].Daiminkan(suit, index);
+                shantenCalculators[playerId].Daiminkan(tileType);
                 break;
               case MeldType.AddedKan:
-                shantenCalculators[playerId].Shouminkan(suit, index);
+                shantenCalculators[playerId].Shouminkan(tileType);
                 break;
               case MeldType.ClosedKan:
-                shantenCalculators[playerId].Ankan(suit, index);
+                shantenCalculators[playerId].Ankan(tileType);
                 break;
             }
             sum += shantenCalculators[playerId].Shanten < 100 ? 1 : 0;

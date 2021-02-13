@@ -15,7 +15,7 @@ namespace Spines.Mahjong.Analysis
       _hand = hand;
     }
 
-    public IEnumerable<Tile> Tiles
+    public IEnumerable<TileType> Tiles
     {
       get
       {
@@ -24,7 +24,7 @@ namespace Spines.Mahjong.Analysis
         {
           for (var c = 0; c < concealed[i]; ++c)
           {
-            yield return Tile.FromSuitAndIndex(IdToSuit[i / 9], i % 9);
+            yield return TileType.FromSuitAndIndex(IdToSuit[i / 9], i % 9);
           }
         }
       }

@@ -8,7 +8,7 @@ namespace Spines.Mahjong.Analysis
 
     public int MeldId { get; set; }
 
-    public IEnumerable<Tile> Tiles => GetTiles();
+    public IEnumerable<TileType> Tiles => GetTiles();
 
     internal Meld(Suit suit, int meldId)
     {
@@ -16,26 +16,26 @@ namespace Spines.Mahjong.Analysis
       Suit = suit;
     }
 
-    private IEnumerable<Tile> GetTiles()
+    private IEnumerable<TileType> GetTiles()
     {
       if (MeldId < 7)
       {
-        yield return Tile.FromSuitAndIndex(Suit, MeldId + 0);
-        yield return Tile.FromSuitAndIndex(Suit, MeldId + 1);
-        yield return Tile.FromSuitAndIndex(Suit, MeldId + 2);
+        yield return TileType.FromSuitAndIndex(Suit, MeldId + 0);
+        yield return TileType.FromSuitAndIndex(Suit, MeldId + 1);
+        yield return TileType.FromSuitAndIndex(Suit, MeldId + 2);
       }
       else if (MeldId < 16)
       {
-        yield return Tile.FromSuitAndIndex(Suit, MeldId - 7);
-        yield return Tile.FromSuitAndIndex(Suit, MeldId - 7);
-        yield return Tile.FromSuitAndIndex(Suit, MeldId - 7);
+        yield return TileType.FromSuitAndIndex(Suit, MeldId - 7);
+        yield return TileType.FromSuitAndIndex(Suit, MeldId - 7);
+        yield return TileType.FromSuitAndIndex(Suit, MeldId - 7);
       }
       else
       {
-        yield return Tile.FromSuitAndIndex(Suit, MeldId - 16);
-        yield return Tile.FromSuitAndIndex(Suit, MeldId - 16);
-        yield return Tile.FromSuitAndIndex(Suit, MeldId - 16);
-        yield return Tile.FromSuitAndIndex(Suit, MeldId - 16);
+        yield return TileType.FromSuitAndIndex(Suit, MeldId - 16);
+        yield return TileType.FromSuitAndIndex(Suit, MeldId - 16);
+        yield return TileType.FromSuitAndIndex(Suit, MeldId - 16);
+        yield return TileType.FromSuitAndIndex(Suit, MeldId - 16);
       }
     }
   }

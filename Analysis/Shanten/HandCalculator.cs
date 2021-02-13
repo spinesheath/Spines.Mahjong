@@ -38,17 +38,18 @@ namespace Spines.Mahjong.Analysis.Shanten
     /// </summary>
     public int Shanten => CalculateShanten(_arrangementValues) - 1;
 
-    public void Ankan(int suitId, int tileTypeIdInSuit)
+    public void Ankan(TileType tileType)
     {
       Debug.Assert(_tilesInHand == 14, "ankan only after draw");
-      Debug.Assert(suitId >= 0 && suitId < 4, "Not a valid suit");
-      Debug.Assert(tileTypeIdInSuit >= 0 && tileTypeIdInSuit < (suitId == 3 ? 7 : 9), "Invalid tile type");
+
+      var suitId = tileType.SuitId;
+      var index = tileType.Index;
 
       _tilesInHand -= 1;
       if (suitId < 3)
       {
-        _suits[suitId][tileTypeIdInSuit] -= 4;
-        _melds[suitId][_meldCounts[suitId]] = 7 + tileTypeIdInSuit;
+        _suits[suitId][index] -= 4;
+        _melds[suitId][_meldCounts[suitId]] = 7 + index;
         _meldCounts[suitId] += 1;
         _meldCount += 1;
         _suitClassifiers[suitId].SetMelds(_melds[suitId], _meldCounts[suitId]);
@@ -56,17 +57,20 @@ namespace Spines.Mahjong.Analysis.Shanten
       }
       else
       {
-        _cJihai[tileTypeIdInSuit] -= 4;
-        _mJihai[tileTypeIdInSuit] += 4;
+        _cJihai[index] -= 4;
+        _mJihai[index] += 4;
         _meldCount += 1;
       }
     }
 
-    public void Chii(int suitId, int lowestTileTypeIdInSuit, int calledTileTypeIdInSuit)
+    public void Chii(TileType lowestTileType, TileType calledTileType)
     {
-      Debug.Assert(suitId >= 0 && suitId < 3, "Not a valid suit for chii");
-      Debug.Assert(lowestTileTypeIdInSuit >= 0 && lowestTileTypeIdInSuit < 7, "Invalid lowest tile type");
-      Debug.Assert(calledTileTypeIdInSuit >= 0 && calledTileTypeIdInSuit < 9, "Invalid called tile type");
+      Debug.Assert(_tilesInHand == 13, "chii only after discard");
+      Debug.Assert(lowestTileType.Suit != Suit.Jihai, "Not a valid suit for chii");
+
+      var suitId = lowestTileType.SuitId;
+      var lowestTileTypeIdInSuit = lowestTileType.Index;
+      var calledTileTypeIdInSuit = calledTileType.Index;
 
       _suits[suitId][lowestTileTypeIdInSuit] -= 1;
       _suits[suitId][lowestTileTypeIdInSuit + 1] -= 1;
@@ -112,17 +116,18 @@ namespace Spines.Mahjong.Analysis.Shanten
       return hand;
     }
 
-    public void Daiminkan(int suitId, int tileTypeIdInSuit)
+    public void Daiminkan(TileType tileType)
     {
       Debug.Assert(_tilesInHand == 13, "daiminkan only after discard");
-      Debug.Assert(suitId >= 0 && suitId < 4, "Not a valid suit");
-      Debug.Assert(tileTypeIdInSuit >= 0 && tileTypeIdInSuit < (suitId == 3 ? 7 : 9), "Invalid tile type");
 
-      _inHandByType[suitId * 9 + tileTypeIdInSuit] += 1;
+      var suitId = tileType.SuitId;
+      var index = tileType.Index;
+      _inHandByType[tileType.TileTypeId] += 1;
+
       if (suitId < 3)
       {
-        _suits[suitId][tileTypeIdInSuit] -= 3;
-        _melds[suitId][_meldCounts[suitId]] = 7 + tileTypeIdInSuit;
+        _suits[suitId][index] -= 3;
+        _melds[suitId][_meldCounts[suitId]] = 7 + index;
         _meldCounts[suitId] += 1;
         _meldCount += 1;
         _suitClassifiers[suitId].SetMelds(_melds[suitId], _meldCounts[suitId]);
@@ -131,39 +136,26 @@ namespace Spines.Mahjong.Analysis.Shanten
       else
       {
         _arrangementValues[3] = _honorClassifier.Daiminkan();
-        _cJihai[tileTypeIdInSuit] -= 3;
-        _mJihai[tileTypeIdInSuit] += 4;
+        _cJihai[index] -= 3;
+        _mJihai[index] += 4;
         _meldCount += 1;
       }
     }
 
-    public void Discard(Tile tile)
+    public void Discard(TileType tileType)
     {
       Debug.Assert(_tilesInHand == 14, "Can't discard from hand with less than 13 tiles.");
+      Debug.Assert(_inHandByType[tileType.TileTypeId] > 0, "Can't discard a tile that is not in the hand.");
 
-      var suit = IdToSuit.IndexOf(tile.Suit);
-
-      Debug.Assert(_inHandByType[suit * 9 + tile.Index] > 0, "Can't discard a tile that is not in the hand.");
-
-      InternalDiscard(suit, tile.Index);
+      InternalDiscard(tileType);
     }
 
-    public void Draw(int tileType)
+    public void Draw(TileType tileType)
     {
       Debug.Assert(_tilesInHand == 13, "Can't draw with a 14 tile hand.");
-      Debug.Assert(tileType >= 0 && tileType < 34, "Not a valid tile type");
+      Debug.Assert(_inHandByType[tileType.TileTypeId] < 4, "Can't draw a tile with 4 of that tile in hand.");
 
-      var suit = tileType / 9;
-      var index = tileType % 9;
-
-      InternalDraw(suit, index);
-    }
-
-    public void Init(IEnumerable<int> tileTypes)
-    {
-      Debug.Assert(_tilesInHand == 0, "Can only initialize when the hand is empty.");
-
-      Init(tileTypes.Select(Tile.FromTileTypeId));
+      InternalDraw(tileType);
     }
 
     /// <summary>
@@ -177,23 +169,54 @@ namespace Spines.Mahjong.Analysis.Shanten
       return ukeIre.Select(u => u.Key.TileTypeId);
     }
 
+    public void Init(IEnumerable<TileType> tiles)
+    {
+      foreach (var tile in tiles)
+      {
+        var suit = (int) tile.Suit;
+        var index = tile.Index;
+
+        _inHandByType[suit * 9 + index] += 1;
+        _tilesInHand += 1;
+        if (suit == 3)
+        {
+          _arrangementValues[3] = _honorClassifier.Draw(_cJihai[index], _mJihai[index]);
+          _kokushi.Draw(_cJihai[index]);
+          _chiitoi.Draw(_cJihai[index]);
+          _cJihai[index] += 1;
+        }
+        else
+        {
+          if (index == 0 || index == 8)
+          {
+            _kokushi.Draw(_suits[suit][index]);
+          }
+
+          _chiitoi.Draw(_suits[suit][index]);
+          _suits[suit][index] += 1;
+        }
+      }
+
+      UpdateValue(0);
+      UpdateValue(1);
+      UpdateValue(2);
+    }
+
     /// <summary>
     /// Does ukeIre before the draw differ from ukeIre after ankan?
     /// </summary>
-    public bool IsUkeIreChangedByAnkan(int lastDrawTileType, int kanTileType)
+    public bool IsUkeIreChangedByAnkan(TileType lastDrawTileType, TileType kanTileType)
     {
-      var drawSuit = lastDrawTileType / 9;
-      var drawIndex = lastDrawTileType % 9;
-      InternalDiscard(drawSuit, drawIndex);
+      InternalDiscard(lastDrawTileType);
 
       var ukeIreBeforeDraw = GetUkeIreFor13();
 
-      InternalDraw(drawSuit, drawIndex);
+      InternalDraw(lastDrawTileType);
 
-      var kanSuit = kanTileType / 9;
-      var kanIndex = kanTileType % 9;
+      var kanSuit = kanTileType.SuitId;
+      var kanIndex = kanTileType.Index;
 
-      Dictionary<Tile, int> ukeIreAfterKan;
+      Dictionary<TileType, int> ukeIreAfterKan;
 
       if (kanSuit < 3)
       {
@@ -246,16 +269,17 @@ namespace Spines.Mahjong.Analysis.Shanten
       return false;
     }
 
-    public void Pon(int suitId, int tileTypeIdInSuit)
+    public void Pon(TileType tileType)
     {
-      Debug.Assert(suitId >= 0 && suitId < 4, "Not a valid suit");
-      Debug.Assert(tileTypeIdInSuit >= 0 && tileTypeIdInSuit < (suitId == 3 ? 7 : 9), "Invalid tile type");
+      Debug.Assert(_tilesInHand == 13, "pon only after discard");
 
-      _inHandByType[suitId * 9 + tileTypeIdInSuit] += 1;
+      var suitId = tileType.SuitId;
+      var index = tileType.Index;
+      _inHandByType[tileType.TileTypeId] += 1;
       if (suitId < 3)
       {
-        _suits[suitId][tileTypeIdInSuit] -= 2;
-        _melds[suitId][_meldCounts[suitId]] = 7 + tileTypeIdInSuit;
+        _suits[suitId][index] -= 2;
+        _melds[suitId][_meldCounts[suitId]] = 7 + index;
         _meldCounts[suitId] += 1;
         _meldCount += 1;
         _tilesInHand += 1;
@@ -264,60 +288,56 @@ namespace Spines.Mahjong.Analysis.Shanten
       }
       else
       {
-        _arrangementValues[3] = _honorClassifier.Pon(_cJihai[tileTypeIdInSuit]);
-        _cJihai[tileTypeIdInSuit] -= 2;
-        _mJihai[tileTypeIdInSuit] += 3;
+        _arrangementValues[3] = _honorClassifier.Pon(_cJihai[index]);
+        _cJihai[index] -= 2;
+        _mJihai[index] += 3;
         _meldCount += 1;
         _tilesInHand += 1;
       }
     }
 
-    public int ShantenAfterDiscard(int tileType)
+    public int ShantenAfterDiscard(TileType tileType)
     {
-      var suit = tileType / 9;
-      var index = tileType % 9;
-      InternalDiscard(suit, index);
+      InternalDiscard(tileType);
 
       var shantenAfterDiscard = CalculateShanten(_arrangementValues) - 1;
 
-      InternalDraw(suit, index);
+      InternalDraw(tileType);
 
       return shantenAfterDiscard;
     }
 
-    public int ShantenWithTile(int tileType)
+    public int ShantenWithTile(TileType tileType)
     {
       Debug.Assert(_tilesInHand == 13, "Too many tiles in hand to draw");
-      Debug.Assert(tileType >= 0 && tileType < 34, "Not a valid tile type");
 
-      var suit = tileType / 9;
-      var index = tileType % 9;
-      InternalDraw(suit, index);
+      InternalDraw(tileType);
 
       var shantenWithTile = CalculateShanten(_arrangementValues) - 1;
 
-      InternalDiscard(suit, index);
+      InternalDiscard(tileType);
 
       return shantenWithTile;
     }
 
-    public void Shouminkan(int suitId, int tileTypeIdInSuit)
+    public void Shouminkan(TileType tileType)
     {
       Debug.Assert(_tilesInHand == 14, "shouminkan only after draw");
-      Debug.Assert(suitId >= 0 && suitId < 4, "Not a valid suit");
-      Debug.Assert(tileTypeIdInSuit >= 0 && tileTypeIdInSuit < (suitId == 3 ? 7 : 9), "Invalid tile type");
+
+      var suitId = tileType.SuitId;
+      var index = tileType.Index;
 
       _tilesInHand -= 1;
       if (suitId < 3)
       {
-        _suits[suitId][tileTypeIdInSuit] -= 1;
+        _suits[suitId][index] -= 1;
         UpdateValue(suitId);
       }
       else
       {
         _arrangementValues[3] = _honorClassifier.Shouminkan();
-        _cJihai[tileTypeIdInSuit] -= 1;
-        _mJihai[tileTypeIdInSuit] += 1;
+        _cJihai[index] -= 1;
+        _mJihai[index] += 1;
       }
     }
 
@@ -404,44 +424,11 @@ namespace Spines.Mahjong.Analysis.Shanten
       _suitClassifiers[suitId].SetMelds(_melds[suitId], _meldCounts[suitId]);
     }
 
-    private void Init(IEnumerable<Tile> tiles)
-    {
-      foreach (var tile in tiles)
-      {
-        var suit = (int) tile.Suit;
-        var index = tile.Index;
-
-        _inHandByType[suit * 9 + index] += 1;
-        _tilesInHand += 1;
-        if (suit == 3)
-        {
-          _arrangementValues[3] = _honorClassifier.Draw(_cJihai[index], _mJihai[index]);
-          _kokushi.Draw(_cJihai[index]);
-          _chiitoi.Draw(_cJihai[index]);
-          _cJihai[index] += 1;
-        }
-        else
-        {
-          if (index == 0 || index == 8)
-          {
-            _kokushi.Draw(_suits[suit][index]);
-          }
-
-          _chiitoi.Draw(_suits[suit][index]);
-          _suits[suit][index] += 1;
-        }
-      }
-
-      UpdateValue(0);
-      UpdateValue(1);
-      UpdateValue(2);
-    }
-
-    private Dictionary<Tile, int> GetUkeIreFor13()
+    private Dictionary<TileType, int> GetUkeIreFor13()
     {
       var currentShanten = CalculateShanten(_arrangementValues);
 
-      var ukeIre = new Dictionary<Tile, int>();
+      var ukeIre = new Dictionary<TileType, int>();
       var tileType = 0;
       var localArrangements = new[] {_arrangementValues[0], _arrangementValues[1], _arrangementValues[2], _arrangementValues[3]};
       for (var suit = 0; suit < 3; ++suit)
@@ -461,7 +448,7 @@ namespace Spines.Mahjong.Analysis.Shanten
             localArrangements[suit] = _suitClassifiers[suit].GetValue(_suits[suit]);
             if (CalculateShanten(localArrangements) < currentShanten)
             {
-              ukeIre.Add(Tile.FromSuitAndIndex(IdToSuit[suit],  index), 4 - _inHandByType[tileType]);
+              ukeIre.Add(TileType.FromSuitAndIndex(IdToSuit[suit], index), 4 - _inHandByType[tileType]);
             }
 
             _chiitoi.Discard(_suits[suit][index]);
@@ -489,7 +476,7 @@ namespace Spines.Mahjong.Analysis.Shanten
           localArrangements[3] = _honorClassifier.Clone().Draw(_cJihai[index], _mJihai[index]);
           if (CalculateShanten(localArrangements) < currentShanten)
           {
-            ukeIre.Add(Tile.FromSuitAndIndex(Suit.Jihai,  index), 4 - _inHandByType[tileType]);
+            ukeIre.Add(TileType.FromSuitAndIndex(Suit.Jihai, index), 4 - _inHandByType[tileType]);
           }
 
           _chiitoi.Discard(previousTileCount + 1);
@@ -502,8 +489,11 @@ namespace Spines.Mahjong.Analysis.Shanten
       return ukeIre;
     }
 
-    private void InternalDiscard(int suit, int index)
+    private void InternalDiscard(TileType tileType)
     {
+      var suit = tileType.SuitId;
+      var index = tileType.Index;
+
       _inHandByType[suit * 9 + index] -= 1;
       _tilesInHand -= 1;
       if (suit == 3)
@@ -526,8 +516,11 @@ namespace Spines.Mahjong.Analysis.Shanten
       }
     }
 
-    private void InternalDraw(int suit, int index)
+    private void InternalDraw(TileType tileType)
     {
+      var suit = tileType.SuitId;
+      var index = tileType.Index;
+
       _inHandByType[suit * 9 + index] += 1;
       _tilesInHand += 1;
       if (suit == 3)
