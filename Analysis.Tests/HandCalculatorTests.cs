@@ -1,5 +1,6 @@
 using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 using Spines.Mahjong.Analysis.Replay;
 using Spines.Mahjong.Analysis.Shanten;
 using Xunit;
@@ -11,11 +12,14 @@ namespace Spines.Mahjong.Analysis.Tests
     [Fact]
     public void Dummy()
     {
+      var loadStatics = new HandCalculator();
+      loadStatics.Draw(TileType.FromTileTypeId(0));
+
       var sum = 0;
       var files = Directory.EnumerateFiles(ReplaysFolder).Take(10000);
       foreach (var file in files)
       {
-        var r = ReplayParser.Parse(File.ReadAllText(file));
+        var r = ReplayParser.Parse(XElement.Load(file));
         sum += r;
       }
 

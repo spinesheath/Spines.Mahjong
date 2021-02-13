@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Spines.Mahjong.Analysis.Shanten;
 
@@ -10,37 +9,15 @@ namespace Spines.Mahjong.Analysis.Replay
 {
   public static class ReplayParser
   {
-    public static int Parse(string xml)
+    public static int Parse(XElement xml)
     {
       var shantenCalculators = new List<HandCalculator>();
 
       var sum = 0;
 
-      var xElement = XElement.Parse(xml);
-      foreach (var e in xElement.Elements())
+      foreach (var e in xml.Elements())
       {
         var name = e.Name.LocalName;
-
-        var drawMatch = DrawRegex.Match(name);
-        if (drawMatch.Success)
-        {
-          var tileId = ToInt(drawMatch.Groups[2].Value);
-          var playerId = drawMatch.Groups[1].Value[0] - 'T';
-          shantenCalculators[playerId].Draw(TileType.FromTileId(tileId));
-          sum += shantenCalculators[playerId].Shanten < 100 ? 1 : 0;
-          continue;
-        }
-
-        var discardMatch = DiscardRegex.Match(name);
-        if (discardMatch.Success)
-        {
-          var tileId = ToInt(discardMatch.Groups[2].Value);
-          var playerId = discardMatch.Groups[1].Value[0] - 'D';
-          shantenCalculators[playerId].Discard(TileType.FromTileId(tileId));
-          sum += shantenCalculators[playerId].Shanten < 100 ? 1 : 0;
-          continue;
-        }
-
         switch (name)
         {
           case "SHUFFLE":
@@ -98,15 +75,30 @@ namespace Spines.Mahjong.Analysis.Replay
             break;
           }
           default:
-            throw new NotImplementedException();
+          {
+            var drawId = name[0] - 'T';
+            if (drawId >= 0 && drawId <= 3)
+            {
+              shantenCalculators[drawId].Draw(TileType.FromTileId(ToInt(name[1..])));
+              sum += shantenCalculators[drawId].Shanten < 100 ? 1 : 0;
+              continue;
+            }
+
+            var discardId = name[0] - 'D';
+            if (discardId >= 0 && discardId <= 3)
+            {
+              shantenCalculators[discardId].Discard(TileType.FromTileId(ToInt(name[1..])));
+              sum += shantenCalculators[discardId].Shanten < 100 ? 1 : 0;
+              continue;
+            }
+
+            throw new NotImplementedException(e.ToString());
+          }
         }
       }
 
       return sum;
     }
-
-    private static readonly Regex DiscardRegex = new Regex(@"([DEFG])(\d{1,3})");
-    private static readonly Regex DrawRegex = new Regex(@"([TUVW])(\d{1,3})");
 
     private static IEnumerable<int> ToInts(string value)
     {
