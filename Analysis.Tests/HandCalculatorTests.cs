@@ -18,11 +18,17 @@ namespace Spines.Mahjong.Analysis.Tests
       loadStatics.Init(Enumerable.Range(0, 13).Select(TileType.FromTileTypeId));
       sum += loadStatics.Shanten < 100 ? 0 : 1;
       
-      var files = Directory.EnumerateFiles(ReplaysFolder).Take(10000);
-      foreach (var file in files)
+      var xmlReaderSettings = new XmlReaderSettings { NameTable = null };
+
+      for (var i = 0; i < 10; i++)
       {
-        var r = ReplayParser.Parse(XmlReader.Create(file));
-        sum += r;
+        var files = Directory.EnumerateFiles(ReplaysFolder).Take(10000);
+        foreach (var file in files)
+        {
+          using var xmlReader = XmlReader.Create(file, xmlReaderSettings);
+          var r = ReplayParser.Parse(xmlReader);
+          sum += r;
+        }
       }
 
       Assert.Equal(1, sum);
