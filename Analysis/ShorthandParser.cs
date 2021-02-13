@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Spines.Mahjong.Analysis.Shanten;
 
 namespace Spines.Mahjong.Analysis
 {
@@ -25,7 +24,7 @@ namespace Spines.Mahjong.Analysis
         {
           for (var c = 0; c < concealed[i]; ++c)
           {
-            yield return new Tile {Suit = IdToSuit[i / 9], Index = i % 9};
+            yield return Tile.FromSuitAndIndex(IdToSuit[i / 9], i % 9);
           }
         }
       }

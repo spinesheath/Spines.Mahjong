@@ -27,7 +27,7 @@ namespace Spines.Mahjong.Analysis.Replay
           var tileId = ToInt(drawMatch.Groups[2].Value);
           var playerId = drawMatch.Groups[1].Value[0] - 'T';
           shantenCalculators[playerId].Draw(tileId / 4);
-          sum += shantenCalculators[playerId].Shanten;
+          sum += shantenCalculators[playerId].Shanten < 100 ? 1 : 0;
           continue;
         }
 
@@ -36,8 +36,8 @@ namespace Spines.Mahjong.Analysis.Replay
         {
           var tileId = ToInt(discardMatch.Groups[2].Value);
           var playerId = discardMatch.Groups[1].Value[0] - 'D';
-          shantenCalculators[playerId].Discard(Tile.FromTileType(tileId / 4));
-          sum += shantenCalculators[playerId].Shanten;
+          shantenCalculators[playerId].Discard(Tile.FromTileTypeId(tileId / 4));
+          sum += shantenCalculators[playerId].Shanten < 100 ? 1 : 0;
           continue;
         }
 
@@ -63,7 +63,7 @@ namespace Spines.Mahjong.Analysis.Replay
               if (hai != null)
               {
                 shantenCalculators[playerId].Init(ToInts(hai.Value).Select(t => t / 4));
-                sum += shantenCalculators[playerId].Shanten;
+                sum += shantenCalculators[playerId].Shanten < 100 ? 1 : 0;
               }
             }
             break;
@@ -94,7 +94,7 @@ namespace Spines.Mahjong.Analysis.Replay
                 shantenCalculators[playerId].Ankan(suit, index);
                 break;
             }
-            sum += shantenCalculators[playerId].Shanten;
+            sum += shantenCalculators[playerId].Shanten < 100 ? 1 : 0;
             break;
           }
           default:

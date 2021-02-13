@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Spines.Mahjong.Analysis.Shanten;
 
 namespace Spines.Mahjong.Analysis
 {
@@ -21,22 +20,22 @@ namespace Spines.Mahjong.Analysis
     {
       if (MeldId < 7)
       {
-        yield return new Tile { Index = MeldId + 0, Suit = Suit };
-        yield return new Tile { Index = MeldId + 1, Suit = Suit };
-        yield return new Tile { Index = MeldId + 2, Suit = Suit };
+        yield return Tile.FromSuitAndIndex(Suit, MeldId + 0);
+        yield return Tile.FromSuitAndIndex(Suit, MeldId + 1);
+        yield return Tile.FromSuitAndIndex(Suit, MeldId + 2);
       }
       else if (MeldId < 16)
       {
-        yield return new Tile { Index = MeldId - 7, Suit = Suit };
-        yield return new Tile { Index = MeldId - 7, Suit = Suit };
-        yield return new Tile { Index = MeldId - 7, Suit = Suit };
+        yield return Tile.FromSuitAndIndex(Suit, MeldId - 7);
+        yield return Tile.FromSuitAndIndex(Suit, MeldId - 7);
+        yield return Tile.FromSuitAndIndex(Suit, MeldId - 7);
       }
       else
       {
-        yield return new Tile {Index = MeldId - 16, Suit = Suit};
-        yield return new Tile {Index = MeldId - 16, Suit = Suit};
-        yield return new Tile {Index = MeldId - 16, Suit = Suit};
-        yield return new Tile {Index = MeldId - 16, Suit = Suit};
+        yield return Tile.FromSuitAndIndex(Suit, MeldId - 16);
+        yield return Tile.FromSuitAndIndex(Suit, MeldId - 16);
+        yield return Tile.FromSuitAndIndex(Suit, MeldId - 16);
+        yield return Tile.FromSuitAndIndex(Suit, MeldId - 16);
       }
     }
   }

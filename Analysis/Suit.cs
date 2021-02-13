@@ -1,4 +1,4 @@
-﻿namespace Spines.Mahjong.Analysis.Shanten
+﻿namespace Spines.Mahjong.Analysis
 {
   public enum Suit
   {

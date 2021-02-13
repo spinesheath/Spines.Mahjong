@@ -163,7 +163,7 @@ namespace Spines.Mahjong.Analysis.Shanten
     {
       Debug.Assert(_tilesInHand == 0, "Can only initialize when the hand is empty.");
 
-      Init(tileTypes.Select(Tile.FromTileType));
+      Init(tileTypes.Select(Tile.FromTileTypeId));
     }
 
     /// <summary>
@@ -174,7 +174,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       Debug.Assert(_tilesInHand == 13 && Shanten == 0, "furiten only makes sense at tenpai");
 
       var ukeIre = GetUkeIreFor13();
-      return ukeIre.Select(u => u.Key.TileType);
+      return ukeIre.Select(u => u.Key.TileTypeId);
     }
 
     /// <summary>
@@ -461,7 +461,7 @@ namespace Spines.Mahjong.Analysis.Shanten
             localArrangements[suit] = _suitClassifiers[suit].GetValue(_suits[suit]);
             if (CalculateShanten(localArrangements) < currentShanten)
             {
-              ukeIre.Add(new Tile {Suit = IdToSuit[suit], Index = index}, 4 - _inHandByType[tileType]);
+              ukeIre.Add(Tile.FromSuitAndIndex(IdToSuit[suit],  index), 4 - _inHandByType[tileType]);
             }
 
             _chiitoi.Discard(_suits[suit][index]);
@@ -489,7 +489,7 @@ namespace Spines.Mahjong.Analysis.Shanten
           localArrangements[3] = _honorClassifier.Clone().Draw(_cJihai[index], _mJihai[index]);
           if (CalculateShanten(localArrangements) < currentShanten)
           {
-            ukeIre.Add(new Tile {Suit = Suit.Jihai, Index = index}, 4 - _inHandByType[tileType]);
+            ukeIre.Add(Tile.FromSuitAndIndex(Suit.Jihai,  index), 4 - _inHandByType[tileType]);
           }
 
           _chiitoi.Discard(previousTileCount + 1);

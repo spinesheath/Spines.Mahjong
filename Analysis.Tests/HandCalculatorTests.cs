@@ -19,7 +19,7 @@ namespace Spines.Mahjong.Analysis.Tests
         sum += r;
       }
 
-      Assert.True(sum > 0);
+      Assert.Equal(1, sum);
     }
 
     [Theory]
