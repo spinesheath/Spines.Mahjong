@@ -14,11 +14,10 @@
     /// <returns>The shanten of the hand.</returns>
     public static int Classify(int[] values)
     {
-      var current = 0;
-      for (var i = 0; i < 4; ++i)
-      {
-        current = Arrangement[current + values[i]];
-      }
+      var current = Arrangement[values[0]];
+      current = Arrangement[current + values[1]];
+      current = Arrangement[current + values[2]];
+      current = Arrangement[current + values[3]];
       return current;
     }
 
