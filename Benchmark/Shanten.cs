@@ -8,7 +8,7 @@ namespace Benchmark
 {
   public class Shanten
   {
-    private const string ReplaysFolder = @".\..\..\..\..\..\..\..\..\Data\tenhou";
+    private const string ReplaysFolder = @"C:\tenhou\2014";
     private readonly List<string> _files;
 
     public Shanten()

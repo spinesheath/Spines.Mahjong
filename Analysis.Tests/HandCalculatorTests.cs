@@ -59,6 +59,6 @@ namespace Spines.Mahjong.Analysis.Tests
       Assert.Equal(expected, actual);
     }
 
-    private const string ReplaysFolder = @".\..\..\..\..\Data\2014";
+    private const string ReplaysFolder = @"C:\tenhou\2014";
   }
 }
