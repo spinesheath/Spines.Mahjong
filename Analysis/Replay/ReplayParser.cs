@@ -29,13 +29,20 @@ namespace Spines.Mahjong.Analysis.Replay
           case "mjloggm":
           case "SHUFFLE":
           case "TAIKYOKU":
-          case "GO":
           case "RYUUKYOKU":
           case "BYE":
           case "UN":
           case "DORA":
           case "REACH":
           case "AGARI":
+            break;
+          case "GO":
+            xml.MoveToAttribute("type");
+            var flags = (GameTypeFlag)xml.ReadContentAsInt();
+            if (flags.HasFlag(GameTypeFlag.Sanma))
+            {
+              return 0;
+            }
             break;
           case "INIT":
           {

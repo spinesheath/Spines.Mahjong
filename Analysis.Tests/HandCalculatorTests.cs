@@ -20,15 +20,12 @@ namespace Spines.Mahjong.Analysis.Tests
       
       var xmlReaderSettings = new XmlReaderSettings { NameTable = null };
 
-      for (var i = 0; i < 10; i++)
+      var files = Directory.EnumerateFiles(ReplaysFolder).Take(60000);
+      foreach (var file in files)
       {
-        var files = Directory.EnumerateFiles(ReplaysFolder).Take(10000);
-        foreach (var file in files)
-        {
-          using var xmlReader = XmlReader.Create(file, xmlReaderSettings);
-          var r = ReplayParser.Parse(xmlReader);
-          sum += r;
-        }
+        using var xmlReader = XmlReader.Create(file, xmlReaderSettings);
+        var r = ReplayParser.Parse(xmlReader);
+        sum += r;
       }
 
       Assert.Equal(1, sum);
@@ -62,6 +59,6 @@ namespace Spines.Mahjong.Analysis.Tests
       Assert.Equal(expected, actual);
     }
 
-    private const string ReplaysFolder = @".\..\..\..\..\Data\tenhou";
+    private const string ReplaysFolder = @".\..\..\..\..\Data\2014";
   }
 }
