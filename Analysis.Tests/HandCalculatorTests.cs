@@ -10,7 +10,27 @@ namespace Spines.Mahjong.Analysis.Tests
   public class HandCalculatorTests
   {
     [Fact]
-    public void Dummy()
+    public void ParseCompressed()
+    {
+      var sum = 0;
+
+      var loadStatics = new HandCalculator();
+      loadStatics.Init(Enumerable.Range(0, 13).Select(TileType.FromTileTypeId));
+      sum += loadStatics.Shanten < 100 ? 0 : 1;
+
+      var files = Directory.EnumerateFiles(CompressedReplaysFolder, "*.actions").Take(60000);
+      foreach (var file in files)
+      {
+        using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
+        var r = ReplayParser.Parse(fileStream);
+        sum += r;
+      }
+
+      Assert.Equal(1, sum);
+    }
+
+    [Fact]
+    public void ParseWithXmlReader()
     {
       var sum = 0;
 
@@ -60,5 +80,6 @@ namespace Spines.Mahjong.Analysis.Tests
     }
 
     private const string ReplaysFolder = @"C:\tenhou\2014";
+    private const string CompressedReplaysFolder = @"C:\tenhou\compressed";
   }
 }

@@ -43,7 +43,7 @@ namespace CompressedReplayCreator
     private static void Compress(string sourceDirectory, string targetDirectory)
     {
       var xmlReaderSettings = new XmlReaderSettings { NameTable = null };
-      foreach (var fileName in Directory.EnumerateFiles(sourceDirectory).Take(1000))
+      foreach (var fileName in Directory.EnumerateFiles(sourceDirectory).Take(60000))
       {
         using var xmlReader = XmlReader.Create(fileName, xmlReaderSettings);
         var actionsFileName = Path.Combine(targetDirectory, Path.GetFileNameWithoutExtension(fileName) + ".actions");
@@ -117,6 +117,8 @@ namespace CompressedReplayCreator
 
             var flags = (GameTypeFlag)ToInt(type);
             playerCount = flags.HasFlag(GameTypeFlag.Sanma) ? 3 : 4;
+            actions.WriteByte((byte)Node.Go);
+            actions.WriteByte((byte)flags);
             metadata.WriteLine($"GO.type={type}");
             metadata.WriteLine($"GO.lobby={lobby}");
 
@@ -352,6 +354,7 @@ namespace CompressedReplayCreator
       string doraHaiUra = null;
       string who = null;
       string fromWho = null;
+      string paoWho = null;
       string sc = null;
 
       while (xml.MoveToNextAttribute())
@@ -400,6 +403,10 @@ namespace CompressedReplayCreator
         {
           fromWho = xml.Value;
         }
+        else if (xml.LocalName == "paoWho")
+        {
+          paoWho = xml.Value;
+        }
         else if (xml.LocalName == "sc")
         {
           sc = xml.Value;
@@ -441,6 +448,10 @@ namespace CompressedReplayCreator
           WriteMeld(actions, who, meldCode);
         }
       }
+      else
+      {
+        actions.WriteByte(0);
+      }
 
       actions.WriteByte(ToByte(machi));
       actions.Write(ToInts(ten).SelectMany(BitConverter.GetBytes).ToArray());
@@ -458,6 +469,7 @@ namespace CompressedReplayCreator
       actions.Write(doraHaiUraBytes);
       actions.WriteByte(ToByte(who));
       actions.WriteByte(ToByte(fromWho));
+      actions.WriteByte(ToByte(paoWho ?? who));
       actions.Write(ToInts(sc).SelectMany(BitConverter.GetBytes).ToArray());
     }
 
@@ -546,6 +558,7 @@ namespace CompressedReplayCreator
         var tilesFromHand = decoder.Tiles.Except(new[] {decoder.CalledTile}).ToList();
         actions.WriteByte((byte) tilesFromHand[0]);
         actions.WriteByte((byte) tilesFromHand[1]);
+        actions.WriteByte(0); // padding so all melds have the same length
       }
       else if (decoder.MeldType == MeldType.Koutsu)
       {
@@ -556,6 +569,7 @@ namespace CompressedReplayCreator
         var tilesFromHand = decoder.Tiles.Except(new[] {decoder.CalledTile}).ToList();
         actions.WriteByte((byte) tilesFromHand[0]);
         actions.WriteByte((byte) tilesFromHand[1]);
+        actions.WriteByte(0); // padding so all melds have the same length
       }
       else if (decoder.MeldType == MeldType.CalledKan)
       {
@@ -583,6 +597,7 @@ namespace CompressedReplayCreator
       {
         actions.WriteByte((byte) Node.Ankan);
         actions.WriteByte(playerId);
+        actions.WriteByte(playerId); // padding so all melds have the same length
         actions.WriteByte((byte) decoder.Tiles[0]);
         actions.WriteByte((byte) decoder.Tiles[1]);
         actions.WriteByte((byte) decoder.Tiles[2]);
@@ -592,7 +607,12 @@ namespace CompressedReplayCreator
       {
         actions.WriteByte((byte)Node.Nuki);
         actions.WriteByte(playerId);
+        actions.WriteByte(playerId); // padding so all melds have the same length
         actions.WriteByte((byte)decoder.Tiles[0]);
+        actions.WriteByte(0); // padding so all melds have the same length
+        actions.WriteByte(0); // padding so all melds have the same length
+        actions.WriteByte(0); // padding so all melds have the same length
+
       }
     }
 
