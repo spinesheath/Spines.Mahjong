@@ -1,11 +1,12 @@
 ﻿namespace Spines.Mahjong.Analysis.Replay
 {
-  internal enum MeldType
+  public enum MeldType
   {
     ClosedKan,
     CalledKan,
     AddedKan,
     Koutsu,
-    Shuntsu
+    Shuntsu,
+    Nuki
   }
 }

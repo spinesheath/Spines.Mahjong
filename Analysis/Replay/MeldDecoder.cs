@@ -3,23 +3,28 @@ using System.Collections.Generic;
 
 namespace Spines.Mahjong.Analysis.Replay
 {
-  internal class MeldDecoder
+  public class MeldDecoder
   {
     public MeldDecoder(string meldCodeString)
     {
       _meldCode = int.Parse(meldCodeString);
       _baseIndex = 0;
       _koutsuUnusedTileNumber = 0;
+      CalledFromPlayerOffset = _meldCode & 3;
 
       MeldType = GetMeldType();
       Decode();
     }
+
+    public int CalledFromPlayerOffset { get; }
 
     public MeldType MeldType { get; }
 
     public IReadOnlyList<int> Tiles { get; private set; }
 
     public int CalledTile => Tiles[_calledTileIndex];
+
+    public int AddedTile => Tiles[_koutsuUnusedTileNumber];
 
     public int LowestTile { get; private set; }
 
@@ -62,6 +67,14 @@ namespace Spines.Mahjong.Analysis.Replay
 
     private void CalculateTiles()
     {
+      if (MeldType == MeldType.Nuki)
+      {
+        var tileId = _meldCode >> 8;
+        Tiles = new[] {tileId};
+        LowestTile = tileId;
+        return;
+      }
+
       var length = MeldType == MeldType.Shuntsu || MeldType == MeldType.Koutsu ? 3 : 4;
       var ids = new int[length];
       for (var i = 0; i < length; ++i)
@@ -100,7 +113,7 @@ namespace Spines.Mahjong.Analysis.Replay
       }
       if ((_meldCode & 1 << 5) != 0)
       {
-        throw new FormatException("Nuki not supported");
+        return MeldType.Nuki;
       }
       if ((_meldCode & 3) != 0)
       {
