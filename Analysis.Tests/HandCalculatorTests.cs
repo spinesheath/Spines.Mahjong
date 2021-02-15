@@ -18,7 +18,7 @@ namespace Spines.Mahjong.Analysis.Tests
       loadStatics.Init(Enumerable.Range(0, 13).Select(TileType.FromTileTypeId));
       sum += loadStatics.Shanten < 100 ? 0 : 1;
 
-      var files = Directory.EnumerateFiles(CompressedReplaysFolder, "*.actions").Take(60000);
+      var files = Directory.EnumerateFiles(CompressedReplaysFolder).Take(60000);
       foreach (var file in files)
       {
         using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
@@ -80,6 +80,6 @@ namespace Spines.Mahjong.Analysis.Tests
     }
 
     private const string ReplaysFolder = @"C:\tenhou\2014";
-    private const string CompressedReplaysFolder = @"C:\tenhou\compressed";
+    private const string CompressedReplaysFolder = @"C:\tenhou\compressed\2014\yonma\actions";
   }
 }
