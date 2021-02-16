@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analysis", "Analysis\Analys
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmark", "Benchmark\Benchmark.csproj", "{2965D962-1FF3-4CC7-BA04-CB1300462AEA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CompressedReplayCreator", "CompressedReplayCreator\CompressedReplayCreator.csproj", "{09034D61-12E7-4F30-B9D5-32B1E4747FC2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CompressedReplayCreator", "CompressedReplayCreator\CompressedReplayCreator.csproj", "{09034D61-12E7-4F30-B9D5-32B1E4747FC2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReplayBundleCreator", "ReplayBundleCreator\ReplayBundleCreator.csproj", "{D7BFA572-EB66-4CF4-9BE8-E69DA74037E3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{09034D61-12E7-4F30-B9D5-32B1E4747FC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{09034D61-12E7-4F30-B9D5-32B1E4747FC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{09034D61-12E7-4F30-B9D5-32B1E4747FC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7BFA572-EB66-4CF4-9BE8-E69DA74037E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7BFA572-EB66-4CF4-9BE8-E69DA74037E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7BFA572-EB66-4CF4-9BE8-E69DA74037E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7BFA572-EB66-4CF4-9BE8-E69DA74037E3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

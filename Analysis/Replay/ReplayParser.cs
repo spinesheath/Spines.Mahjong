@@ -24,6 +24,12 @@ namespace Spines.Mahjong.Analysis.Replay
         {
           return sum;
         }
+        if (action == 127)
+        {
+          shantenCalculators = new List<HandCalculator>();
+          playerCount = 4;
+          continue;
+        }
         
         switch (action)
         {
@@ -31,6 +37,8 @@ namespace Spines.Mahjong.Analysis.Replay
             var flags = (GameTypeFlag)file.ReadByte();
             if (flags.HasFlag(GameTypeFlag.Sanma))
             {
+              // ReSharper disable once RedundantAssignment
+              // Of course it is used...
               playerCount = 3;
               return 0;
             }
