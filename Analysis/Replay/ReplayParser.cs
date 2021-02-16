@@ -12,6 +12,9 @@ namespace Spines.Mahjong.Analysis.Replay
   {
     public static int Parse(FileStream file)
     {
+      var meldBuffer = new byte[6];
+      var haipaiBuffer = new byte[13];
+
       var shantenCalculators = new List<HandCalculator>();
       var playerCount = 4;
 
@@ -30,7 +33,7 @@ namespace Spines.Mahjong.Analysis.Replay
           playerCount = 4;
           continue;
         }
-        
+
         switch (action)
         {
           case 0: // GO flags: 1 byte
@@ -53,9 +56,8 @@ namespace Spines.Mahjong.Analysis.Replay
           {
             var playerId = file.ReadByte();
             shantenCalculators.Add(new HandCalculator());
-            var haipai = new byte[13];
-            file.Read(haipai);
-            shantenCalculators[playerId].Init(haipai.Select(b => TileType.FromTileId(b)));
+            file.Read(haipaiBuffer);
+            shantenCalculators[playerId].Init(haipaiBuffer.Select(b => TileType.FromTileId(b)));
             sum += shantenCalculators[playerId].Shanten < 100 ? 1 : 0;
             break;
           }
@@ -87,49 +89,44 @@ namespace Spines.Mahjong.Analysis.Replay
           }
           case 6: //Chii: 1 byte who, 1 byte fromWho, 1 byte called tileId, 2 bytes tileIds from hand, 1 byte 0 (padding)
           {
-            var data = new byte[6];
-            file.Read(data);
-            var calledTileType = TileType.FromTileId(data[2]);
-            var lowestTileType = TileType.FromTileId(data[2..4].Min());
-            shantenCalculators[data[0]].Chii(lowestTileType, calledTileType);
-            sum += shantenCalculators[data[0]].Shanten < 100 ? 1 : 0;
+            file.Read(meldBuffer);
+            var calledTileType = TileType.FromTileId(meldBuffer[2]);
+            var lowestTileType = TileType.FromTileId(meldBuffer[2..4].Min());
+            shantenCalculators[meldBuffer[0]].Chii(lowestTileType, calledTileType);
+            sum += shantenCalculators[meldBuffer[0]].Shanten < 100 ? 1 : 0;
             break;
           }
           case 7: //Pon: 1 byte who, 1 byte fromWho, 1 byte called tileId, 2 bytes tileIds from hand, 1 byte 0 (padding)
           {
-            var data = new byte[6];
-            file.Read(data);
-            shantenCalculators[data[0]].Pon(TileType.FromTileId(data[2]));
-            sum += shantenCalculators[data[0]].Shanten < 100 ? 1 : 0;
+            file.Read(meldBuffer);
+            shantenCalculators[meldBuffer[0]].Pon(TileType.FromTileId(meldBuffer[2]));
+            sum += shantenCalculators[meldBuffer[0]].Shanten < 100 ? 1 : 0;
             break;
           }
           case 8: //Daiminkan: 1 byte who, 1 byte fromWho, 1 byte called tileId, 3 bytes tileIds from hand
           {
-            var data = new byte[6];
-            file.Read(data);
-            shantenCalculators[data[0]].Daiminkan(TileType.FromTileId(data[2]));
-            sum += shantenCalculators[data[0]].Shanten < 100 ? 1 : 0;
+            file.Read(meldBuffer);
+            shantenCalculators[meldBuffer[0]].Daiminkan(TileType.FromTileId(meldBuffer[2]));
+            sum += shantenCalculators[meldBuffer[0]].Shanten < 100 ? 1 : 0;
             break;
           }
           case 9: //Shouminkan: 1 byte who, 1 byte fromWho, 1 byte called tileId, 1 byte added tileId, 2 bytes tileIds from hand
           {
-            var data = new byte[6];
-            file.Read(data);
-            shantenCalculators[data[0]].Shouminkan(TileType.FromTileId(data[2]));
-            sum += shantenCalculators[data[0]].Shanten < 100 ? 1 : 0;
+            file.Read(meldBuffer);
+            shantenCalculators[meldBuffer[0]].Shouminkan(TileType.FromTileId(meldBuffer[2]));
+            sum += shantenCalculators[meldBuffer[0]].Shanten < 100 ? 1 : 0;
             break;
           }
           case 10: //Ankan: 1 byte who, 1 byte who (padding), 4 bytes tileIds from hand
           {
-            var data = new byte[6];
-            file.Read(data);
-            shantenCalculators[data[0]].Shouminkan(TileType.FromTileId(data[2]));
-            sum += shantenCalculators[data[0]].Shanten < 100 ? 1 : 0;
+            file.Read(meldBuffer);
+            shantenCalculators[meldBuffer[0]].Shouminkan(TileType.FromTileId(meldBuffer[2]));
+            sum += shantenCalculators[meldBuffer[0]].Shanten < 100 ? 1 : 0;
             break;
           }
           case 11: //Nuki: 1 byte who, 1 byte who (padding), 1 byte tileId, 3 bytes 0 (padding)
           {
-            file.Read(new byte[6]);
+            file.Read(meldBuffer);
             break;
           }
           case 12: //Ron
@@ -159,7 +156,7 @@ namespace Spines.Mahjong.Analysis.Replay
           }
           case 14: //Ryuukyoku: 2 byte ba, 2*4*playerCount byte score, 1 byte ryuukyokuType, 4 byte tenpaiState
           {
-            file.Read(new byte[2 + 2*4*playerCount + 1 + 4]);
+            file.Read(new byte[2 + 2 * 4 * playerCount + 1 + 4]);
             break;
           }
           case 15: //Dora: 1 byte tileId

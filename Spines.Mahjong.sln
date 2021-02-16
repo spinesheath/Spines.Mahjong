@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CompressedReplayCreator", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReplayBundleCreator", "ReplayBundleCreator\ReplayBundleCreator.csproj", "{D7BFA572-EB66-4CF4-9BE8-E69DA74037E3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MemoryProfilingRig", "MemoryProfilingRig\MemoryProfilingRig.csproj", "{157FF3E0-8FBD-45B0-A322-4EFE7E16F6F8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{D7BFA572-EB66-4CF4-9BE8-E69DA74037E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D7BFA572-EB66-4CF4-9BE8-E69DA74037E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D7BFA572-EB66-4CF4-9BE8-E69DA74037E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{157FF3E0-8FBD-45B0-A322-4EFE7E16F6F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{157FF3E0-8FBD-45B0-A322-4EFE7E16F6F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{157FF3E0-8FBD-45B0-A322-4EFE7E16F6F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{157FF3E0-8FBD-45B0-A322-4EFE7E16F6F8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

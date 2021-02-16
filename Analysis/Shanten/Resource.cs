@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Resources;
-using System.Text.RegularExpressions;
 
 namespace Spines.Mahjong.Analysis.Shanten
 {
@@ -28,11 +27,11 @@ namespace Spines.Mahjong.Analysis.Shanten
         {
           throw new MissingManifestResourceException("Arrangement classifier transition resource is missing.");
         }
-
+        
         using var reader = new StreamReader(stream);
         stream = null;
         var result = reader.ReadToEnd();
-        var lines = Regex.Split(result, "\r\n|\r|\n").Where(line => line.Length > 0);
+        var lines = result.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
         var ints = lines.Select(line => Convert.ToInt32(line, CultureInfo.InvariantCulture));
         return ints.Select(i => i < 0 ? 0 : i).Select(i => (ushort) i).ToArray();
       }
