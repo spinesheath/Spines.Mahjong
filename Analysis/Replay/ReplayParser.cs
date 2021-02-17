@@ -131,7 +131,7 @@ namespace Spines.Mahjong.Analysis.Replay
           case 10: //Ankan: 1 byte who, 1 byte who (padding), 4 bytes tileIds from hand
           {
             file.Read(meldBuffer);
-            shantenCalculators[meldBuffer[0]].Shouminkan(TileType.FromTileId(meldBuffer[2]));
+            shantenCalculators[meldBuffer[0]].Ankan(TileType.FromTileId(meldBuffer[2]));
             sum += evaluation(shantenCalculators[meldBuffer[0]], true);
             break;
           }
