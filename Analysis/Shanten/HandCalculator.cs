@@ -203,14 +203,12 @@ namespace Spines.Mahjong.Analysis.Shanten
             _suits[suit][index] += 1;
             localArrangements[suit] = _suitClassifiers[suit].GetValue(_suits[suit]);
 
-            if (CalculateShanten(localArrangements) < currentShanten)
-            {
-              ukeIre[suit * 9 + index] = 4 - _inHandByType[tileType];
-            }
-            else
-            {
-              ukeIre[suit * 9 + index] = -1;
-            }
+            var newShanten = CalculateShanten(localArrangements);
+            var a = currentShanten - newShanten;
+            Debug.Assert(a >= 0 && a <= 1, "drawing a tile should always maintain ukeIre or improve it by 1");
+            // this evaluates to (remaining tiles of that type) or -1 if newShanten is not better than currentShanten
+            var t = (5 - _inHandByType[tileType]) * a - 1;
+            ukeIre[suit * 9 + index] = t;
 
             _chiitoi.Discard(_suits[suit][index]);
             if (index == 0 || index == 8)
@@ -219,6 +217,10 @@ namespace Spines.Mahjong.Analysis.Shanten
             }
 
             _suits[suit][index] -= 1;
+          }
+          else
+          {
+            ukeIre[tileType] = -1;
           }
 
           tileType += 1;
@@ -236,17 +238,19 @@ namespace Spines.Mahjong.Analysis.Shanten
           _chiitoi.Draw(previousTileCount);
           localArrangements[3] = _honorClassifier.Clone().Draw(_cJihai[index], _mJihai[index]);
 
-          if (CalculateShanten(localArrangements) < currentShanten)
-          {
-            ukeIre[27 + index] = 4 - _inHandByType[tileType];
-          }
-          else
-          {
-            ukeIre[27 + index] = -1;
-          }
+          var newShanten = CalculateShanten(localArrangements);
+          var a = currentShanten - newShanten;
+          Debug.Assert(a >= 0 && a <= 1, "drawing a tile should always maintain ukeIre or improve it by 1");
+          // this evaluates to (remaining tiles of that type) or -1 if newShanten is not better than currentShanten
+          var t = (5 - _inHandByType[tileType]) * a - 1;
+          ukeIre[27 + index] = t;
 
           _chiitoi.Discard(previousTileCount + 1);
           _kokushi.Discard(previousTileCount + 1);
+        }
+        else
+        {
+          ukeIre[tileType] = -1;
         }
 
         tileType += 1;
