@@ -166,7 +166,93 @@ namespace Spines.Mahjong.Analysis.Shanten
       Debug.Assert(_tilesInHand == 13 && Shanten == 0, "furiten only makes sense at tenpai");
 
       var ukeIre = GetUkeIreFor13();
-      return ukeIre.Select(u => u.Key.TileTypeId);
+      foreach (var i in ukeIre)
+      {
+        if (i >= 0)
+        {
+          yield return i;
+        }
+      }
+    }
+
+    /// <summary>
+    /// 34 ints, one per tileType. -1 if that tileType is not an ukeIre. 0-4 for the remaining tiles of that tileType if ukeIre.
+    /// </summary>
+    public int[] GetUkeIreFor13()
+    {
+      Debug.Assert(_tilesInHand == 13, "It says 13 in the method name!");
+
+      var currentShanten = CalculateShanten(_arrangementValues);
+
+      var ukeIre = new int[34];
+      var tileType = 0;
+      var localArrangements = new[] {_arrangementValues[0], _arrangementValues[1], _arrangementValues[2], _arrangementValues[3]};
+      for (var suit = 0; suit < 3; ++suit)
+      {
+        for (var index = 0; index < 9; ++index)
+        {
+          if (_inHandByType[tileType] != 4)
+          {
+            if (index == 0 || index == 8)
+            {
+              _kokushi.Draw(_suits[suit][index]);
+            }
+
+            _chiitoi.Draw(_suits[suit][index]);
+
+            _suits[suit][index] += 1;
+            localArrangements[suit] = _suitClassifiers[suit].GetValue(_suits[suit]);
+
+            if (CalculateShanten(localArrangements) < currentShanten)
+            {
+              ukeIre[suit * 9 + index] = 4 - _inHandByType[tileType];
+            }
+            else
+            {
+              ukeIre[suit * 9 + index] = -1;
+            }
+
+            _chiitoi.Discard(_suits[suit][index]);
+            if (index == 0 || index == 8)
+            {
+              _kokushi.Discard(_suits[suit][index]);
+            }
+
+            _suits[suit][index] -= 1;
+          }
+
+          tileType += 1;
+        }
+
+        localArrangements[suit] = _arrangementValues[suit];
+      }
+
+      for (var index = 0; index < 7; ++index)
+      {
+        if (_inHandByType[tileType] != 4)
+        {
+          var previousTileCount = _cJihai[index];
+          _kokushi.Draw(previousTileCount);
+          _chiitoi.Draw(previousTileCount);
+          localArrangements[3] = _honorClassifier.Clone().Draw(_cJihai[index], _mJihai[index]);
+
+          if (CalculateShanten(localArrangements) < currentShanten)
+          {
+            ukeIre[27 + index] = 4 - _inHandByType[tileType];
+          }
+          else
+          {
+            ukeIre[27 + index] = -1;
+          }
+
+          _chiitoi.Discard(previousTileCount + 1);
+          _kokushi.Discard(previousTileCount + 1);
+        }
+
+        tileType += 1;
+      }
+
+      return ukeIre;
     }
 
     public void Init(IEnumerable<TileType> tiles)
@@ -216,7 +302,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       var kanSuit = kanTileType.SuitId;
       var kanIndex = kanTileType.Index;
 
-      Dictionary<TileType, int> ukeIreAfterKan;
+      int[] ukeIreAfterKan;
 
       if (kanSuit < 3)
       {
@@ -253,20 +339,7 @@ namespace Spines.Mahjong.Analysis.Shanten
         _honorClassifier = hc;
       }
 
-      if (ukeIreBeforeDraw.Count(t => t.Value > 0) != ukeIreAfterKan.Count(t => t.Value > 0))
-      {
-        return true;
-      }
-
-      foreach (var tile in ukeIreBeforeDraw)
-      {
-        if (!ukeIreAfterKan.TryGetValue(tile.Key, out var count) || tile.Value != count)
-        {
-          return true;
-        }
-      }
-
-      return false;
+      return !ukeIreAfterKan.SequenceEqual(ukeIreBeforeDraw);
     }
 
     public void Pon(TileType tileType)
@@ -348,7 +421,6 @@ namespace Spines.Mahjong.Analysis.Shanten
              GetMeldString(0, 'M') + GetMeldString(1, 'P') + GetMeldString(2, 'S') + GetHonorMeldString();
     }
 
-    private static readonly List<Suit> IdToSuit = new List<Suit> {Suit.Manzu, Suit.Pinzu, Suit.Souzu, Suit.Jihai};
     private readonly int[] _arrangementValues = new int[4];
     private readonly int[] _cJihai = new int[7]; // concealed honor tiles
     private readonly byte[] _inHandByType = new byte[34]; // tiles in hand by tile type, including melds, kan is 4 tiles here
@@ -422,71 +494,6 @@ namespace Spines.Mahjong.Analysis.Shanten
       }
 
       _suitClassifiers[suitId].SetMelds(_melds[suitId], _meldCounts[suitId]);
-    }
-
-    private Dictionary<TileType, int> GetUkeIreFor13()
-    {
-      var currentShanten = CalculateShanten(_arrangementValues);
-
-      var ukeIre = new Dictionary<TileType, int>();
-      var tileType = 0;
-      var localArrangements = new[] {_arrangementValues[0], _arrangementValues[1], _arrangementValues[2], _arrangementValues[3]};
-      for (var suit = 0; suit < 3; ++suit)
-      {
-        for (var index = 0; index < 9; ++index)
-        {
-          if (_inHandByType[tileType] != 4)
-          {
-            if (index == 0 || index == 8)
-            {
-              _kokushi.Draw(_suits[suit][index]);
-            }
-
-            _chiitoi.Draw(_suits[suit][index]);
-
-            _suits[suit][index] += 1;
-            localArrangements[suit] = _suitClassifiers[suit].GetValue(_suits[suit]);
-            if (CalculateShanten(localArrangements) < currentShanten)
-            {
-              ukeIre.Add(TileType.FromSuitAndIndex(IdToSuit[suit], index), 4 - _inHandByType[tileType]);
-            }
-
-            _chiitoi.Discard(_suits[suit][index]);
-            if (index == 0 || index == 8)
-            {
-              _kokushi.Discard(_suits[suit][index]);
-            }
-
-            _suits[suit][index] -= 1;
-          }
-
-          tileType += 1;
-        }
-
-        localArrangements[suit] = _arrangementValues[suit];
-      }
-
-      for (var index = 0; index < 7; ++index)
-      {
-        if (_inHandByType[tileType] != 4)
-        {
-          var previousTileCount = _cJihai[index];
-          _kokushi.Draw(previousTileCount);
-          _chiitoi.Draw(previousTileCount);
-          localArrangements[3] = _honorClassifier.Clone().Draw(_cJihai[index], _mJihai[index]);
-          if (CalculateShanten(localArrangements) < currentShanten)
-          {
-            ukeIre.Add(TileType.FromSuitAndIndex(Suit.Jihai, index), 4 - _inHandByType[tileType]);
-          }
-
-          _chiitoi.Discard(previousTileCount + 1);
-          _kokushi.Discard(previousTileCount + 1);
-        }
-
-        tileType += 1;
-      }
-
-      return ukeIre;
     }
 
     private void InternalDiscard(TileType tileType)

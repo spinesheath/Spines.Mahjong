@@ -37,6 +37,11 @@ namespace Spines.Mahjong.Analysis
       return ByTileType[tileTypeId];
     }
 
+    public override string ToString()
+    {
+      return $"{1 + Index}{"mpsz"[SuitId]}";
+    }
+
     /// <summary>
     /// 0-3 and 0-9
     /// </summary>
