@@ -29,7 +29,7 @@ namespace Spines.Mahjong.Analysis
     }
 
     /// <summary>
-    /// 0-34
+    /// 0-33
     /// </summary>
     public static TileType FromTileTypeId(int tileTypeId)
     {

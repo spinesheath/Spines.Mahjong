@@ -57,6 +57,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       }
       else
       {
+        _arrangementValues[3] = _honorClassifier.Ankan();
         _cJihai[index] -= 4;
         _mJihai[index] += 4;
         _meldCount += 1;
