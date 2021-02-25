@@ -9,12 +9,12 @@
   {
     public static ChiitoiClassifier Create()
     {
-      return new ChiitoiClassifier(14, 0);
+      return new ChiitoiClassifier(7);
     }
 
     public ChiitoiClassifier Clone()
     {
-      return new ChiitoiClassifier(Shanten, _usedSlots);
+      return new ChiitoiClassifier(Shanten);
     }
 
     /// <summary>
@@ -24,38 +24,22 @@
 
     public void Draw(int previousTileCount)
     {
-      switch (previousTileCount)
-      {
-        case 0:
-          Shanten -= _usedSlots < 7 ? 1 : 0;
-          _usedSlots += 1;
-          break;
-        case 1:
-          Shanten -= 1;
-          break;
-      }
+      // ((x >> 1) ^ 001) & x
+      // 1 if x == 1 else 0
+      Shanten -= ((previousTileCount >> 1) ^ 1) & previousTileCount;
     }
 
     public void Discard(int previousTileCount)
     {
-      switch (previousTileCount)
-      {
-        case 1:
-          Shanten += _usedSlots > 7 ? 0 : 1;
-          _usedSlots -= 1;
-          break;
-        case 2:
-          Shanten += 1;
-          break;
-      }
+      // ((x >> 1) ^ 001) & x
+      // 1 if x == 1 else 0
+      var x = previousTileCount - 1;
+      Shanten += ((x >> 1) ^ 1) & x;
     }
 
-    private int _usedSlots;
-
-    private ChiitoiClassifier(int shanten, int usedSlots)
+    private ChiitoiClassifier(int shanten)
     {
       Shanten = shanten;
-      _usedSlots = usedSlots;
     }
   }
 }
