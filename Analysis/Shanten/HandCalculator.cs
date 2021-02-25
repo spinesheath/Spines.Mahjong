@@ -194,11 +194,7 @@ namespace Spines.Mahjong.Analysis.Shanten
         {
           if (_inHandByType[tileType] != 4)
           {
-            if (index == 0 || index == 8)
-            {
-              _kokushi.Draw(_suits[suit][index]);
-            }
-
+            _kokushi.Draw(tileType, _suits[suit][index]);
             _chiitoi.Draw(_suits[suit][index]);
 
             _suits[suit][index] += 1;
@@ -211,12 +207,8 @@ namespace Spines.Mahjong.Analysis.Shanten
             var t = (5 - _inHandByType[tileType]) * a - 1;
             ukeIre[suit * 9 + index] = t;
 
-            if (index == 0 || index == 8)
-            {
-              _kokushi.Discard(_suits[suit][index]);
-            }
-
             _suits[suit][index] -= 1;
+            _kokushi.Discard(tileType, _suits[suit][index]);
             _chiitoi.Discard(_suits[suit][index]);
           }
           else
@@ -235,7 +227,7 @@ namespace Spines.Mahjong.Analysis.Shanten
         if (_inHandByType[tileType] != 4)
         {
           var previousTileCount = _cJihai[index];
-          _kokushi.Draw(previousTileCount);
+          _kokushi.Draw(tileType, previousTileCount);
           _chiitoi.Draw(previousTileCount);
           localArrangements[3] = _honorClassifier.Clone().Draw(_cJihai[index], _mJihai[index]);
 
@@ -247,7 +239,7 @@ namespace Spines.Mahjong.Analysis.Shanten
           ukeIre[27 + index] = t;
 
           _chiitoi.Discard(previousTileCount);
-          _kokushi.Discard(previousTileCount + 1);
+          _kokushi.Discard(tileType, previousTileCount);
         }
         else
         {
@@ -272,17 +264,13 @@ namespace Spines.Mahjong.Analysis.Shanten
         if (suit == 3)
         {
           _arrangementValues[3] = _honorClassifier.Draw(_cJihai[index], _mJihai[index]);
-          _kokushi.Draw(_cJihai[index]);
+          _kokushi.Draw(tile.TileTypeId, _cJihai[index]);
           _chiitoi.Draw(_cJihai[index]);
           _cJihai[index] += 1;
         }
         else
         {
-          if (index == 0 || index == 8)
-          {
-            _kokushi.Draw(_suits[suit][index]);
-          }
-
+          _kokushi.Draw(tile.TileTypeId, _suits[suit][index]);
           _chiitoi.Draw(_suits[suit][index]);
           _suits[suit][index] += 1;
         }
@@ -505,24 +493,21 @@ namespace Spines.Mahjong.Analysis.Shanten
     {
       var suit = tileType.SuitId;
       var index = tileType.Index;
+      var tileTypeId = tileType.TileTypeId;
 
-      _inHandByType[suit * 9 + index] -= 1;
+      _inHandByType[tileTypeId] -= 1;
       _tilesInHand -= 1;
       if (suit == 3)
       {
-        _kokushi.Discard(_cJihai[index]);
         _cJihai[index] -= 1;
+        _kokushi.Discard(tileTypeId, _cJihai[index]);
         _chiitoi.Discard(_cJihai[index]);
         _arrangementValues[3] = _honorClassifier.Discard(_cJihai[index], _mJihai[index]);
       }
       else
       {
-        if (index == 0 || index == 8)
-        {
-          _kokushi.Discard(_suits[suit][index]);
-        }
-
         _suits[suit][index] -= 1;
+        _kokushi.Discard(tileTypeId, _suits[suit][index]);
         _chiitoi.Discard(_suits[suit][index]);
         UpdateValue(suit);
       }
@@ -532,23 +517,20 @@ namespace Spines.Mahjong.Analysis.Shanten
     {
       var suit = tileType.SuitId;
       var index = tileType.Index;
+      var tileTypeId = tileType.TileTypeId;
 
-      _inHandByType[suit * 9 + index] += 1;
+      _inHandByType[tileTypeId] += 1;
       _tilesInHand += 1;
       if (suit == 3)
       {
         _arrangementValues[3] = _honorClassifier.Draw(_cJihai[index], _mJihai[index]);
-        _kokushi.Draw(_cJihai[index]);
+        _kokushi.Draw(tileTypeId, _cJihai[index]);
         _chiitoi.Draw(_cJihai[index]);
         _cJihai[index] += 1;
       }
       else
       {
-        if (index == 0 || index == 8)
-        {
-          _kokushi.Draw(_suits[suit][index]);
-        }
-
+        _kokushi.Draw(tileTypeId, _suits[suit][index]);
         _chiitoi.Draw(_suits[suit][index]);
         _suits[suit][index] += 1;
         UpdateValue(suit);

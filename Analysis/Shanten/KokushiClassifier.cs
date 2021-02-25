@@ -10,7 +10,7 @@
   {
     public static KokushiClassifier Create()
     {
-      return new KokushiClassifier(14, 0);
+      return new KokushiClassifier(14, 1);
     }
 
     public KokushiClassifier Clone()
@@ -22,33 +22,37 @@
     /// Shanten + 1 because in Hand calculations are done with that value instead of real shanten.
     /// </summary>
     public int Shanten;
-
-    public void Draw(int previousTileCount)
+    
+    public void Draw(int tileTypeId, int previousTileCount)
     {
-      switch (previousTileCount)
-      {
-        case 0:
-          Shanten -= 1;
-          break;
-        case 1:
-          Shanten -= _pairs == 0 ? 1 : 0;
-          _pairs += 1;
-          break;
-      }
+      // (1 << x & 0b100000001100000001100000001) >> x | (x + 5) >> 5
+      // 1 if the tileType is a terminal or honor, else 0
+      var r = (1 << tileTypeId & 0b100000001100000001100000001) >> tileTypeId | (tileTypeId + 5) >> 5;
+
+      // 1 if previousTileCount < 2, else 0
+      var s = (previousTileCount ^ 2) >> 1 & r;
+      // 1 if previousTileCount == 1, else 0
+      var p = previousTileCount & s;
+      // 1 if no pair was added or there were no pairs before, else 0
+      var t = (_pairs | ~p) & s;
+      _pairs <<= p;
+      Shanten -= t;
     }
 
-    public void Discard(int previousTileCount)
+    public void Discard(int tileTypeId, int tileCountAfterDiscard)
     {
-      switch (previousTileCount)
-      {
-        case 1:
-          Shanten += 1;
-          break;
-        case 2:
-          _pairs -= 1;
-          Shanten += _pairs == 0 ? 1 : 0;
-          break;
-      }
+      // (1 << x & 0b100000001100000001100000001) >> x | (x + 5) >> 5
+      // 1 if the tileType is a terminal or honor, else 0
+      var r = (1 << tileTypeId & 0b100000001100000001100000001) >> tileTypeId | (tileTypeId + 5) >> 5;
+
+      // 1 if tileCountAfterDiscard < 2, else 0
+      var s = (tileCountAfterDiscard ^ 2) >> 1 & r;
+      // 1 if tileCountAfterDiscard == 1, else 0
+      var p = tileCountAfterDiscard & s;
+      _pairs >>= p;
+      // 1 if no pair was removed or there were at least two pairs before, else 0
+      var t = (_pairs | ~p) & s;
+      Shanten += t;
     }
 
     private int _pairs;
