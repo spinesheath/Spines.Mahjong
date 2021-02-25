@@ -126,6 +126,20 @@ namespace Spines.Mahjong.Analysis.Tests
       Assert.Equal(expected, actual);
     }
 
+    [Fact]
+    public void ChiitoiDiscard()
+    {
+      var parser = new ShorthandParser("114477m114477p11s");
+      var c = new HandCalculator(parser);
+      c.Discard(TileType.FromSuitAndIndex(Suit.Manzu, 0));
+      c.Draw(TileType.FromSuitAndIndex(Suit.Jihai, 6));
+      c.Discard(TileType.FromSuitAndIndex(Suit.Manzu, 3));
+
+      var actual = c.Shanten;
+
+      Assert.Equal(1, actual);
+    }
+
     private const string ReplaysFolder = @"C:\tenhou\2014";
     private const string CompressedReplaysFolder = @"C:\tenhou\compressed\2014\yonma\actions";
     private const string BundlesFolder = @"C:\tenhou\compressed\2014\yonma\bundles";

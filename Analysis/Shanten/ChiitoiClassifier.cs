@@ -29,12 +29,11 @@
       Shanten -= ((previousTileCount >> 1) ^ 1) & previousTileCount;
     }
 
-    public void Discard(int previousTileCount)
+    public void Discard(int tileCountAfterDiscard)
     {
       // ((x >> 1) ^ 001) & x
       // 1 if x == 1 else 0
-      var x = previousTileCount - 1;
-      Shanten += ((x >> 1) ^ 1) & x;
+      Shanten += ((tileCountAfterDiscard >> 1) ^ 1) & tileCountAfterDiscard;
     }
 
     private ChiitoiClassifier(int shanten)

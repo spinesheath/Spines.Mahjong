@@ -9,7 +9,7 @@ namespace Spines.Mahjong.Analysis.Shanten
   /// <summary>
   /// Maintains tile counts and calculates the Shanten of a hand.
   /// </summary>
-  public class HandCalculator
+  public class HandCalculator : IHandCalculator
   {
     public HandCalculator(ShorthandParser initial)
       : this()
@@ -87,7 +87,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       UpdateValue(suitId);
     }
 
-    public HandCalculator Clone()
+    public IHandCalculator Clone()
     {
       var hand = new HandCalculator();
       for (var i = 0; i < _suits.Length; ++i)
@@ -162,7 +162,7 @@ namespace Spines.Mahjong.Analysis.Shanten
     /// <summary>
     /// All tileTypeIds that would make the hand furiten if discarded.
     /// </summary>
-    public IEnumerable<int> GetFuritenTileTypeIds()
+    public IEnumerable<TileType> GetFuritenTileTypes()
     {
       Debug.Assert(_tilesInHand == 13 && Shanten == 0, "furiten only makes sense at tenpai");
 
@@ -171,7 +171,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       {
         if (i >= 0)
         {
-          yield return i;
+          yield return TileType.FromTileTypeId(i);
         }
       }
     }
@@ -211,13 +211,13 @@ namespace Spines.Mahjong.Analysis.Shanten
             var t = (5 - _inHandByType[tileType]) * a - 1;
             ukeIre[suit * 9 + index] = t;
 
-            _chiitoi.Discard(_suits[suit][index]);
             if (index == 0 || index == 8)
             {
               _kokushi.Discard(_suits[suit][index]);
             }
 
             _suits[suit][index] -= 1;
+            _chiitoi.Discard(_suits[suit][index]);
           }
           else
           {
@@ -246,7 +246,7 @@ namespace Spines.Mahjong.Analysis.Shanten
           var t = (5 - _inHandByType[tileType]) * a - 1;
           ukeIre[27 + index] = t;
 
-          _chiitoi.Discard(previousTileCount + 1);
+          _chiitoi.Discard(previousTileCount);
           _kokushi.Discard(previousTileCount + 1);
         }
         else
@@ -511,8 +511,8 @@ namespace Spines.Mahjong.Analysis.Shanten
       if (suit == 3)
       {
         _kokushi.Discard(_cJihai[index]);
-        _chiitoi.Discard(_cJihai[index]);
         _cJihai[index] -= 1;
+        _chiitoi.Discard(_cJihai[index]);
         _arrangementValues[3] = _honorClassifier.Discard(_cJihai[index], _mJihai[index]);
       }
       else
@@ -522,8 +522,8 @@ namespace Spines.Mahjong.Analysis.Shanten
           _kokushi.Discard(_suits[suit][index]);
         }
 
-        _chiitoi.Discard(_suits[suit][index]);
         _suits[suit][index] -= 1;
+        _chiitoi.Discard(_suits[suit][index]);
         UpdateValue(suit);
       }
     }
