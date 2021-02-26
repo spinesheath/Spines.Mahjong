@@ -29,6 +29,8 @@
       // 1 if the tileType is a terminal or honor, else 0
       var r = (1 << tileTypeId & 0b100000001100000001100000001) >> tileTypeId | (tileTypeId + 5) >> 5;
 
+      // TODO Is suspect this can be simplified
+
       // 1 if previousTileCount < 2, else 0
       var s = (previousTileCount ^ 2) >> 1 & r;
       // 1 if previousTileCount == 1, else 0
@@ -44,6 +46,8 @@
       // (1 << x & 0b100000001100000001100000001) >> x | (x + 5) >> 5
       // 1 if the tileType is a terminal or honor, else 0
       var r = (1 << tileTypeId & 0b100000001100000001100000001) >> tileTypeId | (tileTypeId + 5) >> 5;
+
+      // TODO Is suspect this can be simplified
 
       // 1 if tileCountAfterDiscard < 2, else 0
       var s = (tileCountAfterDiscard ^ 2) >> 1 & r;

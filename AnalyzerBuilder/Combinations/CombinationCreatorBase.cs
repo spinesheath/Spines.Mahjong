@@ -7,7 +7,7 @@ namespace AnalyzerBuilder.Combinations
   /// <summary>
   /// Base class for combination creators.
   /// </summary>
-  internal abstract class CombinationCreatorBase
+  public abstract class CombinationCreatorBase
   {
     /// <summary>
     /// Creates a new instance of CombinationCreatorBase.

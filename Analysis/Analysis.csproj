@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -9,6 +9,7 @@
   <ItemGroup>
     <None Remove="Resources\ArrangementTransitions.txt" />
     <None Remove="Resources\ProgressiveHonorStateMachine.txt" />
+    <None Remove="Resources\suitArrangementsBase5NoMelds.dat" />
     <None Remove="Resources\SuitFirstPhase.txt" />
     <None Remove="Resources\SuitSecondPhase0.txt" />
     <None Remove="Resources\SuitSecondPhase1.txt" />
@@ -20,6 +21,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\ArrangementTransitions.txt" />
     <EmbeddedResource Include="Resources\ProgressiveHonorStateMachine.txt" />
+    <EmbeddedResource Include="Resources\suitArrangementsBase5NoMelds.dat" />
     <EmbeddedResource Include="Resources\SuitFirstPhase.txt" />
     <EmbeddedResource Include="Resources\SuitSecondPhase0.txt" />
     <EmbeddedResource Include="Resources\SuitSecondPhase1.txt" />

@@ -6,7 +6,7 @@ namespace AnalyzerBuilder.Combinations
   /// <summary>
   /// A combination of tiles.
   /// </summary>
-  internal class Combination
+  public class Combination
   {
     /// <summary>
     /// Constructs a new Combination for a given number of types.

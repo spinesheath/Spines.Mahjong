@@ -8,7 +8,7 @@ namespace AnalyzerBuilder.Combinations
   /// <summary>
   /// Creates possible combinations of tiles in one suit.
   /// </summary>
-  internal class ConcealedCombinationCreator : CombinationCreatorBase
+  public class ConcealedCombinationCreator : CombinationCreatorBase
   {
     /// <summary>
     /// Creates a ConcealedCombinationCreator for a suit.

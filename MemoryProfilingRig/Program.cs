@@ -31,7 +31,7 @@ namespace MemoryProfilingRig
       foreach (var file in files)
       {
         using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
-        var r = ReplayParser.Parse(fileStream);
+        var r = ReplayParser.Parse(fileStream, false);
         sum += r;
       }
 

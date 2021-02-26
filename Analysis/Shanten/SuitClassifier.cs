@@ -3,7 +3,7 @@
   /// <summary>
   /// Calculates arrangement value of a suit.
   /// </summary>
-  internal class SuitClassifier
+  public class SuitClassifier
   {
     public SuitClassifier Clone()
     {
@@ -24,11 +24,21 @@
 
     public int GetValue(int[] tiles)
     {
-      var current = _entry;
-      current = _secondPhase[current + tiles[0]];
       switch (_meldCount)
       {
+        case 0:
+          var h = 0;
+          for (var i = 0; i < tiles.Length; i++)
+          {
+            h *= 5;
+            h += tiles[i];
+          }
+
+          return SuitBase5Lookup[h];
         case 1:
+        {
+          var current = _entry;
+          current = _secondPhase[current + tiles[0]];
           current = _secondPhase[current + tiles[1]];
           current = _secondPhase[current + tiles[2]];
           current = _secondPhase[current + tiles[3]] + 11752;
@@ -36,8 +46,12 @@
           current = _secondPhase[current + tiles[5]] + 55952;
           current = _secondPhase[current + tiles[6]] + 80078;
           current = _secondPhase[current + tiles[7]] + 99750;
-          break;
+          return _secondPhase[current + tiles[8]];
+        }
         case 2:
+        {
+          var current = _entry;
+          current = _secondPhase[current + tiles[0]];
           current = _secondPhase[current + tiles[1]];
           current = _secondPhase[current + tiles[2]] + 22358;
           current = _secondPhase[current + tiles[3]] + 54162;
@@ -45,8 +59,12 @@
           current = _secondPhase[current + tiles[5]] + 120379;
           current = _secondPhase[current + tiles[6]] + 139662;
           current = _secondPhase[current + tiles[7]] + 150573;
-          break;
+          return _secondPhase[current + tiles[8]];
+        }
         case 3:
+        {
+          var current = _entry;
+          current = _secondPhase[current + tiles[0]];
           current = _secondPhase[current + tiles[1]] + 24641;
           current = _secondPhase[current + tiles[2]] + 50680;
           current = _secondPhase[current + tiles[3]] + 76245;
@@ -54,9 +72,12 @@
           current = _secondPhase[current + tiles[5]] + 102953;
           current = _secondPhase[current + tiles[6]] + 107217;
           current = _secondPhase[current + tiles[7]] + 108982;
-          break;
-        case 0:
+          return _secondPhase[current + tiles[8]];
+        }
         case 4:
+        {
+          var current = _entry;
+          current = _secondPhase[current + tiles[0]];
           current = _secondPhase[current + tiles[1]];
           current = _secondPhase[current + tiles[2]];
           current = _secondPhase[current + tiles[3]];
@@ -64,9 +85,11 @@
           current = _secondPhase[current + tiles[5]];
           current = _secondPhase[current + tiles[6]];
           current = _secondPhase[current + tiles[7]];
-          break;
+          return _secondPhase[current + tiles[8]];
+        }
       }
-      return _secondPhase[current + tiles[8]];
+
+      return 0;
     }
 
     private ushort[] _secondPhase = SuitSecondPhase0;
@@ -79,6 +102,7 @@
     private static readonly ushort[] SuitSecondPhase2 = Resource.Transitions("SuitSecondPhase2.txt");
     private static readonly ushort[] SuitSecondPhase3 = Resource.Transitions("SuitSecondPhase3.txt");
     private static readonly ushort[] SuitSecondPhase4 = Resource.Transitions("SuitSecondPhase4.txt");
+    private static readonly byte[] SuitBase5Lookup = Resource.ArrangementLookup("suitArrangementsBase5NoMelds.dat");
 
     private static readonly ushort[][] SuitSecondPhases =
     {

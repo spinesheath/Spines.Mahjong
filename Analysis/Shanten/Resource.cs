@@ -3,7 +3,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Resources;
 
 namespace Spines.Mahjong.Analysis.Shanten
 {
@@ -25,7 +24,7 @@ namespace Spines.Mahjong.Analysis.Shanten
         stream = assembly.GetManifestResourceStream(fullResourceName);
         if (stream == null)
         {
-          throw new MissingManifestResourceException("Arrangement classifier transition resource is missing.");
+          throw new FileNotFoundException("Arrangement classifier transition resource is missing.");
         }
         
         using var reader = new StreamReader(stream);
@@ -39,6 +38,21 @@ namespace Spines.Mahjong.Analysis.Shanten
       {
         stream?.Dispose();
       }
+    }
+
+    public static byte[] ArrangementLookup(string resourceName)
+    {
+      var fullResourceName = "Spines.Mahjong.Analysis.Resources." + resourceName;
+      var assembly = Assembly.GetExecutingAssembly(); 
+      using var stream = assembly.GetManifestResourceStream(fullResourceName);
+      if (stream == null)
+      {
+        throw new FileNotFoundException("Arrangement lookup resource is missing.");
+      }
+
+      var data = new byte[stream.Length];
+      stream.Read(data);
+      return data;
     }
   }
 }

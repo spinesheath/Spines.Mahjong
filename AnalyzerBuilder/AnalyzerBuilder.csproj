@@ -10,4 +10,8 @@
     <Folder Include="Combinations\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Analysis\Analysis.csproj" />
+  </ItemGroup>
+
 </Project>
