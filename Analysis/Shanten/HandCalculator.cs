@@ -82,7 +82,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       _meldCounts[suitId] += 1;
       _meldCount += 1;
       _tilesInHand += 1;
-      _inHandByType[suitId * 9 + calledTileTypeIdInSuit] += 1;
+      _inHandByType[calledTileType.TileTypeId] += 1;
       _suitClassifiers[suitId].SetMelds(_melds[suitId], _meldCounts[suitId]);
       UpdateValue(suitId);
     }
@@ -205,7 +205,7 @@ namespace Spines.Mahjong.Analysis.Shanten
             Debug.Assert(a >= 0 && a <= 1, "drawing a tile should always maintain ukeIre or improve it by 1");
             // this evaluates to (remaining tiles of that type) or -1 if newShanten is not better than currentShanten
             var t = (5 - _inHandByType[tileType]) * a - 1;
-            ukeIre[suit * 9 + index] = t;
+            ukeIre[tileType] = t;
 
             _suits[suit][index] -= 1;
             _kokushi.Discard(tileType, _suits[suit][index]);
@@ -256,23 +256,16 @@ namespace Spines.Mahjong.Analysis.Shanten
     {
       foreach (var tile in tiles)
       {
-        var suit = (int) tile.Suit;
-        var index = tile.Index;
-
-        _inHandByType[suit * 9 + index] += 1;
+        _inHandByType[tile.TileTypeId] += 1;
         _tilesInHand += 1;
-        if (suit == 3)
+
+        var previousTileCount = _suits[tile.SuitId][tile.Index]++;
+        _kokushi.Draw(tile.TileTypeId, previousTileCount);
+        _chiitoi.Draw(previousTileCount);
+
+        if (tile.SuitId == 3)
         {
-          _arrangementValues[3] = _honorClassifier.Draw(_cJihai[index], _mJihai[index]);
-          _kokushi.Draw(tile.TileTypeId, _cJihai[index]);
-          _chiitoi.Draw(_cJihai[index]);
-          _cJihai[index] += 1;
-        }
-        else
-        {
-          _kokushi.Draw(tile.TileTypeId, _suits[suit][index]);
-          _chiitoi.Draw(_suits[suit][index]);
-          _suits[suit][index] += 1;
+          _arrangementValues[3] = _honorClassifier.Draw(previousTileCount, _mJihai[tile.Index]);
         }
       }
 
@@ -491,49 +484,39 @@ namespace Spines.Mahjong.Analysis.Shanten
 
     private void InternalDiscard(TileType tileType)
     {
-      var suit = tileType.SuitId;
-      var index = tileType.Index;
-      var tileTypeId = tileType.TileTypeId;
-
-      _inHandByType[tileTypeId] -= 1;
+      _inHandByType[tileType.TileTypeId] -= 1;
       _tilesInHand -= 1;
-      if (suit == 3)
+
+      var tileCountAfterDiscard = --_suits[tileType.SuitId][tileType.Index];
+      _kokushi.Discard(tileType.TileTypeId, tileCountAfterDiscard);
+      _chiitoi.Discard(tileCountAfterDiscard);
+
+      if (tileType.SuitId == 3)
       {
-        _cJihai[index] -= 1;
-        _kokushi.Discard(tileTypeId, _cJihai[index]);
-        _chiitoi.Discard(_cJihai[index]);
-        _arrangementValues[3] = _honorClassifier.Discard(_cJihai[index], _mJihai[index]);
+        _arrangementValues[3] = _honorClassifier.Discard(tileCountAfterDiscard, _mJihai[tileType.Index]);
       }
       else
       {
-        _suits[suit][index] -= 1;
-        _kokushi.Discard(tileTypeId, _suits[suit][index]);
-        _chiitoi.Discard(_suits[suit][index]);
-        UpdateValue(suit);
+        UpdateValue(tileType.SuitId);
       }
     }
 
     private void InternalDraw(TileType tileType)
     {
-      var suit = tileType.SuitId;
-      var index = tileType.Index;
-      var tileTypeId = tileType.TileTypeId;
-
-      _inHandByType[tileTypeId] += 1;
+      _inHandByType[tileType.TileTypeId] += 1;
       _tilesInHand += 1;
-      if (suit == 3)
+
+      var previousTileCount = _suits[tileType.SuitId][tileType.Index]++;
+      _kokushi.Draw(tileType.TileTypeId, previousTileCount);
+      _chiitoi.Draw(previousTileCount);
+
+      if (tileType.SuitId == 3)
       {
-        _arrangementValues[3] = _honorClassifier.Draw(_cJihai[index], _mJihai[index]);
-        _kokushi.Draw(tileTypeId, _cJihai[index]);
-        _chiitoi.Draw(_cJihai[index]);
-        _cJihai[index] += 1;
+        _arrangementValues[3] = _honorClassifier.Draw(previousTileCount, _mJihai[tileType.Index]);
       }
       else
       {
-        _kokushi.Draw(tileTypeId, _suits[suit][index]);
-        _chiitoi.Draw(_suits[suit][index]);
-        _suits[suit][index] += 1;
-        UpdateValue(suit);
+        UpdateValue(tileType.SuitId);
       }
     }
 
