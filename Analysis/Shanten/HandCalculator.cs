@@ -33,6 +33,13 @@ namespace Spines.Mahjong.Analysis.Shanten
       _melds = new[] {new int[4], new int[4], new int[4]};
     }
 
+    public override string ToString()
+    {
+      return Shanten + ": " + GetConcealedString(0, 'm') + GetConcealedString(1, 'p') + GetConcealedString(2, 's') +
+             GetConcealedString(3, 'z') +
+             GetMeldString(0, 'M') + GetMeldString(1, 'P') + GetMeldString(2, 'S') + GetHonorMeldString();
+    }
+
     /// <summary>
     /// The current shanten of the hand.
     /// </summary>
@@ -143,22 +150,6 @@ namespace Spines.Mahjong.Analysis.Shanten
       }
     }
 
-    public void Discard(TileType tileType)
-    {
-      Debug.Assert(_tilesInHand == 14, "Can't discard from hand with less than 13 tiles.");
-      Debug.Assert(_inHandByType[tileType.TileTypeId] > 0, "Can't discard a tile that is not in the hand.");
-
-      InternalDiscard(tileType);
-    }
-
-    public void Draw(TileType tileType)
-    {
-      Debug.Assert(_tilesInHand == 13, "Can only draw with a 13 tile hand.");
-      Debug.Assert(_inHandByType[tileType.TileTypeId] < 4, "Can't draw a tile with 4 of that tile in hand.");
-
-      InternalDraw(tileType);
-    }
-
     /// <summary>
     /// All tileTypeIds that would make the hand furiten if discarded.
     /// </summary>
@@ -177,7 +168,9 @@ namespace Spines.Mahjong.Analysis.Shanten
     }
 
     /// <summary>
-    /// 34 ints, one per tileType. -1 if that tileType is not an ukeIre. 0-4 for the remaining tiles of that tileType if ukeIre.
+    /// 34 ints, one per tileType.
+    /// -1 if that tileType is not an ukeIre.
+    /// 0-4 for the remaining tiles of that tileType if ukeIre.
     /// </summary>
     public int[] GetUkeIreFor13()
     {
@@ -279,11 +272,11 @@ namespace Spines.Mahjong.Analysis.Shanten
     /// </summary>
     public bool IsUkeIreChangedByAnkan(TileType lastDrawTileType, TileType kanTileType)
     {
-      InternalDiscard(lastDrawTileType);
+      Discard(lastDrawTileType);
 
       var ukeIreBeforeDraw = GetUkeIreFor13();
 
-      InternalDraw(lastDrawTileType);
+      Draw(lastDrawTileType);
 
       var kanSuit = kanTileType.SuitId;
       var kanIndex = kanTileType.Index;
@@ -357,11 +350,11 @@ namespace Spines.Mahjong.Analysis.Shanten
 
     public int ShantenAfterDiscard(TileType tileType)
     {
-      InternalDiscard(tileType);
+      Discard(tileType);
 
       var shantenAfterDiscard = CalculateShanten(_arrangementValues) - 1;
 
-      InternalDraw(tileType);
+      Draw(tileType);
 
       return shantenAfterDiscard;
     }
@@ -370,11 +363,11 @@ namespace Spines.Mahjong.Analysis.Shanten
     {
       Debug.Assert(_tilesInHand == 13, "Too many tiles in hand to draw");
 
-      InternalDraw(tileType);
+      Draw(tileType);
 
       var shantenWithTile = CalculateShanten(_arrangementValues) - 1;
 
-      InternalDiscard(tileType);
+      Discard(tileType);
 
       return shantenWithTile;
     }
@@ -400,11 +393,48 @@ namespace Spines.Mahjong.Analysis.Shanten
       }
     }
 
-    public override string ToString()
+    public void Discard(TileType tileType)
     {
-      return Shanten + ": " + GetConcealedString(0, 'm') + GetConcealedString(1, 'p') + GetConcealedString(2, 's') +
-             GetConcealedString(3, 'z') +
-             GetMeldString(0, 'M') + GetMeldString(1, 'P') + GetMeldString(2, 'S') + GetHonorMeldString();
+      Debug.Assert(_tilesInHand == 14, "Can't discard from hand with less than 13 tiles.");
+      Debug.Assert(_inHandByType[tileType.TileTypeId] > 0, "Can't discard a tile that is not in the hand.");
+
+      _inHandByType[tileType.TileTypeId] -= 1;
+      _tilesInHand -= 1;
+
+      var tileCountAfterDiscard = --_suits[tileType.SuitId][tileType.Index];
+      _kokushi.Discard(tileType.TileTypeId, tileCountAfterDiscard);
+      _chiitoi.Discard(tileCountAfterDiscard);
+
+      if (tileType.SuitId == 3)
+      {
+        _arrangementValues[3] = _honorClassifier.Discard(tileCountAfterDiscard, _mJihai[tileType.Index]);
+      }
+      else
+      {
+        UpdateValue(tileType.SuitId);
+      }
+    }
+
+    public void Draw(TileType tileType)
+    {
+      Debug.Assert(_tilesInHand == 13, "Can only draw with a 13 tile hand.");
+      Debug.Assert(_inHandByType[tileType.TileTypeId] < 4, "Can't draw a tile with 4 of that tile in hand.");
+
+      _inHandByType[tileType.TileTypeId] += 1;
+      _tilesInHand += 1;
+
+      var previousTileCount = _suits[tileType.SuitId][tileType.Index]++;
+      _kokushi.Draw(tileType.TileTypeId, previousTileCount);
+      _chiitoi.Draw(previousTileCount);
+
+      if (tileType.SuitId == 3)
+      {
+        _arrangementValues[3] = _honorClassifier.Draw(previousTileCount, _mJihai[tileType.Index]);
+      }
+      else
+      {
+        UpdateValue(tileType.SuitId);
+      }
     }
 
     private readonly int[] _arrangementValues = new int[4];
@@ -480,44 +510,6 @@ namespace Spines.Mahjong.Analysis.Shanten
       }
 
       _suitClassifiers[suitId].SetMelds(_melds[suitId], _meldCounts[suitId]);
-    }
-
-    private void InternalDiscard(TileType tileType)
-    {
-      _inHandByType[tileType.TileTypeId] -= 1;
-      _tilesInHand -= 1;
-
-      var tileCountAfterDiscard = --_suits[tileType.SuitId][tileType.Index];
-      _kokushi.Discard(tileType.TileTypeId, tileCountAfterDiscard);
-      _chiitoi.Discard(tileCountAfterDiscard);
-
-      if (tileType.SuitId == 3)
-      {
-        _arrangementValues[3] = _honorClassifier.Discard(tileCountAfterDiscard, _mJihai[tileType.Index]);
-      }
-      else
-      {
-        UpdateValue(tileType.SuitId);
-      }
-    }
-
-    private void InternalDraw(TileType tileType)
-    {
-      _inHandByType[tileType.TileTypeId] += 1;
-      _tilesInHand += 1;
-
-      var previousTileCount = _suits[tileType.SuitId][tileType.Index]++;
-      _kokushi.Draw(tileType.TileTypeId, previousTileCount);
-      _chiitoi.Draw(previousTileCount);
-
-      if (tileType.SuitId == 3)
-      {
-        _arrangementValues[3] = _honorClassifier.Draw(previousTileCount, _mJihai[tileType.Index]);
-      }
-      else
-      {
-        UpdateValue(tileType.SuitId);
-      }
     }
 
     private void UpdateValue(int suit)
