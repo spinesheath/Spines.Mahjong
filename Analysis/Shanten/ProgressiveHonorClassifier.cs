@@ -39,17 +39,29 @@
       return new ProgressiveHonorClassifier {_current = _current};
     }
 
-    public int Draw(int previousTiles, int melded)
+    /// <summary>
+    /// Draw a tile.
+    /// </summary>
+    /// <param name="previousTiles">Number of concealed tiles of that type before the draw.</param>
+    /// <param name="meldBit">1 if there is a pon for that tileType, else 0.</param>
+    /// <returns>Arrangement value of honors.</returns>
+    public int Draw(int previousTiles, int meldBit)
     {
-      var actionId = previousTiles + melded + (melded & 1);
-      _current = Transitions[_current + actionId + 1];
+      var action = previousTiles + (meldBit << 2) + 1;
+      _current = Transitions[_current + action];
       return Transitions[_current];
     }
 
-    public int Discard(int tilesAfterDiscard, int melded)
+    /// <summary>
+    /// Discard a tile.
+    /// </summary>
+    /// <param name="tilesAfterDiscard">Number of concealed tiles of that type after the discard.</param>
+    /// <param name="meldBit">1 if there is a pon for that tileType, else 0.</param>
+    /// <returns>Arrangement value of honors.</returns>
+    public int Discard(int tilesAfterDiscard, int meldBit)
     {
-      var actionId = 6 + tilesAfterDiscard + melded + (melded & 1);
-      _current = Transitions[_current + actionId];
+      var action = tilesAfterDiscard + (meldBit << 2) + 6;
+      _current = Transitions[_current + action];
       return Transitions[_current];
     }
 
