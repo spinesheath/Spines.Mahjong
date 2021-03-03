@@ -22,13 +22,14 @@
       _secondPhase = SuitSecondPhases[_meldCount];
     }
 
-    public int GetValue(int[] tiles)
+    public int GetValue(int[] tiles, int suit)
     {
+      var offset = suit * 9;
       switch (_meldCount)
       {
         case 0:
           var h = 0;
-          for (var i = 0; i < tiles.Length; i++)
+          for (var i = offset; i < offset + 9; i++)
           {
             h *= 5;
             h += tiles[i];
@@ -38,54 +39,54 @@
         case 1:
         {
           var current = _entry;
-          current = _secondPhase[current + tiles[0]];
-          current = _secondPhase[current + tiles[1]];
-          current = _secondPhase[current + tiles[2]];
-          current = _secondPhase[current + tiles[3]] + 11752;
-          current = _secondPhase[current + tiles[4]] + 30650;
-          current = _secondPhase[current + tiles[5]] + 55952;
-          current = _secondPhase[current + tiles[6]] + 80078;
-          current = _secondPhase[current + tiles[7]] + 99750;
-          return _secondPhase[current + tiles[8]];
+          current = _secondPhase[current + tiles[offset + 0]];
+          current = _secondPhase[current + tiles[offset + 1]];
+          current = _secondPhase[current + tiles[offset + 2]];
+          current = _secondPhase[current + tiles[offset + 3]] + 11752;
+          current = _secondPhase[current + tiles[offset + 4]] + 30650;
+          current = _secondPhase[current + tiles[offset + 5]] + 55952;
+          current = _secondPhase[current + tiles[offset + 6]] + 80078;
+          current = _secondPhase[current + tiles[offset + 7]] + 99750;
+          return _secondPhase[current + tiles[offset + 8]];
         }
         case 2:
         {
           var current = _entry;
-          current = _secondPhase[current + tiles[0]];
-          current = _secondPhase[current + tiles[1]];
-          current = _secondPhase[current + tiles[2]] + 22358;
-          current = _secondPhase[current + tiles[3]] + 54162;
-          current = _secondPhase[current + tiles[4]] + 90481;
-          current = _secondPhase[current + tiles[5]] + 120379;
-          current = _secondPhase[current + tiles[6]] + 139662;
-          current = _secondPhase[current + tiles[7]] + 150573;
-          return _secondPhase[current + tiles[8]];
+          current = _secondPhase[current + tiles[offset + 0]];
+          current = _secondPhase[current + tiles[offset + 1]];
+          current = _secondPhase[current + tiles[offset + 2]] + 22358;
+          current = _secondPhase[current + tiles[offset + 3]] + 54162;
+          current = _secondPhase[current + tiles[offset + 4]] + 90481;
+          current = _secondPhase[current + tiles[offset + 5]] + 120379;
+          current = _secondPhase[current + tiles[offset + 6]] + 139662;
+          current = _secondPhase[current + tiles[offset + 7]] + 150573;
+          return _secondPhase[current + tiles[offset + 8]];
         }
         case 3:
         {
           var current = _entry;
-          current = _secondPhase[current + tiles[0]];
-          current = _secondPhase[current + tiles[1]] + 24641;
-          current = _secondPhase[current + tiles[2]] + 50680;
-          current = _secondPhase[current + tiles[3]] + 76245;
-          current = _secondPhase[current + tiles[4]] + 93468;
-          current = _secondPhase[current + tiles[5]] + 102953;
-          current = _secondPhase[current + tiles[6]] + 107217;
-          current = _secondPhase[current + tiles[7]] + 108982;
-          return _secondPhase[current + tiles[8]];
+          current = _secondPhase[current + tiles[offset + 0]];
+          current = _secondPhase[current + tiles[offset + 1]] + 24641;
+          current = _secondPhase[current + tiles[offset + 2]] + 50680;
+          current = _secondPhase[current + tiles[offset + 3]] + 76245;
+          current = _secondPhase[current + tiles[offset + 4]] + 93468;
+          current = _secondPhase[current + tiles[offset + 5]] + 102953;
+          current = _secondPhase[current + tiles[offset + 6]] + 107217;
+          current = _secondPhase[current + tiles[offset + 7]] + 108982;
+          return _secondPhase[current + tiles[offset + 8]];
         }
         case 4:
         {
           var current = _entry;
-          current = _secondPhase[current + tiles[0]];
-          current = _secondPhase[current + tiles[1]];
-          current = _secondPhase[current + tiles[2]];
-          current = _secondPhase[current + tiles[3]];
-          current = _secondPhase[current + tiles[4]];
-          current = _secondPhase[current + tiles[5]];
-          current = _secondPhase[current + tiles[6]];
-          current = _secondPhase[current + tiles[7]];
-          return _secondPhase[current + tiles[8]];
+          current = _secondPhase[current + tiles[offset + 0]];
+          current = _secondPhase[current + tiles[offset + 1]];
+          current = _secondPhase[current + tiles[offset + 2]];
+          current = _secondPhase[current + tiles[offset + 3]];
+          current = _secondPhase[current + tiles[offset + 4]];
+          current = _secondPhase[current + tiles[offset + 5]];
+          current = _secondPhase[current + tiles[offset + 6]];
+          current = _secondPhase[current + tiles[offset + 7]];
+          return _secondPhase[current + tiles[offset + 8]];
         }
       }
 
