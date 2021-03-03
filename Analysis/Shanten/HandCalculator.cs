@@ -65,7 +65,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       {
         _arrangementValues[3] = _honorClassifier.Ankan();
         _concealedTiles[tileType.TileTypeId] -= 4;
-        _mJihai[index] += 4;
+        _mJihai += 4 << (index * 4);
         _meldCount += 1;
       }
     }
@@ -104,7 +104,7 @@ namespace Spines.Mahjong.Analysis.Shanten
 
       Array.Copy(_inHandByType, hand._inHandByType, _inHandByType.Length);
       Array.Copy(_meldCounts, hand._meldCounts, _meldCounts.Length);
-      Array.Copy(_mJihai, hand._mJihai, _mJihai.Length);
+      _mJihai = hand._mJihai;
       Array.Copy(_arrangementValues, hand._arrangementValues, _arrangementValues.Length);
       hand._tilesInHand = _tilesInHand;
       hand._meldCount = _meldCount;
@@ -140,7 +140,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       {
         _arrangementValues[3] = _honorClassifier.Daiminkan();
         _concealedTiles[tileType.TileTypeId] -= 3;
-        _mJihai[index] += 4;
+        _mJihai += 4 << (index * 4);
         _meldCount += 1;
       }
     }
@@ -217,7 +217,7 @@ namespace Spines.Mahjong.Analysis.Shanten
           var previousTileCount = _concealedTiles[tileTypeId];
           _kokushi.Draw(tileTypeId, previousTileCount);
           _chiitoi.Draw(previousTileCount);
-          localArrangements[3] = _honorClassifier.Clone().Draw(_concealedTiles[tileTypeId], _mJihai[index]);
+          localArrangements[3] = _honorClassifier.Clone().Draw(_concealedTiles[tileTypeId], _mJihai >> (index * 4) & 0b1111);
 
           var newShanten = CalculateShanten(localArrangements);
           var a = currentShanten - newShanten;
@@ -242,18 +242,18 @@ namespace Spines.Mahjong.Analysis.Shanten
 
     public void Init(IEnumerable<TileType> tiles)
     {
-      foreach (var tile in tiles)
+      foreach (var tileType in tiles)
       {
-        _inHandByType[tile.TileTypeId] += 1;
+        _inHandByType[tileType.TileTypeId] += 1;
         _tilesInHand += 1;
 
-        var previousTileCount = _concealedTiles[tile.TileTypeId]++;
-        _kokushi.Draw(tile.TileTypeId, previousTileCount);
+        var previousTileCount = _concealedTiles[tileType.TileTypeId]++;
+        _kokushi.Draw(tileType.TileTypeId, previousTileCount);
         _chiitoi.Draw(previousTileCount);
 
-        if (tile.SuitId == 3)
+        if (tileType.SuitId == 3)
         {
-          _arrangementValues[3] = _honorClassifier.Draw(previousTileCount, _mJihai[tile.Index]);
+          _arrangementValues[3] = _honorClassifier.Draw(previousTileCount, _mJihai >> (tileType.Index * 4) & 0b1111);
         }
       }
 
@@ -301,13 +301,13 @@ namespace Spines.Mahjong.Analysis.Shanten
         var a = _arrangementValues[3];
         _arrangementValues[3] = _honorClassifier.Ankan();
         _concealedTiles[kanTileType.TileTypeId] -= 4;
-        _mJihai[kanIndex] += 4;
+        _mJihai += 4 << (kanIndex * 4);
         _meldCount += 1;
 
         ukeIreAfterKan = GetUkeIreFor13();
 
         _meldCount -= 1;
-        _mJihai[kanIndex] -= 4;
+        _mJihai -= 4 << (kanIndex * 4);
         _concealedTiles[kanTileType.TileTypeId] += 4;
         _arrangementValues[3] = a;
         _honorClassifier = hc;
@@ -337,7 +337,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       {
         _arrangementValues[3] = _honorClassifier.Pon(_concealedTiles[tileType.TileTypeId]);
         _concealedTiles[tileType.TileTypeId] -= 2;
-        _mJihai[index] += 3;
+        _mJihai += 3 << (index * 4);
         _meldCount += 1;
         _tilesInHand += 1;
       }
@@ -384,7 +384,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       {
         _arrangementValues[3] = _honorClassifier.Shouminkan();
         _concealedTiles[tileType.TileTypeId] -= 1;
-        _mJihai[index] += 1;
+        _mJihai += 1 << (index * 4);
       }
     }
 
@@ -402,7 +402,7 @@ namespace Spines.Mahjong.Analysis.Shanten
 
       if (tileType.SuitId == 3)
       {
-        _arrangementValues[3] = _honorClassifier.Discard(tileCountAfterDiscard, _mJihai[tileType.Index]);
+        _arrangementValues[3] = _honorClassifier.Discard(tileCountAfterDiscard, _mJihai >> (tileType.Index * 4) & 0b1111);
       }
       else
       {
@@ -424,7 +424,7 @@ namespace Spines.Mahjong.Analysis.Shanten
 
       if (tileType.SuitId == 3)
       {
-        _arrangementValues[3] = _honorClassifier.Draw(previousTileCount, _mJihai[tileType.Index]);
+        _arrangementValues[3] = _honorClassifier.Draw(previousTileCount, _mJihai >> (tileType.Index * 4) & 0b1111);
       }
       else
       {
@@ -437,7 +437,7 @@ namespace Spines.Mahjong.Analysis.Shanten
     private readonly byte[] _inHandByType = new byte[34]; // tiles in hand by tile type, including melds, kan is 4 tiles here
     private readonly int[] _meldCounts = new int[3]; // used meldId slots for non-honors
     private readonly int[][] _melds; // non-honors, identified by meldId
-    private readonly int[] _mJihai = new int[7]; // melded honor tiles
+    private int _mJihai; // 4 bit per tileType, lowest tileType in the least significant bits
     private readonly SuitClassifier[] _suitClassifiers = {new SuitClassifier(), new SuitClassifier(), new SuitClassifier()};
     private ChiitoiClassifier _chiitoi = ChiitoiClassifier.Create();
     private ProgressiveHonorClassifier _honorClassifier;
@@ -459,7 +459,7 @@ namespace Spines.Mahjong.Analysis.Shanten
           _honorClassifier.Draw(0, 0);
           _honorClassifier.Draw(1, 0);
           _arrangementValues[3] = _honorClassifier.Pon(2);
-          _mJihai[index] += 3;
+          _mJihai += 3 << (index * 4);
           _inHandByType[tileType] += 3;
         }
         else
@@ -470,7 +470,7 @@ namespace Spines.Mahjong.Analysis.Shanten
           _honorClassifier.Draw(1, 0);
           _honorClassifier.Draw(2, 0);
           _arrangementValues[3] = _honorClassifier.Daiminkan();
-          _mJihai[index] += 4;
+          _mJihai += 4 << (index * 4);
           _inHandByType[tileType] += 4;
         }
       }
@@ -553,9 +553,10 @@ namespace Spines.Mahjong.Analysis.Shanten
       var sb = new StringBuilder();
       for (var i = 0; i < 7; ++i)
       {
-        if (_mJihai[i] > 0)
+        var count = _mJihai >> (i * 4) & 0b1111;
+        if (count > 0)
         {
-          sb.Append((char) ('1' + i), _mJihai[i]);
+          sb.Append((char) ('1' + i), count);
           sb.Append('Z');
         }
       }
