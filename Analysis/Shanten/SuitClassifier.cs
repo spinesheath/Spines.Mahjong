@@ -22,20 +22,13 @@
       _secondPhase = SuitSecondPhases[_meldCount];
     }
 
-    public int GetValue(int[] tiles, int suit)
+    public int GetValue(int[] tiles, int suit, int[] base5Hashes)
     {
       var offset = suit * 9;
       switch (_meldCount)
       {
         case 0:
-          var h = 0;
-          for (var i = offset; i < offset + 9; i++)
-          {
-            h *= 5;
-            h += tiles[i];
-          }
-
-          return SuitBase5Lookup[h];
+          return SuitBase5Lookup[base5Hashes[suit]];
         case 1:
         {
           var current = _entry;

@@ -184,7 +184,8 @@ namespace Spines.Mahjong.Analysis.Shanten
             _chiitoi.Draw(_concealedTiles[tileTypeId]);
 
             _concealedTiles[tileTypeId] += 1;
-            localArrangements[suit] = _suitClassifiers[suit].GetValue(_concealedTiles, suit);
+            _base5Hashes[suit] += Base5Table[index];
+            localArrangements[suit] = _suitClassifiers[suit].GetValue(_concealedTiles, suit, _base5Hashes);
 
             var newShanten = CalculateShanten(localArrangements);
             var a = currentShanten - newShanten;
@@ -194,6 +195,7 @@ namespace Spines.Mahjong.Analysis.Shanten
             ukeIre[tileTypeId] = t;
 
             _concealedTiles[tileTypeId] -= 1;
+            _base5Hashes[suit] -= Base5Table[index];
             _kokushi.Discard(tileTypeId, _concealedTiles[tileTypeId]);
             _chiitoi.Discard(_concealedTiles[tileTypeId]);
           }
@@ -252,6 +254,10 @@ namespace Spines.Mahjong.Analysis.Shanten
         if (tileType.SuitId == 3)
         {
           _arrangementValues[3] = _honorClassifier.Draw(previousTileCount, _jihaiMeldBit >> tileType.Index & 1);
+        }
+        else
+        {
+          _base5Hashes[tileType.SuitId] += Base5Table[tileType.Index];
         }
       }
 
@@ -400,6 +406,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       }
       else
       {
+        _base5Hashes[tileType.SuitId] -= Base5Table[tileType.Index];
         UpdateValue(tileType.SuitId);
       }
     }
@@ -422,11 +429,13 @@ namespace Spines.Mahjong.Analysis.Shanten
       }
       else
       {
+        _base5Hashes[tileType.SuitId] += Base5Table[tileType.Index];
         UpdateValue(tileType.SuitId);
       }
     }
 
     private readonly int[] _arrangementValues = new int[4];
+    private readonly int[] _base5Hashes = new int[3]; // base 5 representation of concealed suits. Not relevant with a meld.
     private readonly int[] _concealedTiles = new int[34];
     private readonly byte[] _inHandByType = new byte[34]; // tiles in hand by tile type, including melds, kan is 4 tiles here
     private readonly int[] _meldCounts = new int[3]; // used meldId slots for non-honors
@@ -438,6 +447,19 @@ namespace Spines.Mahjong.Analysis.Shanten
     private KokushiClassifier _kokushi = KokushiClassifier.Create();
     private int _meldCount;
     private int _tilesInHand; // concealed and melded tiles, but all melds count as 3 tiles
+
+    private static readonly int[] Base5Table = 
+    {
+      1,
+      5,
+      25,
+      125,
+      625,
+      3125,
+      15625,
+      78125,
+      390625
+    };
 
     private void InitializeJihaiMelds(IEnumerable<int> meldIds)
     {
@@ -501,7 +523,7 @@ namespace Spines.Mahjong.Analysis.Shanten
 
     private void UpdateValue(int suit)
     {
-      _arrangementValues[suit] = _suitClassifiers[suit].GetValue(_concealedTiles, suit);
+      _arrangementValues[suit] = _suitClassifiers[suit].GetValue(_concealedTiles, suit, _base5Hashes);
     }
 
     private int CalculateShanten(int[] arrangementValues)
