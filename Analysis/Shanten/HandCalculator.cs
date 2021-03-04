@@ -55,7 +55,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       {
         _concealedTiles[tileType.TileTypeId] -= 4;
         _melds[suitId] <<= 6;
-        _melds[suitId] += 1 + 7 + index;
+        _melds[suitId] += 1 + 7 + 9 + index;
         _meldCount += 1;
         _suitClassifiers[suitId].SetMelds(_melds[suitId]);
         UpdateValue(suitId);
@@ -123,7 +123,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       {
         _concealedTiles[tileType.TileTypeId] -= 3;
         _melds[suitId] <<= 6;
-        _melds[suitId] += 1 + 7 + index;
+        _melds[suitId] += 1 + 7 + 9 + index;
         _meldCount += 1;
         _suitClassifiers[suitId].SetMelds(_melds[suitId]);
         UpdateValue(suitId);
