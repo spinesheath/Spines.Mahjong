@@ -45,12 +45,11 @@ namespace Spines.Mahjong.Analysis.Shanten
 
     public void Ankan(TileType tileType)
     {
-      Debug.Assert(_tilesInHand == 14, "ankan only after draw");
+      Debug.Assert(TilesInHand() == 14, "ankan only after draw");
 
       var suitId = tileType.SuitId;
       var index = tileType.Index;
-
-      _tilesInHand -= 1;
+      
       if (suitId < 3)
       {
         _concealedTiles[tileType.TileTypeId] -= 4;
@@ -70,7 +69,7 @@ namespace Spines.Mahjong.Analysis.Shanten
 
     public void Chii(TileType lowestTileType, TileType calledTileType)
     {
-      Debug.Assert(_tilesInHand == 13, "chii only after discard");
+      Debug.Assert(TilesInHand() == 13, "chii only after discard");
       Debug.Assert(lowestTileType.Suit != Suit.Jihai, "Not a valid suit for chii");
 
       var suitId = lowestTileType.SuitId;
@@ -84,7 +83,6 @@ namespace Spines.Mahjong.Analysis.Shanten
       _melds[suitId] <<= 6;
       _melds[suitId] += 1 + lowestTileTypeIdInSuit;
       _meldCount += 1;
-      _tilesInHand += 1;
       _inHandByType[calledTileType.TileTypeId] += 1;
       _suitClassifiers[suitId].SetMelds(_melds[suitId]);
       UpdateValue(suitId);
@@ -98,7 +96,6 @@ namespace Spines.Mahjong.Analysis.Shanten
       Array.Copy(_inHandByType, hand._inHandByType, _inHandByType.Length);
       _jihaiMeldBit = hand._jihaiMeldBit;
       Array.Copy(_arrangementValues, hand._arrangementValues, _arrangementValues.Length);
-      hand._tilesInHand = _tilesInHand;
       hand._meldCount = _meldCount;
       for (var i = 0; i < _suitClassifiers.Length; ++i)
       {
@@ -113,7 +110,7 @@ namespace Spines.Mahjong.Analysis.Shanten
 
     public void Daiminkan(TileType tileType)
     {
-      Debug.Assert(_tilesInHand == 13, "daiminkan only after discard");
+      Debug.Assert(TilesInHand() == 13, "daiminkan only after discard");
 
       var suitId = tileType.SuitId;
       var index = tileType.Index;
@@ -141,7 +138,7 @@ namespace Spines.Mahjong.Analysis.Shanten
     /// </summary>
     public IEnumerable<TileType> GetFuritenTileTypes()
     {
-      Debug.Assert(_tilesInHand == 13 && Shanten == 0, "furiten only makes sense at tenpai");
+      Debug.Assert(TilesInHand() == 13 && Shanten == 0, "furiten only makes sense at tenpai");
 
       var ukeIre = GetUkeIreFor13();
       foreach (var i in ukeIre)
@@ -160,7 +157,7 @@ namespace Spines.Mahjong.Analysis.Shanten
     /// </summary>
     public int[] GetUkeIreFor13()
     {
-      Debug.Assert(_tilesInHand == 13, "It says 13 in the method name!");
+      Debug.Assert(TilesInHand() == 13, "It says 13 in the method name!");
 
       var currentShanten = CalculateShanten(_arrangementValues);
 
@@ -238,7 +235,6 @@ namespace Spines.Mahjong.Analysis.Shanten
       foreach (var tileType in tiles)
       {
         _inHandByType[tileType.TileTypeId] += 1;
-        _tilesInHand += 1;
 
         var previousTileCount = _concealedTiles[tileType.TileTypeId]++;
         _kokushi.Draw(tileType.TileTypeId, previousTileCount);
@@ -277,7 +273,6 @@ namespace Spines.Mahjong.Analysis.Shanten
 
       if (kanSuit < 3)
       {
-        // TODO why is it here 7+9+kan, but just 7+kan for daiminkan?
         _melds[kanSuit] <<= 6;
         _melds[kanSuit] += 1 + 7 + 9 + kanIndex;
         _meldCount += 1;
@@ -314,7 +309,7 @@ namespace Spines.Mahjong.Analysis.Shanten
 
     public void Pon(TileType tileType)
     {
-      Debug.Assert(_tilesInHand == 13, "pon only after discard");
+      Debug.Assert(TilesInHand() == 13, "pon only after discard");
 
       var suitId = tileType.SuitId;
       var index = tileType.Index;
@@ -325,7 +320,6 @@ namespace Spines.Mahjong.Analysis.Shanten
         _melds[suitId] <<= 6;
         _melds[suitId] += 1 + 7 + index;
         _meldCount += 1;
-        _tilesInHand += 1;
         _suitClassifiers[suitId].SetMelds(_melds[suitId]);
         UpdateValue(suitId);
       }
@@ -335,7 +329,6 @@ namespace Spines.Mahjong.Analysis.Shanten
         _concealedTiles[tileType.TileTypeId] -= 2;
         _jihaiMeldBit += 1 << index;
         _meldCount += 1;
-        _tilesInHand += 1;
       }
     }
 
@@ -352,7 +345,7 @@ namespace Spines.Mahjong.Analysis.Shanten
 
     public int ShantenWithTile(TileType tileType)
     {
-      Debug.Assert(_tilesInHand == 13, "Too many tiles in hand to draw");
+      Debug.Assert(TilesInHand() == 13, "Too many tiles in hand to draw");
 
       Draw(tileType);
 
@@ -365,11 +358,10 @@ namespace Spines.Mahjong.Analysis.Shanten
 
     public void Shouminkan(TileType tileType)
     {
-      Debug.Assert(_tilesInHand == 14, "shouminkan only after draw");
+      Debug.Assert(TilesInHand() == 14, "shouminkan only after draw");
 
       var suitId = tileType.SuitId;
-
-      _tilesInHand -= 1;
+      
       if (suitId < 3)
       {
         _concealedTiles[tileType.TileTypeId] -= 1;
@@ -384,11 +376,10 @@ namespace Spines.Mahjong.Analysis.Shanten
 
     public void Discard(TileType tileType)
     {
-      Debug.Assert(_tilesInHand == 14, "Can't discard from hand with less than 13 tiles.");
+      Debug.Assert(TilesInHand() == 14, "Can't discard from hand with less than 13 tiles.");
       Debug.Assert(_inHandByType[tileType.TileTypeId] > 0, "Can't discard a tile that is not in the hand.");
 
       _inHandByType[tileType.TileTypeId] -= 1;
-      _tilesInHand -= 1;
 
       var tileCountAfterDiscard = --_concealedTiles[tileType.TileTypeId];
       _kokushi.Discard(tileType.TileTypeId, tileCountAfterDiscard);
@@ -407,11 +398,10 @@ namespace Spines.Mahjong.Analysis.Shanten
 
     public void Draw(TileType tileType)
     {
-      Debug.Assert(_tilesInHand == 13, "Can only draw with a 13 tile hand.");
+      Debug.Assert(TilesInHand() == 13, "Can only draw with a 13 tile hand.");
       Debug.Assert(_inHandByType[tileType.TileTypeId] < 4, "Can't draw a tile with 4 of that tile in hand.");
 
       _inHandByType[tileType.TileTypeId] += 1;
-      _tilesInHand += 1;
 
       var previousTileCount = _concealedTiles[tileType.TileTypeId]++;
       _kokushi.Draw(tileType.TileTypeId, previousTileCount);
@@ -439,7 +429,11 @@ namespace Spines.Mahjong.Analysis.Shanten
     private ProgressiveHonorClassifier _honorClassifier;
     private KokushiClassifier _kokushi = KokushiClassifier.Create();
     private int _meldCount;
-    private int _tilesInHand; // concealed and melded tiles, but all melds count as 3 tiles
+
+    private int TilesInHand()
+    {
+      return _concealedTiles.Sum(x => x) + _meldCount * 3;
+    }
 
     private static readonly int[] Base5Table = 
     {
@@ -459,7 +453,6 @@ namespace Spines.Mahjong.Analysis.Shanten
       foreach (var meldId in meldIds)
       {
         _meldCount += 1;
-        _tilesInHand += 3;
 
         if (meldId < 7 + 9)
         {
@@ -507,8 +500,6 @@ namespace Spines.Mahjong.Analysis.Shanten
         {
           _inHandByType[9 * suitId + meldId - 16] += 4;
         }
-
-        _tilesInHand += 3;
       }
 
       _suitClassifiers[suitId].SetMelds(_melds[suitId]);
