@@ -10,13 +10,23 @@
       return new SuitClassifier {_entry = _entry, _meldCount = _meldCount, _secondPhase = _secondPhase};
     }
 
-    public void SetMelds(int[] melds, int meldCount)
+    public void SetMelds(int melds)
     {
-      _meldCount = meldCount;
       var current = 0;
-      for (var i = 0; i < meldCount; ++i)
+      _meldCount = 0;
+      for (var i = 0; i < 5; ++i)
       {
-        current = SuitFirstPhase[current + melds[i] + 1];
+        var m = melds & 0b111111;
+        if (m != 0)
+        {
+          current = SuitFirstPhase[current + m];
+          melds >>= 6;
+          _meldCount += 1;
+        }
+        else
+        {
+          break;
+        }
       }
       _entry = SuitFirstPhase[current];
       _secondPhase = SuitSecondPhases[_meldCount];

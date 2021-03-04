@@ -29,7 +29,6 @@ namespace Spines.Mahjong.Analysis.Shanten
     {
       // Don't need to initialize _arrangementValues here because the value for an empty hand is 0.
       // Don't need to set the melds in the suit classifiers here because entry state for concealed suits for a hand without melds is 0.
-      _melds = new[] {new int[4], new int[4], new int[4]};
     }
 
     public override string ToString()
@@ -55,10 +54,10 @@ namespace Spines.Mahjong.Analysis.Shanten
       if (suitId < 3)
       {
         _concealedTiles[tileType.TileTypeId] -= 4;
-        _melds[suitId][_meldCounts[suitId]] = 7 + index;
-        _meldCounts[suitId] += 1;
+        _melds[suitId] <<= 6;
+        _melds[suitId] += 1 + 7 + index;
         _meldCount += 1;
-        _suitClassifiers[suitId].SetMelds(_melds[suitId], _meldCounts[suitId]);
+        _suitClassifiers[suitId].SetMelds(_melds[suitId]);
         UpdateValue(suitId);
       }
       else
@@ -82,12 +81,12 @@ namespace Spines.Mahjong.Analysis.Shanten
       _concealedTiles[lowestTileType.TileTypeId + 2] -= 1;
       _concealedTiles[calledTileType.TileTypeId] += 1;
 
-      _melds[suitId][_meldCounts[suitId]] = lowestTileTypeIdInSuit;
-      _meldCounts[suitId] += 1;
+      _melds[suitId] <<= 6;
+      _melds[suitId] += 1 + lowestTileTypeIdInSuit;
       _meldCount += 1;
       _tilesInHand += 1;
       _inHandByType[calledTileType.TileTypeId] += 1;
-      _suitClassifiers[suitId].SetMelds(_melds[suitId], _meldCounts[suitId]);
+      _suitClassifiers[suitId].SetMelds(_melds[suitId]);
       UpdateValue(suitId);
     }
 
@@ -95,14 +94,8 @@ namespace Spines.Mahjong.Analysis.Shanten
     {
       var hand = new HandCalculator();
       Array.Copy(_concealedTiles, hand._concealedTiles, _concealedTiles.Length);
-
-      for (var i = 0; i < _melds.Length; ++i)
-      {
-        Array.Copy(_melds[i], hand._melds[i], _melds[i].Length);
-      }
-
+      Array.Copy(_melds, hand._melds, _melds.Length);
       Array.Copy(_inHandByType, hand._inHandByType, _inHandByType.Length);
-      Array.Copy(_meldCounts, hand._meldCounts, _meldCounts.Length);
       _jihaiMeldBit = hand._jihaiMeldBit;
       Array.Copy(_arrangementValues, hand._arrangementValues, _arrangementValues.Length);
       hand._tilesInHand = _tilesInHand;
@@ -129,10 +122,10 @@ namespace Spines.Mahjong.Analysis.Shanten
       if (suitId < 3)
       {
         _concealedTiles[tileType.TileTypeId] -= 3;
-        _melds[suitId][_meldCounts[suitId]] = 7 + index;
-        _meldCounts[suitId] += 1;
+        _melds[suitId] <<= 6;
+        _melds[suitId] += 1 + 7 + index;
         _meldCount += 1;
-        _suitClassifiers[suitId].SetMelds(_melds[suitId], _meldCounts[suitId]);
+        _suitClassifiers[suitId].SetMelds(_melds[suitId]);
         UpdateValue(suitId);
       }
       else
@@ -284,18 +277,19 @@ namespace Spines.Mahjong.Analysis.Shanten
 
       if (kanSuit < 3)
       {
-        _melds[kanSuit][_meldCounts[kanSuit]] = 7 + 9 + kanIndex;
-        _meldCounts[kanSuit] += 1;
+        // TODO why is it here 7+9+kan, but just 7+kan for daiminkan?
+        _melds[kanSuit] <<= 6;
+        _melds[kanSuit] += 1 + 7 + 9 + kanIndex;
         _meldCount += 1;
-        _suitClassifiers[kanSuit].SetMelds(_melds[kanSuit], _meldCounts[kanSuit]);
+        _suitClassifiers[kanSuit].SetMelds(_melds[kanSuit]);
         _concealedTiles[kanTileType.TileTypeId] -= 4;
         UpdateValue(kanSuit);
 
         ukeIreAfterKan = GetUkeIreFor13();
 
-        _meldCounts[kanSuit] -= 1;
+        _melds[kanSuit] >>= 6;
         _meldCount -= 1;
-        _suitClassifiers[kanSuit].SetMelds(_melds[kanSuit], _meldCounts[kanSuit]);
+        _suitClassifiers[kanSuit].SetMelds(_melds[kanSuit]);
         _concealedTiles[kanTileType.TileTypeId] += 4;
         UpdateValue(kanSuit);
       }
@@ -328,11 +322,11 @@ namespace Spines.Mahjong.Analysis.Shanten
       if (suitId < 3)
       {
         _concealedTiles[tileType.TileTypeId] -= 2;
-        _melds[suitId][_meldCounts[suitId]] = 7 + index;
-        _meldCounts[suitId] += 1;
+        _melds[suitId] <<= 6;
+        _melds[suitId] += 1 + 7 + index;
         _meldCount += 1;
         _tilesInHand += 1;
-        _suitClassifiers[suitId].SetMelds(_melds[suitId], _meldCounts[suitId]);
+        _suitClassifiers[suitId].SetMelds(_melds[suitId]);
         UpdateValue(suitId);
       }
       else
@@ -438,8 +432,7 @@ namespace Spines.Mahjong.Analysis.Shanten
     private readonly int[] _base5Hashes = new int[3]; // base 5 representation of concealed suits. Not relevant with a meld.
     private readonly int[] _concealedTiles = new int[34];
     private readonly byte[] _inHandByType = new byte[34]; // tiles in hand by tile type, including melds, kan is 4 tiles here
-    private readonly int[] _meldCounts = new int[3]; // used meldId slots for non-honors
-    private readonly int[][] _melds; // non-honors, identified by meldId
+    private readonly int[] _melds = new int[3]; // non-honors, identified by meldId, youngest meld in least significant bits
     private int _jihaiMeldBit; // bit=1 for honor pon, least significant bit represents east wind. bit=0 for both kan and no meld.
     private readonly SuitClassifier[] _suitClassifiers = {new SuitClassifier(), new SuitClassifier(), new SuitClassifier()};
     private ChiitoiClassifier _chiitoi = ChiitoiClassifier.Create();
@@ -495,8 +488,8 @@ namespace Spines.Mahjong.Analysis.Shanten
     {
       foreach (var meldId in meldIds)
       {
-        _melds[suitId][_meldCounts[suitId]] = meldId;
-        _meldCounts[suitId] += 1;
+        _melds[suitId] <<= 6;
+        _melds[suitId] += 1 + meldId;
         _meldCount += 1;
 
         if (meldId < 7)
@@ -518,7 +511,7 @@ namespace Spines.Mahjong.Analysis.Shanten
         _tilesInHand += 3;
       }
 
-      _suitClassifiers[suitId].SetMelds(_melds[suitId], _meldCounts[suitId]);
+      _suitClassifiers[suitId].SetMelds(_melds[suitId]);
     }
 
     private void UpdateValue(int suit)
@@ -539,12 +532,25 @@ namespace Spines.Mahjong.Analysis.Shanten
 
     private string GetMeldString(int suitId, char suit)
     {
+      var melds = _melds[suitId];
       var sb = new StringBuilder();
-      var meldCount = _meldCounts[suitId];
-      for (var i = 0; i < meldCount; ++i)
+      var meldIds = new List<int>();
+      for (var i = 0; i < 5; ++i)
+      {
+        var meldId = melds & 0b111111;
+        if (meldId == 0)
+        {
+          break;
+        }
+
+        melds >>= 6;
+        meldIds.Add(meldId - 1);
+      }
+
+      meldIds.Reverse();
+      foreach (var meldId in meldIds)
       {
         sb.Append(" ");
-        var meldId = _melds[suitId][i];
         if (meldId < 7)
         {
           for (var m = meldId; m < meldId + 3; ++m)
@@ -555,6 +561,10 @@ namespace Spines.Mahjong.Analysis.Shanten
         else if (meldId < 16)
         {
           sb.Append((char) ('1' + meldId - 7), _inHandByType[suitId * 9 + meldId - 7] - _concealedTiles[suitId * 9 + meldId - 7]);
+        }
+        else
+        {
+          sb.Append((char)('1' + meldId - 7 - 9), _inHandByType[suitId * 9 + meldId - 7 - 9] - _concealedTiles[suitId * 9 + meldId - 7 - 9]);
         }
 
         sb.Append(suit);
