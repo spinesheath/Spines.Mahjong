@@ -18,7 +18,7 @@ namespace Spines.Mahjong.Analysis.Tests
       loadStatics.Init(Enumerable.Range(0, 13).Select(TileType.FromTileTypeId));
       sum += loadStatics.Shanten < 100 ? 0 : 1;
 
-      var files = Directory.EnumerateFiles(BundlesFolder);
+      var files = Directory.EnumerateFiles(BundlesFolders[0]);
       foreach (var file in files)
       {
         using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
@@ -38,7 +38,7 @@ namespace Spines.Mahjong.Analysis.Tests
       loadStatics.Init(Enumerable.Range(0, 13).Select(TileType.FromTileTypeId));
       sum += loadStatics.Shanten < 100 ? 0 : 1;
 
-      var files = Directory.EnumerateFiles(BundlesFolder);
+      var files = BundlesFolders.SelectMany(Directory.EnumerateFiles);
       foreach (var file in files)
       {
         using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
@@ -121,6 +121,9 @@ namespace Spines.Mahjong.Analysis.Tests
     [InlineData("11447m147p147s12z", 4)]
     [InlineData("1147m147p147s123z", 5)]
     [InlineData("147m147p147s1234z", 6)]
+    [InlineData("115599m1155p111S", 2)]
+    [InlineData("115599m1155p111Z", 2)]
+    [InlineData("115599m1155p1111Z", 2)]
     public void JustSomeHands(string hand, int expected)
     {
       var parser = new ShorthandParser(hand);
@@ -145,8 +148,55 @@ namespace Spines.Mahjong.Analysis.Tests
       Assert.Equal(1, actual);
     }
 
+    [Fact]
+    public void BlockingAnkan()
+    {
+      var parser = new ShorthandParser("12223m11222333z");
+      var c = new HandCalculator(parser);
+      var m2 = TileType.FromSuitAndIndex(Suit.Manzu, 1);
+      c.Draw(m2);
+      c.Ankan(m2);
+
+      var actual = c.Shanten;
+
+      Assert.Equal(1, actual);
+    }
+
+    [Fact]
+    public void BlockingDaiminkan()
+    {
+      var parser = new ShorthandParser("12223m11222333z");
+      var c = new HandCalculator(parser);
+      var m2 = TileType.FromSuitAndIndex(Suit.Manzu, 1);
+      c.Daiminkan(m2);
+
+      var actual = c.Shanten;
+
+      Assert.Equal(1, actual);
+    }
+
+    [Fact]
+    public void BlockingPon()
+    {
+      var parser = new ShorthandParser("1223m112223z123M");
+      var c = new HandCalculator(parser);
+      var m2 = TileType.FromSuitAndIndex(Suit.Manzu, 1);
+      c.Pon(m2);
+      var shaa = TileType.FromSuitAndIndex(Suit.Jihai, 2);
+      c.Discard(shaa);
+
+      var actual = c.Shanten;
+
+      Assert.Equal(1, actual);
+    }
+
     private const string ReplaysFolder = @"C:\tenhou\2014";
     private const string CompressedReplaysFolder = @"C:\tenhou\compressed\2014\yonma\actions";
-    private const string BundlesFolder = @"C:\tenhou\compressed\2014\yonma\bundles";
+    private static readonly string[] BundlesFolders = new[]
+    {
+      @"C:\tenhou\compressed\2014\yonma\bundles",
+      @"C:\tenhou\compressed\2015\yonma\bundles",
+      @"C:\tenhou\compressed\2016\yonma\bundles"
+    };
   }
 }
