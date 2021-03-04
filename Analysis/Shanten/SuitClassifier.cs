@@ -32,7 +32,7 @@
       _secondPhase = SuitSecondPhases[_meldCount];
     }
 
-    public int GetValue(int[] tiles, int suit, int[] base5Hashes)
+    public int GetValue(byte[] tiles, int suit, int[] base5Hashes)
     {
       var offset = suit * 9;
       switch (_meldCount)

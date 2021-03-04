@@ -430,7 +430,7 @@ namespace Spines.Mahjong.Analysis.Shanten
 
     private readonly int[] _arrangementValues = new int[4];
     private readonly int[] _base5Hashes = new int[3]; // base 5 representation of concealed suits. Not relevant with a meld.
-    private readonly int[] _concealedTiles = new int[34];
+    private readonly byte[] _concealedTiles = new byte[34];
     private readonly byte[] _inHandByType = new byte[34]; // tiles in hand by tile type, including melds, kan is 4 tiles here
     private readonly int[] _melds = new int[3]; // non-honors, identified by meldId, youngest meld in least significant bits
     private int _jihaiMeldBit; // bit=1 for honor pon, least significant bit represents east wind. bit=0 for both kan and no meld.
