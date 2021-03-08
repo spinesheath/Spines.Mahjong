@@ -106,7 +106,7 @@
     private static readonly ushort[] SuitSecondPhase2 = Resource.Transitions("SuitSecondPhase2.txt");
     private static readonly ushort[] SuitSecondPhase3 = Resource.Transitions("SuitSecondPhase3.txt");
     private static readonly ushort[] SuitSecondPhase4 = Resource.Transitions("SuitSecondPhase4.txt");
-    private static readonly byte[] SuitBase5Lookup = Resource.ArrangementLookup("suitArrangementsBase5NoMelds.dat");
+    private static readonly byte[] SuitBase5Lookup = Resource.Lookup("suitArrangementsBase5NoMelds.dat");
 
     private static readonly ushort[][] SuitSecondPhases =
     {

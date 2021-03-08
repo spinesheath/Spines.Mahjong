@@ -40,7 +40,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       }
     }
 
-    public static byte[] ArrangementLookup(string resourceName)
+    public static byte[] Lookup(string resourceName)
     {
       var fullResourceName = "Spines.Mahjong.Analysis.Resources." + resourceName;
       var assembly = Assembly.GetExecutingAssembly(); 

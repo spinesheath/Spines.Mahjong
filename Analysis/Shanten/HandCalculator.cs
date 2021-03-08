@@ -43,27 +43,72 @@ namespace Spines.Mahjong.Analysis.Shanten
     /// </summary>
     public int Shanten => CalculateShanten(_arrangementValues) - 1;
 
-    public void Ankan(TileType tileType)
+    public void Init(IEnumerable<TileType> tiles)
     {
-      Debug.Assert(TilesInHand() == 14, "ankan only after draw");
-
-      var suitId = tileType.SuitId;
-      var index = tileType.Index;
-      
-      if (suitId < 3)
+      foreach (var tileType in tiles)
       {
-        _concealedTiles[tileType.TileTypeId] -= 4;
-        _melds[suitId] <<= 6;
-        _melds[suitId] += 1 + 7 + 9 + index;
-        _meldCount += 1;
-        _suitClassifiers[suitId].SetMelds(_melds[suitId]);
-        UpdateValue(suitId);
+        _inHandByType[tileType.TileTypeId] += 1;
+
+        var previousTileCount = _concealedTiles[tileType.TileTypeId]++;
+        _kokushi.Draw(tileType.TileTypeId, previousTileCount);
+        _chiitoi.Draw(previousTileCount);
+
+        if (tileType.SuitId == 3)
+        {
+          _arrangementValues[3] = _honorClassifier.Draw(previousTileCount, _jihaiMeldBit >> tileType.Index & 1);
+        }
+        else
+        {
+          _base5Hashes[tileType.SuitId] += Base5Table[tileType.Index];
+        }
+      }
+
+      UpdateValue(0);
+      UpdateValue(1);
+      UpdateValue(2);
+    }
+
+    public void Draw(TileType tileType)
+    {
+      Debug.Assert(TilesInHand() == 13, "Can only draw with a 13 tile hand.");
+      Debug.Assert(_inHandByType[tileType.TileTypeId] < 4, "Can't draw a tile with 4 of that tile in hand.");
+
+      _inHandByType[tileType.TileTypeId] += 1;
+
+      var previousTileCount = _concealedTiles[tileType.TileTypeId]++;
+      _kokushi.Draw(tileType.TileTypeId, previousTileCount);
+      _chiitoi.Draw(previousTileCount);
+
+      if (tileType.SuitId == 3)
+      {
+        _arrangementValues[3] = _honorClassifier.Draw(previousTileCount, _jihaiMeldBit >> tileType.Index & 1);
       }
       else
       {
-        _arrangementValues[3] = _honorClassifier.Ankan();
-        _concealedTiles[tileType.TileTypeId] -= 4;
-        _meldCount += 1;
+        _base5Hashes[tileType.SuitId] += Base5Table[tileType.Index];
+        UpdateValue(tileType.SuitId);
+      }
+    }
+
+    public void Discard(TileType tileType)
+    {
+      Debug.Assert(TilesInHand() == 14, "Can't discard from hand with less than 13 tiles.");
+      Debug.Assert(_inHandByType[tileType.TileTypeId] > 0, "Can't discard a tile that is not in the hand.");
+
+      _inHandByType[tileType.TileTypeId] -= 1;
+
+      var tileCountAfterDiscard = --_concealedTiles[tileType.TileTypeId];
+      _kokushi.Discard(tileType.TileTypeId, tileCountAfterDiscard);
+      _chiitoi.Discard(tileCountAfterDiscard);
+
+      if (tileType.SuitId == 3)
+      {
+        _arrangementValues[3] = _honorClassifier.Discard(tileCountAfterDiscard, _jihaiMeldBit >> tileType.Index & 1);
+      }
+      else
+      {
+        _base5Hashes[tileType.SuitId] -= Base5Table[tileType.Index];
+        UpdateValue(tileType.SuitId);
       }
     }
 
@@ -88,24 +133,71 @@ namespace Spines.Mahjong.Analysis.Shanten
       UpdateValue(suitId);
     }
 
-    public IHandCalculator Clone()
+    public void Pon(TileType tileType)
     {
-      var hand = new HandCalculator();
-      Array.Copy(_concealedTiles, hand._concealedTiles, _concealedTiles.Length);
-      Array.Copy(_melds, hand._melds, _melds.Length);
-      Array.Copy(_inHandByType, hand._inHandByType, _inHandByType.Length);
-      _jihaiMeldBit = hand._jihaiMeldBit;
-      Array.Copy(_arrangementValues, hand._arrangementValues, _arrangementValues.Length);
-      hand._meldCount = _meldCount;
-      for (var i = 0; i < _suitClassifiers.Length; ++i)
-      {
-        hand._suitClassifiers[i] = _suitClassifiers[i].Clone();
-      }
+      Debug.Assert(TilesInHand() == 13, "pon only after discard");
 
-      hand._kokushi = _kokushi.Clone();
-      hand._chiitoi = _chiitoi.Clone();
-      hand._honorClassifier = _honorClassifier.Clone();
-      return hand;
+      var suitId = tileType.SuitId;
+      var index = tileType.Index;
+      _inHandByType[tileType.TileTypeId] += 1;
+      if (suitId < 3)
+      {
+        _concealedTiles[tileType.TileTypeId] -= 2;
+        _melds[suitId] <<= 6;
+        _melds[suitId] += 1 + 7 + index;
+        _meldCount += 1;
+        _suitClassifiers[suitId].SetMelds(_melds[suitId]);
+        UpdateValue(suitId);
+      }
+      else
+      {
+        _arrangementValues[3] = _honorClassifier.Pon(_concealedTiles[tileType.TileTypeId]);
+        _concealedTiles[tileType.TileTypeId] -= 2;
+        _jihaiMeldBit += 1 << index;
+        _meldCount += 1;
+      }
+    }
+
+    public void Shouminkan(TileType tileType)
+    {
+      Debug.Assert(TilesInHand() == 14, "shouminkan only after draw");
+
+      var suitId = tileType.SuitId;
+
+      if (suitId < 3)
+      {
+        _concealedTiles[tileType.TileTypeId] -= 1;
+        UpdateValue(suitId);
+      }
+      else
+      {
+        _arrangementValues[3] = _honorClassifier.Shouminkan();
+        _concealedTiles[tileType.TileTypeId] -= 1;
+      }
+    }
+
+    public void Ankan(TileType tileType)
+    {
+      Debug.Assert(TilesInHand() == 14, "ankan only after draw");
+
+      var suitId = tileType.SuitId;
+      var index = tileType.Index;
+      
+      if (suitId < 3)
+      {
+        _concealedTiles[tileType.TileTypeId] -= 4;
+        _melds[suitId] <<= 6;
+        _melds[suitId] += 1 + 7 + 9 + index;
+        _meldCount += 1;
+        _suitClassifiers[suitId].SetMelds(_melds[suitId]);
+        UpdateValue(suitId);
+      }
+      else
+      {
+        _arrangementValues[3] = _honorClassifier.Ankan();
+        _concealedTiles[tileType.TileTypeId] -= 4;
+        _meldCount += 1;
+      }
     }
 
     public void Daiminkan(TileType tileType)
@@ -230,31 +322,6 @@ namespace Spines.Mahjong.Analysis.Shanten
       return ukeIre;
     }
 
-    public void Init(IEnumerable<TileType> tiles)
-    {
-      foreach (var tileType in tiles)
-      {
-        _inHandByType[tileType.TileTypeId] += 1;
-
-        var previousTileCount = _concealedTiles[tileType.TileTypeId]++;
-        _kokushi.Draw(tileType.TileTypeId, previousTileCount);
-        _chiitoi.Draw(previousTileCount);
-
-        if (tileType.SuitId == 3)
-        {
-          _arrangementValues[3] = _honorClassifier.Draw(previousTileCount, _jihaiMeldBit >> tileType.Index & 1);
-        }
-        else
-        {
-          _base5Hashes[tileType.SuitId] += Base5Table[tileType.Index];
-        }
-      }
-
-      UpdateValue(0);
-      UpdateValue(1);
-      UpdateValue(2);
-    }
-
     /// <summary>
     /// Does ukeIre before the draw differ from ukeIre after ankan?
     /// </summary>
@@ -307,31 +374,6 @@ namespace Spines.Mahjong.Analysis.Shanten
       return !ukeIreAfterKan.SequenceEqual(ukeIreBeforeDraw);
     }
 
-    public void Pon(TileType tileType)
-    {
-      Debug.Assert(TilesInHand() == 13, "pon only after discard");
-
-      var suitId = tileType.SuitId;
-      var index = tileType.Index;
-      _inHandByType[tileType.TileTypeId] += 1;
-      if (suitId < 3)
-      {
-        _concealedTiles[tileType.TileTypeId] -= 2;
-        _melds[suitId] <<= 6;
-        _melds[suitId] += 1 + 7 + index;
-        _meldCount += 1;
-        _suitClassifiers[suitId].SetMelds(_melds[suitId]);
-        UpdateValue(suitId);
-      }
-      else
-      {
-        _arrangementValues[3] = _honorClassifier.Pon(_concealedTiles[tileType.TileTypeId]);
-        _concealedTiles[tileType.TileTypeId] -= 2;
-        _jihaiMeldBit += 1 << index;
-        _meldCount += 1;
-      }
-    }
-
     public int ShantenAfterDiscard(TileType tileType)
     {
       Discard(tileType);
@@ -356,66 +398,24 @@ namespace Spines.Mahjong.Analysis.Shanten
       return shantenWithTile;
     }
 
-    public void Shouminkan(TileType tileType)
+    public IHandCalculator Clone()
     {
-      Debug.Assert(TilesInHand() == 14, "shouminkan only after draw");
-
-      var suitId = tileType.SuitId;
-      
-      if (suitId < 3)
+      var hand = new HandCalculator();
+      Array.Copy(_concealedTiles, hand._concealedTiles, _concealedTiles.Length);
+      Array.Copy(_melds, hand._melds, _melds.Length);
+      Array.Copy(_inHandByType, hand._inHandByType, _inHandByType.Length);
+      _jihaiMeldBit = hand._jihaiMeldBit;
+      Array.Copy(_arrangementValues, hand._arrangementValues, _arrangementValues.Length);
+      hand._meldCount = _meldCount;
+      for (var i = 0; i < _suitClassifiers.Length; ++i)
       {
-        _concealedTiles[tileType.TileTypeId] -= 1;
-        UpdateValue(suitId);
+        hand._suitClassifiers[i] = _suitClassifiers[i].Clone();
       }
-      else
-      {
-        _arrangementValues[3] = _honorClassifier.Shouminkan();
-        _concealedTiles[tileType.TileTypeId] -= 1;
-      }
-    }
 
-    public void Discard(TileType tileType)
-    {
-      Debug.Assert(TilesInHand() == 14, "Can't discard from hand with less than 13 tiles.");
-      Debug.Assert(_inHandByType[tileType.TileTypeId] > 0, "Can't discard a tile that is not in the hand.");
-
-      _inHandByType[tileType.TileTypeId] -= 1;
-
-      var tileCountAfterDiscard = --_concealedTiles[tileType.TileTypeId];
-      _kokushi.Discard(tileType.TileTypeId, tileCountAfterDiscard);
-      _chiitoi.Discard(tileCountAfterDiscard);
-
-      if (tileType.SuitId == 3)
-      {
-        _arrangementValues[3] = _honorClassifier.Discard(tileCountAfterDiscard, _jihaiMeldBit >> tileType.Index & 1);
-      }
-      else
-      {
-        _base5Hashes[tileType.SuitId] -= Base5Table[tileType.Index];
-        UpdateValue(tileType.SuitId);
-      }
-    }
-
-    public void Draw(TileType tileType)
-    {
-      Debug.Assert(TilesInHand() == 13, "Can only draw with a 13 tile hand.");
-      Debug.Assert(_inHandByType[tileType.TileTypeId] < 4, "Can't draw a tile with 4 of that tile in hand.");
-
-      _inHandByType[tileType.TileTypeId] += 1;
-
-      var previousTileCount = _concealedTiles[tileType.TileTypeId]++;
-      _kokushi.Draw(tileType.TileTypeId, previousTileCount);
-      _chiitoi.Draw(previousTileCount);
-
-      if (tileType.SuitId == 3)
-      {
-        _arrangementValues[3] = _honorClassifier.Draw(previousTileCount, _jihaiMeldBit >> tileType.Index & 1);
-      }
-      else
-      {
-        _base5Hashes[tileType.SuitId] += Base5Table[tileType.Index];
-        UpdateValue(tileType.SuitId);
-      }
+      hand._kokushi = _kokushi.Clone();
+      hand._chiitoi = _chiitoi.Clone();
+      hand._honorClassifier = _honorClassifier.Clone();
+      return hand;
     }
 
     private readonly int[] _arrangementValues = new int[4];
