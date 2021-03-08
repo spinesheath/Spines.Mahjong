@@ -142,20 +142,19 @@ namespace Spines.Mahjong.Analysis.Shanten
       _inHandByType[tileType.TileTypeId] += 1;
       if (suitId < 3)
       {
-        _concealedTiles[tileType.TileTypeId] -= 2;
         _melds[suitId] <<= 6;
         _melds[suitId] += 1 + 7 + index;
-        _meldCount += 1;
         _suitClassifiers[suitId].SetMelds(_melds[suitId]);
         UpdateValue(suitId);
       }
       else
       {
         _arrangementValues[3] = _honorClassifier.Pon(_concealedTiles[tileType.TileTypeId]);
-        _concealedTiles[tileType.TileTypeId] -= 2;
         _jihaiMeldBit += 1 << index;
-        _meldCount += 1;
       }
+
+      _concealedTiles[tileType.TileTypeId] -= 2;
+      _meldCount += 1;
     }
 
     public void Shouminkan(TileType tileType)
@@ -182,21 +181,19 @@ namespace Spines.Mahjong.Analysis.Shanten
 
       var suitId = tileType.SuitId;
       var index = tileType.Index;
-      
+      _concealedTiles[tileType.TileTypeId] -= 4;
+      _meldCount += 1;
+
       if (suitId < 3)
       {
-        _concealedTiles[tileType.TileTypeId] -= 4;
         _melds[suitId] <<= 6;
         _melds[suitId] += 1 + 7 + 9 + index;
-        _meldCount += 1;
         _suitClassifiers[suitId].SetMelds(_melds[suitId]);
         UpdateValue(suitId);
       }
       else
       {
         _arrangementValues[3] = _honorClassifier.Ankan();
-        _concealedTiles[tileType.TileTypeId] -= 4;
-        _meldCount += 1;
       }
     }
 
@@ -207,21 +204,19 @@ namespace Spines.Mahjong.Analysis.Shanten
       var suitId = tileType.SuitId;
       var index = tileType.Index;
       _inHandByType[tileType.TileTypeId] += 1;
+      _concealedTiles[tileType.TileTypeId] -= 3;
+      _meldCount += 1;
 
       if (suitId < 3)
       {
-        _concealedTiles[tileType.TileTypeId] -= 3;
         _melds[suitId] <<= 6;
         _melds[suitId] += 1 + 7 + 9 + index;
-        _meldCount += 1;
         _suitClassifiers[suitId].SetMelds(_melds[suitId]);
         UpdateValue(suitId);
       }
       else
       {
         _arrangementValues[3] = _honorClassifier.Daiminkan();
-        _concealedTiles[tileType.TileTypeId] -= 3;
-        _meldCount += 1;
       }
     }
 
