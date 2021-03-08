@@ -176,6 +176,23 @@ namespace Spines.Mahjong.Analysis.Tests
     }
 
     [Fact]
+    public void BlockingShouminkan()
+    {
+      var parser = new ShorthandParser("1223m112223337z");
+      var c = new HandCalculator(parser);
+      var m2 = TileType.FromSuitAndIndex(Suit.Manzu, 1);
+      var z7 = TileType.FromSuitAndIndex(Suit.Jihai, 6);
+      c.Pon(m2);
+      c.Discard(z7);
+      c.Draw(m2);
+      c.Shouminkan(m2);
+
+      var actual = c.Shanten;
+
+      Assert.Equal(1, actual);
+    }
+
+    [Fact]
     public void BlockingPon()
     {
       var parser = new ShorthandParser("1223m112223z123M");

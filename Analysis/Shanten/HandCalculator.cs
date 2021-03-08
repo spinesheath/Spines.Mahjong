@@ -140,6 +140,8 @@ namespace Spines.Mahjong.Analysis.Shanten
       var suitId = tileType.SuitId;
       var index = tileType.Index;
       _inHandByType[tileType.TileTypeId] += 1;
+      _meldCount += 1;
+      var previousTiles = _concealedTiles[tileType.TileTypeId] -= 2;
       if (suitId < 3)
       {
         _melds[suitId] <<= 6;
@@ -149,12 +151,9 @@ namespace Spines.Mahjong.Analysis.Shanten
       }
       else
       {
-        _arrangementValues[3] = _honorClassifier.Pon(_concealedTiles[tileType.TileTypeId]);
+        _arrangementValues[3] = _honorClassifier.Pon(previousTiles);
         _jihaiMeldBit += 1 << index;
       }
-
-      _concealedTiles[tileType.TileTypeId] -= 2;
-      _meldCount += 1;
     }
 
     public void Shouminkan(TileType tileType)
@@ -162,16 +161,26 @@ namespace Spines.Mahjong.Analysis.Shanten
       Debug.Assert(TilesInHand() == 14, "shouminkan only after draw");
 
       var suitId = tileType.SuitId;
+      _concealedTiles[tileType.TileTypeId] -= 1;
 
       if (suitId < 3)
       {
-        _concealedTiles[tileType.TileTypeId] -= 1;
+        for (var i = 0; i < 4; i++)
+        {
+          var pon = 1 + 7 + tileType.Index;
+          if ((_melds[suitId] >> 6 * i & 0b111111) == pon)
+          {
+            _melds[suitId] += 9 << 6 * i;
+            break;
+          }
+        }
+        
+        _suitClassifiers[suitId].SetMelds(_melds[suitId]);
         UpdateValue(suitId);
       }
       else
       {
         _arrangementValues[3] = _honorClassifier.Shouminkan();
-        _concealedTiles[tileType.TileTypeId] -= 1;
       }
     }
 
