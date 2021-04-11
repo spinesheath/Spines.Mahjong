@@ -1,9 +1,15 @@
 ﻿using System.Diagnostics;
+using System.Linq;
 
 namespace Spines.Mahjong.Analysis
 {
   public class TileType
   {
+    static TileType()
+    {
+      ByTileType = Enumerable.Range(0, 34).Select(i => new TileType(i)).ToArray();
+    }
+
     private TileType(int tileTypeId)
     {
       TileTypeId = tileTypeId;
@@ -19,6 +25,21 @@ namespace Spines.Mahjong.Analysis
     public int SuitId { get; }
 
     public int TileTypeId { get; }
+
+    public static TileType FromString(string tileType)
+    {
+      Debug.Assert(tileType.Length == 2);
+      Debug.Assert(char.IsDigit(tileType[0]));
+      return FromTileTypeId("mpsz".IndexOf(tileType[1]) * 9 + tileType[0] - '1');
+    }
+
+    /// <summary>
+    /// 0-3 and 0-9
+    /// </summary>
+    public static TileType FromSuitAndIndex(Suit suit, int index)
+    {
+      return FromTileTypeId((int) suit * 9 + index);
+    }
 
     /// <summary>
     /// 0-135
@@ -42,47 +63,6 @@ namespace Spines.Mahjong.Analysis
       return $"{1 + Index}{"mpsz"[SuitId]}";
     }
 
-    /// <summary>
-    /// 0-3 and 0-9
-    /// </summary>
-    public static TileType FromSuitAndIndex(Suit suit, int index) => FromTileTypeId((int) suit * 9 + index);
-
-    private static readonly TileType[] ByTileType =
-    {
-      new TileType(0),
-      new TileType(1),
-      new TileType(2),
-      new TileType(3),
-      new TileType(4),
-      new TileType(5),
-      new TileType(6),
-      new TileType(7),
-      new TileType(8),
-      new TileType(9),
-      new TileType(10),
-      new TileType(11),
-      new TileType(12),
-      new TileType(13),
-      new TileType(14),
-      new TileType(15),
-      new TileType(16),
-      new TileType(17),
-      new TileType(18),
-      new TileType(19),
-      new TileType(20),
-      new TileType(21),
-      new TileType(22),
-      new TileType(23),
-      new TileType(24),
-      new TileType(25),
-      new TileType(26),
-      new TileType(27),
-      new TileType(28),
-      new TileType(29),
-      new TileType(30),
-      new TileType(31),
-      new TileType(32),
-      new TileType(33)
-    };
+    private static readonly TileType[] ByTileType;
   }
 }

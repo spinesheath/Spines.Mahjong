@@ -6,8 +6,13 @@ namespace Spines.Mahjong.Analysis.Replay
   public class MeldDecoder
   {
     public MeldDecoder(string meldCodeString)
+      : this(int.Parse(meldCodeString))
     {
-      _meldCode = int.Parse(meldCodeString);
+    }
+
+    public MeldDecoder(int meldCode)
+    {
+      _meldCode = meldCode;
       _baseIndex = 0;
       _koutsuUnusedTileNumber = 0;
       CalledFromPlayerOffset = _meldCode & 3;

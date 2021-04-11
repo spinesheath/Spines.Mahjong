@@ -17,5 +17,23 @@ namespace Spines.Mahjong.Analysis.Tests
 
       Assert.Equal(expected, actual);
     }
+
+    [Theory]
+    [InlineData("123456789m12345s", "1s")]
+    [InlineData("468m11156778p345s", "4m")]
+    [InlineData("689m11156778p345s", "6m")]
+    [InlineData("113467m345p66s111z", "4m")]
+    [InlineData("34589m235p124s344z", "5p")]
+    public void HighestUkeIreDiscard(string hand, string expectedTileType)
+    {
+      var expected = TileType.FromString(expectedTileType).TileTypeId;
+
+      var parser = new ShorthandParser(hand);
+      var c = new UkeIreCalculator(parser);
+
+      var actual = c.GetHighestUkeIreDiscard();
+
+      Assert.Equal(expected, actual);
+    }
   }
 }

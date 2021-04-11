@@ -15,7 +15,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReplayBundleCreator", "Repl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MemoryProfilingRig", "MemoryProfilingRig\MemoryProfilingRig.csproj", "{157FF3E0-8FBD-45B0-A322-4EFE7E16F6F8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnalyzerBuilder", "AnalyzerBuilder\AnalyzerBuilder.csproj", "{1B10422E-0A51-4731-88BF-A42FAC37B023}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnalyzerBuilder", "AnalyzerBuilder\AnalyzerBuilder.csproj", "{1B10422E-0A51-4731-88BF-A42FAC37B023}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Ai", "Ai", "{7183B3F5-016D-4CA3-A1E6-542C1ED46369}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphicalFrontend", "GraphicalFrontend\GraphicalFrontend.csproj", "{DD42C391-85D2-4D68-8C08-19D14137E457}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,9 +55,16 @@ Global
 		{1B10422E-0A51-4731-88BF-A42FAC37B023}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B10422E-0A51-4731-88BF-A42FAC37B023}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1B10422E-0A51-4731-88BF-A42FAC37B023}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD42C391-85D2-4D68-8C08-19D14137E457}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD42C391-85D2-4D68-8C08-19D14137E457}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD42C391-85D2-4D68-8C08-19D14137E457}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD42C391-85D2-4D68-8C08-19D14137E457}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DD42C391-85D2-4D68-8C08-19D14137E457} = {7183B3F5-016D-4CA3-A1E6-542C1ED46369}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DEE3A479-66FA-49B0-B1B8-BD9843DEA3D7}

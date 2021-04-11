@@ -19,15 +19,15 @@ namespace AnalyzerBuilder
         var combinations = cc.Create(i);
         foreach (var combination in combinations)
         {
-          var c = combination.Counts.ToArray();
+          var c = combination.Counts.Select(x => (byte) x).ToArray();
           var rc = c.Reverse().ToArray();
 
           var h1 = Hash(c);
-          var a1 = sc.GetValue(c);
+          var a1 = sc.GetValue(c, 0, new[] { h1, 0, 0 });
           AddToDictionary(dict, h1, a1);
 
           var h2 = Hash(rc);
-          var a2 = sc.GetValue(rc);
+          var a2 = sc.GetValue(rc,0 , new[] { h2, 0, 0 });
           AddToDictionary(dict, h2, a2);
         }
       }
@@ -58,7 +58,7 @@ namespace AnalyzerBuilder
       }
     }
 
-    private static int Hash(int[] tiles)
+    private static int Hash(byte[] tiles)
     {
       var r = 0;
 
