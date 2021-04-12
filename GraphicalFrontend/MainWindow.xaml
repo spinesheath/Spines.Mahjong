@@ -51,6 +51,8 @@
         </StackPanel>
 
         <Button DockPanel.Dock="Top" Content="Testplay" Click="StartTestplay"/>
+
+        <Button DockPanel.Dock="Top" Content="Ippan" Click="StartIppan"/>
         
         <TextBlock Text="{Binding Messages.Messages}"/>
     </DockPanel>

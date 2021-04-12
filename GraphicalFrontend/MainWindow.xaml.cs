@@ -38,5 +38,10 @@ namespace GraphicalFrontend
     {
       _client?.Testplay();
     }
+
+    private void StartIppan(object sender, RoutedEventArgs e)
+    {
+      _client?.Ippan();
+    }
   }
 }

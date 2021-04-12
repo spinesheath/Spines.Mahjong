@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Threading;
 using GraphicalFrontend.Client;
 using Spines.Mahjong.Analysis;
 
@@ -10,6 +12,7 @@ namespace GraphicalFrontend.Ai
     {
       Id = tenhouId;
       Lobby = lobby;
+      _random = new Random();
     }
 
     public string Id { get; }
@@ -20,6 +23,7 @@ namespace GraphicalFrontend.Ai
     {
       if (suggestedActions.HasFlag(DrawActions.Tsumo))
       {
+        Thread.Sleep(_random.Next(100, 500));
         return DrawResponse.Tsumo();
       }
 
@@ -27,11 +31,13 @@ namespace GraphicalFrontend.Ai
       {
         var tileTypeId = state.Hand.GetHighestUkeIreDiscard();
         var discard = Tile.FromTileId(state.ConcealedTileIds.First(i => i / 4 == tileTypeId));
+        Thread.Sleep(_random.Next(100, 1000));
         return DrawResponse.Riichi(discard);
       }
 
       if (suggestedActions.HasFlag(DrawActions.KyuushuKyuuhai) && state.Hand.Shanten > 2)
       {
+        Thread.Sleep(_random.Next(100, 1000));
         return DrawResponse.KyuushuKyuuhai();
       }
 
@@ -40,10 +46,12 @@ namespace GraphicalFrontend.Ai
         // Prefer tsumogiri
         if (tileId / 4 == tileTypeId)
         {
+          Thread.Sleep(_random.Next(100, 500));
           return DrawResponse.Discard(Tile.FromTileId(tileId));
         }
 
         var discard = Tile.FromTileId(state.ConcealedTileIds.First(i => i / 4 == tileTypeId));
+        Thread.Sleep(_random.Next(100, 1000));
         return DrawResponse.Discard(discard);
       }
     }
@@ -52,10 +60,11 @@ namespace GraphicalFrontend.Ai
     {
       if (suggestedActions.HasFlag(DiscardActions.Ron))
       {
+        Thread.Sleep(_random.Next(100, 500));
         return DiscardResponse.Ron();
       }
-      
-      // Call Dragons if it improves shanten
+
+      // Call value honors if it improves shanten
       if (suggestedActions.HasFlag(DiscardActions.Pon) && !suggestedActions.HasFlag(DiscardActions.Kan))
       {
         var tileType = TileType.FromTileId(tileId);
@@ -69,17 +78,22 @@ namespace GraphicalFrontend.Ai
             var tileTypeId = t.GetHighestUkeIreDiscard();
             var discardTileId = Tile.FromTileId(state.ConcealedTileIds.First(i => i / 4 == tileTypeId));
 
+            Thread.Sleep(_random.Next(100, 1000));
             return DiscardResponse.Pon(tilesInHand[0], tilesInHand[1], discardTileId);
           }
         }
       }
 
+      Thread.Sleep(_random.Next(100, 500));
       return DiscardResponse.Pass();
     }
 
     public bool Chankan(IGameState state, int tileId, int who)
     {
+      Thread.Sleep(_random.Next(100, 500));
       return true;
     }
+
+    private readonly Random _random;
   }
 }

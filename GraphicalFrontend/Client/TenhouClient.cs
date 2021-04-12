@@ -41,6 +41,11 @@ namespace GraphicalFrontend.Client
       SendHelo();
     }
 
+    public void Ippan()
+    {
+      Send("<JOIN t=\"0,9\" />");
+    }
+
     public void Testplay()
     {
       Send("<JOIN t=\"0,64\" />");
@@ -228,7 +233,7 @@ namespace GraphicalFrontend.Client
       Send($"<AUTH val=\"{transformed}\" />");
     }
 
-    private void OnReceivedRejoin(XElement message)
+    private void OnRejoin(XElement message)
     {
       var parts = message.Attribute("t")!.Value.Split(',');
       var lobby = parts[0];
@@ -241,7 +246,7 @@ namespace GraphicalFrontend.Client
       Send($"<JOIN t=\"{lobby},{matchTypeId}\" />");
     }
 
-    private void OnReceivedGo()
+    private void OnGo()
     {
       Send("<GOK />");
       SendNextReady();
@@ -281,7 +286,7 @@ namespace GraphicalFrontend.Client
       return value.Split(',').Select(x => Convert.ToInt32(x, CultureInfo.InvariantCulture)).ToList();
     }
 
-    private void OnReceivedInit(XElement message)
+    private void OnInit(XElement message)
     {
       foreach (var opponent in _state.Opponents)
       {
@@ -445,38 +450,38 @@ namespace GraphicalFrontend.Client
             OnLoggedOn(message);
             break;
           case "REJOIN":
-            OnReceivedRejoin(message);
+            OnRejoin(message);
             break;
           case "GO":
-            OnReceivedGo();
+            OnGo();
             break;
           case "REINIT":
           case "INIT":
-            OnReceivedInit(message);
+            OnInit(message);
             break;
           case "N":
-            OnReceivedNaki(message);
+            OnNaki(message);
             break;
           case "DORA":
-            OnReceivedDora(message);
+            OnDora(message);
             break;
           case "REACH":
-            OnReceivedReach(message);
+            OnReach(message);
             break;
           case "TAIKYOKU":
-            OnReceivedTaikyoku(message);
+            OnTaikyoku(message);
             break;
           case "AGARI":
-            OnReceivedAgariOrRyuukyoku(message);
+            OnAgariOrRyuukyoku(message);
             break;
           case "RYUUKYOKU":
-            OnReceivedAgariOrRyuukyoku(message);
+            OnAgariOrRyuukyoku(message);
             break;
           default:
           {
             if (IsPlayerDraw(nodeName))
             {
-              OnDrawInternal(message);
+              OnDraw(message);
             }
             else if (IsOpponentDraw(nodeName))
             {
@@ -484,7 +489,7 @@ namespace GraphicalFrontend.Client
             }
             else if (IsDiscard(nodeName))
             {
-              OnDiscardInternal(message);
+              OnDiscard(message);
             }
           }
             break;
@@ -494,7 +499,7 @@ namespace GraphicalFrontend.Client
       }
     }
 
-    private void OnReceivedNaki(XElement message)
+    private void OnNaki(XElement message)
     {
       var who = GetInt(message, "who");
       var meldCode = GetInt(message, "m");
@@ -571,7 +576,7 @@ namespace GraphicalFrontend.Client
       _pendingDiscardAfterCall = null;
     }
 
-    private void OnDiscardInternal(XElement xElement)
+    private void OnDiscard(XElement xElement)
     {
       var nodeName = xElement.Name.LocalName;
       var callable = xElement.Attributes("t").Any();
@@ -604,7 +609,7 @@ namespace GraphicalFrontend.Client
       }
     }
 
-    private void OnDrawInternal(XElement xElement)
+    private void OnDraw(XElement xElement)
     {
       var nodeName = xElement.Name.LocalName;
       var tileId = Convert.ToInt32(nodeName.Substring(1), CultureInfo.InvariantCulture);
@@ -641,7 +646,7 @@ namespace GraphicalFrontend.Client
       Send($"<D p=\"{tileId}\" />");
     }
 
-    private void OnReceivedReach(XElement message)
+    private void OnReach(XElement message)
     {
       var step = GetInt(message, "step");
       var who = GetInt(message, "who");
@@ -667,14 +672,14 @@ namespace GraphicalFrontend.Client
       _spectator.Updated(State);
     }
 
-    private void OnReceivedDora(XElement message)
+    private void OnDora(XElement message)
     {
       var hai = GetInts(message, "hai");
       _state.DoraIndicators.AddRange(hai);
       _spectator.Updated(State);
     }
 
-    private void OnReceivedTaikyoku(XElement message)
+    private void OnTaikyoku(XElement message)
     {
       var log = message.Attribute("log")?.Value;
       if (log != null)
@@ -686,7 +691,7 @@ namespace GraphicalFrontend.Client
       }
     }
 
-    private void OnReceivedAgariOrRyuukyoku(XElement message)
+    private void OnAgariOrRyuukyoku(XElement message)
     {
       if (message.Attributes().Any(a => a.Name == "owari"))
       {
