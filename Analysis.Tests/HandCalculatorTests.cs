@@ -124,6 +124,8 @@ namespace Spines.Mahjong.Analysis.Tests
     [InlineData("115599m1155p111S", 2)]
     [InlineData("115599m1155p111Z", 2)]
     [InlineData("115599m1155p1111Z", 2)]
+    [InlineData("268m333678p33s77z", 1)]
+    [InlineData("268m333678p33s777Z", 0)]
     public void JustSomeHands(string hand, int expected)
     {
       var parser = new ShorthandParser(hand);

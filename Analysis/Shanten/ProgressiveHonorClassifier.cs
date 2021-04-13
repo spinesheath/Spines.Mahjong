@@ -1,4 +1,6 @@
-﻿namespace Spines.Mahjong.Analysis.Shanten
+﻿using System.Diagnostics;
+
+namespace Spines.Mahjong.Analysis.Shanten
 {
   /// <summary>
   /// Returns the arrangement value of honors after the execution of a single action.
@@ -67,6 +69,7 @@
 
     public int Pon(int previousTiles)
     {
+      Debug.Assert(previousTiles > 1, "Can't pon with less than 2 tiles in hand");
       _current = Transitions[_current + previousTiles + 9];
       return Transitions[_current];
     }

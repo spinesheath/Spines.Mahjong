@@ -141,7 +141,9 @@ namespace Spines.Mahjong.Analysis.Shanten
       var index = tileType.Index;
       _inHandByType[tileType.TileTypeId] += 1;
       _meldCount += 1;
-      var previousTiles = _concealedTiles[tileType.TileTypeId] -= 2;
+      
+      var previousTiles = _concealedTiles[tileType.TileTypeId];
+      _concealedTiles[tileType.TileTypeId] -= 2;
       if (suitId < 3)
       {
         _melds[suitId] <<= 6;
