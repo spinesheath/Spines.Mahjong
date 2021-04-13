@@ -1,8 +1,15 @@
-﻿namespace GraphicalFrontend.Client
+﻿using Spines.Mahjong.Analysis;
+
+namespace GraphicalFrontend.Client
 {
   internal class DiscardedTile
   {
-    public int TileId { get; set; }
+    public DiscardedTile(Tile tile)
+    {
+      Tile = tile;
+    }
+
+    public Tile Tile { get; set; }
 
     public bool IsTsumogiri { get; set; }
 

@@ -39,7 +39,7 @@ namespace GraphicalFrontend.Client
 
     private readonly IReadOnlyList<ISpectator> _members;
 
-    private void Broadcast(Action<ISpectator> action)
+    protected virtual void Broadcast(Action<ISpectator> action)
     {
       foreach (var spectator in _members)
       {

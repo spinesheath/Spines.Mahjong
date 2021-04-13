@@ -1,4 +1,6 @@
-﻿namespace GraphicalFrontend.Client
+﻿using Spines.Mahjong.Analysis;
+
+namespace GraphicalFrontend.Client
 {
   internal interface IPlayer
   {
@@ -6,10 +8,10 @@
 
     string Lobby { get; }
     
-    DrawResponse OnDraw(IGameState state, int tileId, DrawActions suggestedActions);
+    DrawResponse OnDraw(IGameState state, Tile tile, DrawActions suggestedActions);
 
-    DiscardResponse OnDiscard(IGameState state, int tileId, int who, DiscardActions suggestedActions);
+    DiscardResponse OnDiscard(IGameState state, Tile tile, int who, DiscardActions suggestedActions);
 
-    bool Chankan(IGameState state, int tileId, int who);
+    bool Chankan(IGameState state, Tile tile, int who);
   }
 }

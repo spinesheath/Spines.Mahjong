@@ -20,7 +20,12 @@ namespace Spines.Mahjong.Analysis.Shanten
     {
       Debug.Assert(TilesInHand() == 14, "Have to be able to discard a tile");
 
+      // If we have a winning hand, all discards will lead to worse shanten
       var currentShanten = CalculateShanten(ArrangementValues);
+      if (currentShanten == 0)
+      {
+        return ConcealedTiles[0];
+      }
 
       var tileTypeId = 0;
       var localArrangements = new[] { ArrangementValues[0], ArrangementValues[1], ArrangementValues[2], ArrangementValues[3] };

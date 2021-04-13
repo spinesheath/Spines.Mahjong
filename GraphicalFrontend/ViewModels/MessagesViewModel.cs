@@ -16,6 +16,11 @@ namespace GraphicalFrontend.ViewModels
       }
     }
 
+    public void Clear()
+    {
+      Messages = "";
+    }
+
     public void Sent(string message)
     {
       AppendOutgoingMessage(message);

@@ -13,18 +13,26 @@ namespace GraphicalFrontend
     {
       InitializeComponent();
 
-      var messages = new MessagesViewModel();
-      var board = new BoardViewModel();
-      DataContext = new MainViewModel(messages, board);
+      var watashi = new PlayerViewModel(0);
+      var kamicha = new PlayerViewModel(1);
+      var toimen = new PlayerViewModel(2);
+      var shimocha = new PlayerViewModel(3);
+      _messages = new MessagesViewModel();
+      var board = new BoardViewModel(watashi, kamicha, toimen, shimocha);
+      DataContext = new MainViewModel(_messages, board);
 
-      var ai = new SimpleAi(Settings.Default.TenhouId, "0");
-      var audience = new Audience(messages, board);
+      var ai = new SimpleAi(Settings.Default.TenhouId, "0", false);
+      var audience = new UiThreadAudience(_messages, board, watashi, kamicha, toimen, shimocha);
 
-      _client = new TenhouClient(ai, audience);
-      _client.LogOn();
+      //_client = new TenhouClient(ai, audience);
+      //_client.LogOn();
+
+      _localClient = new LocalClient(ai, audience);
     }
 
     private TenhouClient? _client;
+    private readonly LocalClient _localClient;
+    private readonly MessagesViewModel _messages;
 
     protected override void OnClosing(CancelEventArgs e)
     {
@@ -36,12 +44,14 @@ namespace GraphicalFrontend
 
     private void StartTestplay(object sender, RoutedEventArgs e)
     {
-      _client?.Testplay();
+      _messages.Clear();
+      _localClient.Start();
+      //_client?.Testplay();
     }
 
     private void StartIppan(object sender, RoutedEventArgs e)
     {
-      _client?.Ippan();
+      //_client?.Ippan();
     }
   }
 }

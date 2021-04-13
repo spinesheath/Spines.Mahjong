@@ -1,37 +1,27 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
+﻿using System.Collections.ObjectModel;
 using GraphicalFrontend.Client;
 
 namespace GraphicalFrontend.ViewModels
 {
   internal class BoardViewModel : ViewModelBase, ISpectator
   {
-    public ObservableCollection<int> Hand
+    public BoardViewModel(PlayerViewModel watashi, PlayerViewModel kamicha, PlayerViewModel toimen, PlayerViewModel shimocha)
     {
-      get => _hand;
-      set
-      {
-        _hand = value;
-        OnPropertyChanged();
-      }
+      Watashi = watashi;
+      Kamicha = kamicha;
+      Toimen = toimen;
+      Shimocha = shimocha;
     }
 
-    public OpponentViewModel Kamicha { get; }
+    public PlayerViewModel Watashi { get; }
 
-    public ObservableCollection<MeldViewModel> Melds
-    {
-      get => _melds;
-      set
-      {
-        _melds = value;
-        OnPropertyChanged();
-      }
-    }
+    public PlayerViewModel Kamicha { get; }
 
-    public OpponentViewModel Shimocha { get; }
+    public PlayerViewModel Toimen { get; }
 
-    public OpponentViewModel Toimen { get; }
+    public PlayerViewModel Shimocha { get; }
+
+    public ObservableCollection<int> DoraIndicators { get; } = new ();
 
     public void Sent(string message)
     {
@@ -47,35 +37,11 @@ namespace GraphicalFrontend.ViewModels
 
     public void Updated(IGameState state)
     {
-      var ordered = state.ConcealedTileIds.OrderBy(x => x).ToList();
-      // Move recent draw to the end.
-      if (state.RecentDraw != null)
+      DoraIndicators.Clear();
+      foreach (var tile in state.DoraIndicators)
       {
-        ordered.Remove(state.RecentDraw.Value);
-        ordered.Add(state.RecentDraw.Value);
+        DoraIndicators.Add(tile.TileId);
       }
-
-      Hand = new ObservableCollection<int>(ordered);
-      var melds = new ObservableCollection<MeldViewModel>();
-      foreach (var meld in state.Melds)
-      {
-        melds.Add(new MeldViewModel(meld.Tiles));
-      }
-
-      Melds = melds;
     }
-
-    private ObservableCollection<int> _hand = new();
-    private ObservableCollection<MeldViewModel> _melds = new();
-  }
-
-  internal class MeldViewModel : ViewModelBase
-  {
-    public MeldViewModel(IEnumerable<int> tiles)
-    {
-      Tiles = new ObservableCollection<int>(tiles);
-    }
-
-    public ObservableCollection<int> Tiles { get; }
   }
 }

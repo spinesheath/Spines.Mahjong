@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Spines.Mahjong.Analysis;
-using Spines.Mahjong.Analysis.Replay;
 using Spines.Mahjong.Analysis.Shanten;
 
 namespace GraphicalFrontend.Client
@@ -13,22 +12,26 @@ namespace GraphicalFrontend.Client
 
     int RiichiSticks { get; }
 
-    IReadOnlyList<int> DoraIndicators { get; }
+    IReadOnlyList<Tile> DoraIndicators { get; }
 
     IUkeIreAnalysis Hand { get; }
 
     bool DeclaredRiichi { get; }
 
-    IReadOnlyList<int> ConcealedTileIds { get; }
+    int Score { get; }
 
-    int? RecentDraw { get; }
+    IReadOnlyList<Tile> ConcealedTiles { get; }
 
-    IReadOnlyList<MeldDecoder> Melds { get; }
+    Tile? RecentDraw { get; }
+
+    IReadOnlyList<Meld> Melds { get; }
 
     Tile? RecentDiscard { get; }
 
     TileType SeatWind { get; }
 
     TileType RoundWind { get; }
+
+    IReadOnlyList<Pond> Ponds { get; }
   }
 }

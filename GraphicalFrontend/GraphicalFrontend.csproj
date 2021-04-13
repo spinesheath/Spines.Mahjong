@@ -539,10 +539,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Views\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Analysis\Analysis.csproj" />
   </ItemGroup>
 

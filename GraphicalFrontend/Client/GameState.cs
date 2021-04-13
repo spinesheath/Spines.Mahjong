@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Spines.Mahjong.Analysis;
-using Spines.Mahjong.Analysis.Replay;
 using Spines.Mahjong.Analysis.Shanten;
 
 namespace GraphicalFrontend.Client
@@ -20,9 +19,9 @@ namespace GraphicalFrontend.Client
 
     public int Dice1 { get; set; }
 
-    IReadOnlyList<int> IGameState.DoraIndicators => DoraIndicators;
+    IReadOnlyList<Tile> IGameState.DoraIndicators => DoraIndicators;
 
-    public List<int> DoraIndicators { get; } = new();
+    public List<Tile> DoraIndicators { get; } = new();
 
     IUkeIreAnalysis IGameState.Hand => Hand;
 
@@ -32,7 +31,15 @@ namespace GraphicalFrontend.Client
 
     public int Score { get; set; }
 
-    public List<Pond> Ponds { get; set; } = new();
+    public List<Pond> Ponds { get; set; } = new()
+    {
+      new Pond(),
+      new Pond(),
+      new Pond(),
+      new Pond()
+    };
+
+    IReadOnlyList<Pond> IGameState.Ponds => Ponds;
 
     public List<Opponent> Opponents { get; set; } = new()
     {
@@ -43,15 +50,15 @@ namespace GraphicalFrontend.Client
 
     public bool DeclaredRiichi { get; set; }
 
-    IReadOnlyList<int> IGameState.ConcealedTileIds => ConcealedTileIds;
+    IReadOnlyList<Tile> IGameState.ConcealedTiles => ConcealedTiles;
 
-    public int? RecentDraw { get; set; }
+    public Tile? RecentDraw { get; set; }
 
-    IReadOnlyList<MeldDecoder> IGameState.Melds => Melds;
+    IReadOnlyList<Meld> IGameState.Melds => Melds;
 
-    public List<MeldDecoder> Melds { get; set; } = new();
+    public List<Meld> Melds { get; set; } = new();
 
-    public List<int> ConcealedTileIds { get; set; } = new();
+    public List<Tile> ConcealedTiles { get; set; } = new();
 
     public Tile? RecentDiscard { get; set; }
 

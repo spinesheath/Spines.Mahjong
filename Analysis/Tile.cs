@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Diagnostics;
+using System.Linq;
 
 namespace Spines.Mahjong.Analysis
 {
@@ -21,6 +22,12 @@ namespace Spines.Mahjong.Analysis
     public int TileId { get; }
 
     public TileType TileType { get; }
+
+    public static Tile FromTileType(TileType tileType, int index)
+    {
+      Debug.Assert(index >= 0 && index < 4, "4 tiles per tileType");
+      return ByTileId[tileType.TileTypeId * 4 + index];
+    }
 
     public static Tile FromTileId(int tileId)
     {

@@ -1,6 +1,8 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:controls="clr-namespace:GraphicalFrontend.Controls">
+                    xmlns:controls="clr-namespace:GraphicalFrontend.Controls"
+                    xmlns:viewModels="clr-namespace:GraphicalFrontend.ViewModels"
+                    xmlns:views="clr-namespace:GraphicalFrontend.Views">
     <Style TargetType="{x:Type controls:Tile}">
         <Style.Setters>
             <Setter Property="Template">
@@ -12,4 +14,9 @@
             </Setter>
         </Style.Setters>
     </Style>
+
+  <DataTemplate DataType="{x:Type viewModels:PlayerViewModel}">
+    <views:PlayerView/>
+  </DataTemplate>
+
 </ResourceDictionary>

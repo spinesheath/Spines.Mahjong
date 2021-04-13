@@ -3,57 +3,45 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:controls="clr-namespace:GraphicalFrontend.Controls"
         xmlns:viewModels="clr-namespace:GraphicalFrontend.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" 
-        Height="450" 
-        Width="800"
+        Title="MainWindow"
+        Height="800"
+        Width="1200"
+        Background="Gray"
         d:DataContext="{d:DesignInstance Type={x:Type viewModels:MainViewModel}, IsDesignTimeCreatable=False}">
-    <DockPanel>
-        <StackPanel Orientation="Horizontal">
-            <ItemsControl ItemsSource="{Binding Board.Hand}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel IsItemsHost="True" Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <controls:Tile TileId="{Binding}" Width="24"/>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
 
-            <ItemsControl ItemsSource="{Binding Board.Melds}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel IsItemsHost="True" Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <ItemsControl ItemsSource="{Binding Tiles}" Margin="10,0,0,0">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel IsItemsHost="True" Orientation="Horizontal"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <controls:Tile TileId="{Binding}" Width="24"/>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </StackPanel>
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="600"/>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="600"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
 
-        <Button DockPanel.Dock="Top" Content="Testplay" Click="StartTestplay"/>
+    <ContentControl Grid.Column="0" Grid.Row="0" Content="{Binding Board.Watashi}"/>
+    <ContentControl Grid.Column="0" Grid.Row="0" Content="{Binding Board.Shimocha}" >
+      <ContentControl.LayoutTransform>
+        <RotateTransform CenterX="0.5" CenterY="0.5" Angle="270"/>
+      </ContentControl.LayoutTransform>
+    </ContentControl>
+    <ContentControl Grid.Column="0" Grid.Row="0" Content="{Binding Board.Toimen}">
+      <ContentControl.LayoutTransform>
+        <RotateTransform CenterX="0.5" CenterY="0.5" Angle="180"/>
+      </ContentControl.LayoutTransform>
+    </ContentControl>
+    <ContentControl Grid.Column="0" Grid.Row="0" Content="{Binding Board.Kamicha}">
+      <ContentControl.LayoutTransform>
+        <RotateTransform CenterX="0.5" CenterY="0.5" Angle="90"/>
+      </ContentControl.LayoutTransform>
+    </ContentControl>
 
-        <Button DockPanel.Dock="Top" Content="Ippan" Click="StartIppan"/>
-        
-        <TextBlock Text="{Binding Messages.Messages}"/>
+    <DockPanel Grid.Column="1" Grid.Row="0" Grid.RowSpan="2">
+      <Button DockPanel.Dock="Top" Content="Testplay" Click="StartTestplay" />
+      <Button DockPanel.Dock="Top" Content="Ippan" Click="StartIppan" />
+      <TextBlock Text="{Binding Messages.Messages}" />
     </DockPanel>
+  </Grid>
 </Window>

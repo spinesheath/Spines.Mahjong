@@ -38,7 +38,7 @@ namespace GraphicalFrontend.Client
 
     protected static bool HasTile(IGameState state, Tile tile)
     {
-      return state.ConcealedTileIds.Contains(tile.TileId);
+      return state.ConcealedTiles.Contains(tile);
     }
 
     internal abstract bool CanExecute(IGameState state, DrawActions possibleActions);
@@ -76,12 +76,12 @@ namespace GraphicalFrontend.Client
 
       internal override bool CanExecute(IGameState state, DrawActions possibleActions)
       {
-        if (!possibleActions.HasFlag(DrawActions.Kan) || state.ConcealedTileIds.Count(t => t / 4 == _tileType.TileTypeId) != 4 || state.RecentDraw == null)
+        if (!possibleActions.HasFlag(DrawActions.Kan) || state.ConcealedTiles.Count(t => t.TileType == _tileType) != 4 || state.RecentDraw == null)
         {
           return false;
         }
         
-        return !state.DeclaredRiichi || !state.Hand.IsUkeIreChangedByAnkan(TileType.FromTileId(state.RecentDraw.Value), _tileType);
+        return !state.DeclaredRiichi || !state.Hand.IsUkeIreChangedByAnkan(state.RecentDraw.TileType, _tileType);
       }
 
       internal override void Execute(IClient client)
@@ -104,7 +104,7 @@ namespace GraphicalFrontend.Client
         return possibleActions.HasFlag(DrawActions.Kan) && 
                !state.DeclaredRiichi && 
                HasTile(state, _tile) && 
-               state.Melds.Any(m => m.MeldType == MeldType.Koutsu && m.LowestTile / 4 == _tile.TileId / 4);
+               state.Melds.Any(m => m.MeldType == MeldType.Koutsu && m.LowestTile.TileType == _tile.TileType);
       }
 
       internal override void Execute(IClient client)

@@ -37,7 +37,7 @@ namespace GraphicalFrontend.Client
 
     protected static bool HasTile(IGameState state, Tile tile)
     {
-      return state.ConcealedTileIds.Contains(tile.TileId);
+      return state.ConcealedTiles.Contains(tile);
     }
 
     private class PassStrategy : DiscardResponse
@@ -81,6 +81,11 @@ namespace GraphicalFrontend.Client
 
       internal override bool CanExecute(IGameState state, DiscardActions possibleActions)
       {
+        if (state.RecentDiscard == null)
+        {
+          return false;
+        }
+
         var tileType = state.RecentDiscard.TileType;
         return possibleActions.HasFlag(DiscardActions.Pon) && 
                _tile0.TileType == tileType && 
@@ -112,12 +117,21 @@ namespace GraphicalFrontend.Client
 
       internal override bool CanExecute(IGameState state, DiscardActions possibleActions)
       {
+        if (state.RecentDiscard == null)
+        {
+          return false;
+        }
+        
         var tileType = state.RecentDiscard.TileType;
         var tileTypeIds = new[] {_tile0.TileType.TileTypeId, _tile1.TileType.TileTypeId, tileType.TileTypeId}.OrderBy(x => x).ToList();
+
+        var isValidDiscardForKanchanCase = tileTypeIds[1] == tileType.TileTypeId && _discardAfterCall.TileType != tileType;
+        var isValidDiscard = isValidDiscardForKanchanCase || Kuikae.IsValidDiscardForNonKanchanChii(tileType, _discardAfterCall.TileType);
+
         return possibleActions.HasFlag(DiscardActions.Chii) &&
                tileTypeIds[0] + 1 == tileTypeIds[1] && 
                tileTypeIds[1] + 1 == tileTypeIds[2] &&
-               !KuikaeTileTypesByCalledTileTypeId[tileType.TileTypeId].Contains(_discardAfterCall.TileType) &&
+               isValidDiscard &&
                HasTile(state, _tile0) &&
                HasTile(state, _tile1) &&
                HasTile(state, _discardAfterCall);
@@ -127,27 +141,6 @@ namespace GraphicalFrontend.Client
       {
         client.Chii(_tile0, _tile1, _discardAfterCall);
       }
-
-      static ChiiStrategy()
-      {
-        KuikaeTileTypesByCalledTileTypeId = new TileType[34][];
-        for (var i = 0; i < 34; i++)
-        {
-          var list = new List<TileType> {TileType.FromTileTypeId(i)};
-          if (i < 27 && i % 9 > 3)
-          {
-            list.Add(TileType.FromTileId(i - 3));
-          }
-          if (i < 27 && i % 9 < 6)
-          {
-            list.Add(TileType.FromTileId(i + 3));
-          }
-
-          KuikaeTileTypesByCalledTileTypeId[i] = list.ToArray();
-        }
-      }
-
-      private static readonly TileType[][] KuikaeTileTypesByCalledTileTypeId;
     }
 
     private class RonStrategy : DiscardResponse

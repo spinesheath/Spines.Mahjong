@@ -50,9 +50,7 @@ namespace GraphicalFrontend.Client
     {
       Send("<JOIN t=\"0,64\" />");
     }
-
-    protected IGameState State => _state;
-
+    
     public void Discard(Tile tile)
     {
       Send($"<D p=\"{tile.TileId}\" />");
@@ -294,6 +292,12 @@ namespace GraphicalFrontend.Client
         opponent.Melds.Clear();
       }
 
+      _state.Ponds = new List<Pond>();
+      for (var i = 0; i < 4; i++)
+      {
+        _state.Ponds.Add(new Pond());
+      }
+
       _state.DeclaredRiichi = false;
 
       var seed = GetInts(message, "seed");
@@ -304,7 +308,7 @@ namespace GraphicalFrontend.Client
       _state.Dice0 = seed[3];
       _state.Dice1 = seed[4];
       _state.DoraIndicators.Clear();
-      _state.DoraIndicators.Add(seed[5]);
+      _state.DoraIndicators.Add(Tile.FromTileId(seed[5]));
 
       _state.Oya = GetInt(message, "oya");
 
@@ -318,8 +322,8 @@ namespace GraphicalFrontend.Client
       _state.Hand = new UkeIreCalculator();
       var hai = GetInts(message, "hai");
       _state.Hand.Init(hai.Select(TileType.FromTileId));
-      _state.ConcealedTileIds.Clear();
-      _state.ConcealedTileIds.AddRange(hai);
+      _state.ConcealedTiles.Clear();
+      _state.ConcealedTiles.AddRange(hai.Select(Tile.FromTileId));
 
       _state.RecentDraw = null;
       _state.Melds.Clear();
@@ -389,7 +393,6 @@ namespace GraphicalFrontend.Client
         var discardedTileIds = GetInts(message, $"kawa{i}");
 
         var pond = _state.Ponds[i];
-        pond.Clear();
 
         var nextTileRiichi = false;
         foreach (var tileId in discardedTileIds)
@@ -400,13 +403,13 @@ namespace GraphicalFrontend.Client
           }
           else
           {
-            pond.Add(new DiscardedTile {TileId = tileId, IsRiichi = nextTileRiichi});
+            pond.Add(new DiscardedTile(Tile.FromTileId(tileId)) {IsRiichi = nextTileRiichi});
             nextTileRiichi = false;
           }
         }
       }
 
-      _spectator.Updated(State);
+      _spectator.Updated(_state);
     }
 
     private static bool IsDiscard(string nodeName)
@@ -495,7 +498,7 @@ namespace GraphicalFrontend.Client
             break;
         }
 
-        _spectator.Updated(State);
+        _spectator.Updated(_state);
       }
     }
 
@@ -529,17 +532,17 @@ namespace GraphicalFrontend.Client
 
         foreach (var tile in decoder.Tiles)
         {
-          _state.ConcealedTileIds.Remove(tile);
+          _state.ConcealedTiles.Remove(Tile.FromTileId(tile));
         }
 
         _state.RecentDraw = null;
 
         if (decoder.MeldType == MeldType.AddedKan)
         {
-          _state.Melds.Remove(_state.Melds.First(m => m.MeldType == MeldType.Koutsu && m.LowestTile / 4 == decoder.LowestTile / 4));
+          _state.Melds.Remove(_state.Melds.First(m => m.MeldType == MeldType.Koutsu && m.LowestTile.TileType.TileTypeId == decoder.LowestTile / 4));
         }
 
-        _state.Melds.Add(decoder);
+        _state.Melds.Add(new Meld(decoder));
 
         if (_pendingDiscardAfterCall != null)
         {
@@ -558,7 +561,7 @@ namespace GraphicalFrontend.Client
         var t = message.Attribute("t");
         if (t != null)
         {
-          var decider = Task.Run(() => _player.Chankan(State, decoder.AddedTile, who));
+          var decider = Task.Run(() => _player.Chankan(_state, Tile.FromTileId(decoder.AddedTile), who));
           Task.WhenAny(decider, Task.Delay(DecisionTimeout)).ContinueWith(r =>
           {
             if (r.IsCompletedSuccessfully && r.Result is Task<bool> {IsCompletedSuccessfully: true})
@@ -584,20 +587,23 @@ namespace GraphicalFrontend.Client
       var isTsumogiri = "defg".Contains(nodeName[0]);
       var playerIndex = nodeName[0] - (isTsumogiri ? 'd' : 'D');
       var tileId = Convert.ToInt32(nodeName.Substring(1), CultureInfo.InvariantCulture);
-      _state.RecentDiscard = Tile.FromTileId(tileId);
+      var tile = Tile.FromTileId(tileId);
+      _state.RecentDiscard = tile;
+      // TODO called tiles, riichi tile
+      _state.Ponds[playerIndex].Add(new DiscardedTile(tile));
 
       if (playerIndex == 0)
       {
         _state.Hand.Discard(TileType.FromTileId(tileId));
-        _state.ConcealedTileIds.Remove(tileId);
+        _state.ConcealedTiles.Remove(tile);
         _state.RecentDraw = null;
       }
       else if (actions != DiscardActions.Pass)
       {
-        var decider = Task.Run(() => _player.OnDiscard(State, tileId, playerIndex, actions));
+        var decider = Task.Run(() => _player.OnDiscard(_state, tile, playerIndex, actions));
         Task.WhenAny(decider, Task.Delay(DecisionTimeout)).ContinueWith(r =>
         {
-          if (r.IsCompletedSuccessfully && r.Result is Task<DiscardResponse> {IsCompletedSuccessfully: true} t && t.Result.CanExecute(State, actions))
+          if (r.IsCompletedSuccessfully && r.Result is Task<DiscardResponse> {IsCompletedSuccessfully: true} t && t.Result.CanExecute(_state, actions))
           {
             t.Result.Execute(this);
           }
@@ -613,9 +619,10 @@ namespace GraphicalFrontend.Client
     {
       var nodeName = xElement.Name.LocalName;
       var tileId = Convert.ToInt32(nodeName.Substring(1), CultureInfo.InvariantCulture);
+      var tile = Tile.FromTileId(tileId);
       _state.Hand.Draw(TileType.FromTileId(tileId));
-      _state.ConcealedTileIds.Add(tileId);
-      _state.RecentDraw = tileId;
+      _state.ConcealedTiles.Add(tile);
+      _state.RecentDraw = tile;
 
       var callable = xElement.Attributes("t").Any();
       var actions = callable ? (DrawActions) GetInt(xElement, "t") : DrawActions.Discard;
@@ -626,10 +633,10 @@ namespace GraphicalFrontend.Client
       }
       else
       {
-        var decider = Task.Run(() => _player.OnDraw(State, tileId, actions));
+        var decider = Task.Run(() => _player.OnDraw(_state, tile, actions));
         Task.WhenAny(decider, Task.Delay(DecisionTimeout)).ContinueWith(r =>
         {
-          if (r.IsCompletedSuccessfully && r.Result is Task<DrawResponse> {IsCompletedSuccessfully: true} t && t.Result.CanExecute(State, actions))
+          if (r.IsCompletedSuccessfully && r.Result is Task<DrawResponse> {IsCompletedSuccessfully: true} t && t.Result.CanExecute(_state, actions))
           {
             t.Result.Execute(this);
           }
@@ -669,14 +676,14 @@ namespace GraphicalFrontend.Client
         }
       }
 
-      _spectator.Updated(State);
+      _spectator.Updated(_state);
     }
 
     private void OnDora(XElement message)
     {
-      var hai = GetInts(message, "hai");
+      var hai = GetInts(message, "hai").Select(Tile.FromTileId);
       _state.DoraIndicators.AddRange(hai);
-      _spectator.Updated(State);
+      _spectator.Updated(_state);
     }
 
     private void OnTaikyoku(XElement message)

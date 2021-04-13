@@ -35,5 +35,18 @@ namespace Spines.Mahjong.Analysis.Tests
 
       Assert.Equal(expected, actual);
     }
+
+    [Theory]
+    [InlineData("268m333678p33s77z", 33, 0)]
+    public void WithPon(string hand, int tileTypeId, int expectedShanten)
+    {
+      var parser = new ShorthandParser(hand);
+      var c = new UkeIreCalculator(parser);
+
+      var t = c.WithPon(TileType.FromTileTypeId(tileTypeId));
+      var actual = t.Shanten;
+
+      Assert.Equal(expectedShanten, actual);
+    }
   }
 }
