@@ -141,7 +141,9 @@ namespace Spines.Mahjong.Analysis.Shanten
       var index = tileType.Index;
       InHandByType[tileType.TileTypeId] += 1;
       _meldCount += 1;
-      var previousTiles = ConcealedTiles[tileType.TileTypeId] -= 2;
+      // TODO this not the previous tiles at all, bug from refactoring?
+      var previousTiles = ConcealedTiles[tileType.TileTypeId];
+      ConcealedTiles[tileType.TileTypeId] -= 2;
       if (suitId < 3)
       {
         _melds[suitId] <<= 6;
