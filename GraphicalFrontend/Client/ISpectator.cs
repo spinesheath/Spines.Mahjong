@@ -1,4 +1,6 @@
-﻿namespace GraphicalFrontend.Client
+﻿using GraphicalFrontend.GameEngine;
+
+namespace GraphicalFrontend.Client
 {
   internal interface ISpectator
   {
@@ -9,5 +11,7 @@
     void Received(string message);
 
     void Updated(IGameState state);
+
+    void Updated(VisibleBoard board);
   }
 }

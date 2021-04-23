@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using GraphicalFrontend.GameEngine;
 
 namespace GraphicalFrontend.Client
 {
@@ -35,6 +36,11 @@ namespace GraphicalFrontend.Client
     public void Updated(IGameState state)
     {
       Broadcast(s => s.Updated(state));
+    }
+
+    public void Updated(VisibleBoard board)
+    {
+      Broadcast(s => s.Updated(board));
     }
 
     private readonly IReadOnlyList<ISpectator> _members;

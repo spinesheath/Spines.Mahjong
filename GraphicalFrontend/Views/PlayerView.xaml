@@ -26,6 +26,10 @@
       <RowDefinition Height="36" />
     </Grid.RowDefinitions>
 
+    <TextBlock Grid.Column="2" Grid.Row="3" HorizontalAlignment="Left" Margin="10,0,0,0" Text="{Binding Direction}"/>
+
+    <TextBlock Grid.Column="2" Grid.Row="4" HorizontalAlignment="Left" Margin="10,0,0,0" Text="{Binding Score}"/>
+
     <Canvas Grid.Column="1" Grid.Row="1" HorizontalAlignment="Center" Height="10" Width="100" Background="White">
       <Canvas.Style>
         <Style TargetType="{x:Type Canvas}">

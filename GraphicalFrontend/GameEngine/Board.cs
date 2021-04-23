@@ -19,6 +19,7 @@ namespace GraphicalFrontend.GameEngine
     public int RiichiSticks { get; set; }
 
     public TileType RoundWind { get; set; } = TileType.FromSuitAndIndex(Suit.Jihai, 0);
+
     public IReadOnlyList<Seat> Seats { get; } = new List<Seat> {new(), new(), new(), new()};
 
     public Wall Wall { get; } = new();

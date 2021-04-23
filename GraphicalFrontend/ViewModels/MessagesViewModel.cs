@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Threading;
 using GraphicalFrontend.Client;
+using GraphicalFrontend.GameEngine;
 
 namespace GraphicalFrontend.ViewModels
 {
@@ -32,6 +33,10 @@ namespace GraphicalFrontend.ViewModels
     }
 
     public void Updated(IGameState state)
+    {
+    }
+
+    public void Updated(VisibleBoard board)
     {
     }
 

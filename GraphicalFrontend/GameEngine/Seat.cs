@@ -16,7 +16,7 @@ namespace GraphicalFrontend.GameEngine
 
     public bool DeclaredRiichi { get; set; }
 
-    public UkeIreCalculator Hand { get; } = new();
+    public UkeIreCalculator Hand { get; set; } = new();
 
     public List<Client.Meld> Melds { get; } = new();
 

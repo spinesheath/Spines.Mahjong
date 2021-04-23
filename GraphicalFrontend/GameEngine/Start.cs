@@ -9,7 +9,9 @@ namespace GraphicalFrontend.GameEngine
     {
       for (var i = 0; i < 4; i++)
       {
-        board.Seats[i].SeatWind = TileType.FromSuitAndIndex(Suit.Jihai, i);
+        var seat = board.Seats[i];
+        seat.SeatWind = TileType.FromSuitAndIndex(Suit.Jihai, i);
+        seat.Score = 25000;
       }
     }
 

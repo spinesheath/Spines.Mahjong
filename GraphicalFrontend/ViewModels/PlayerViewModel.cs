@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
 using GraphicalFrontend.Client;
+using GraphicalFrontend.GameEngine;
 
 namespace GraphicalFrontend.ViewModels
 {
@@ -13,7 +14,15 @@ namespace GraphicalFrontend.ViewModels
 
     public ObservableCollection<int> ConcealedTiles { get; } = new();
 
-    public string Direction { get; set; } = "";
+    public string Direction
+    {
+      get => _direction;
+      set
+      {
+        _direction = value;
+        OnPropertyChanged();
+      }
+    }
 
     public bool HasRecentDraw
     {
@@ -38,7 +47,7 @@ namespace GraphicalFrontend.ViewModels
     public ObservableCollection<MeldViewModel> Melds { get; } = new();
 
     public string Name => _seatIndex.ToString();
-
+    
     public ObservableCollection<int> PondRow0 { get; } = new();
 
     public ObservableCollection<int> PondRow1 { get; } = new();
@@ -69,7 +78,15 @@ namespace GraphicalFrontend.ViewModels
       }
     }
 
-    public string Score { get; private set; } = "";
+    public string Score
+    {
+      get => _score;
+      private set
+      {
+        _score = value;
+        OnPropertyChanged();
+      }
+    }
 
     public void Sent(string message)
     {
@@ -138,11 +155,46 @@ namespace GraphicalFrontend.ViewModels
       }
     }
 
+    public void Updated(VisibleBoard board)
+    {
+      var seat = board.Seats[_seatIndex];
+      HasDeclaredRiichi = seat.DeclaredRiichi;
+
+      var ordered = seat.ConcealedTiles.OrderBy(x => x.TileId).ToList();
+      if (seat.CurrentDraw != null)
+      {
+        ordered.Remove(seat.CurrentDraw);
+      }
+
+      RecentDraw = seat.CurrentDraw?.TileId ?? -1;
+      HasRecentDraw = seat.CurrentDraw != null;
+
+      ConcealedTiles.Clear();
+      foreach (var tile in ordered)
+      {
+        ConcealedTiles.Add(tile.TileId);
+      }
+
+      Melds.Clear();
+      foreach (var meld in seat.Melds)
+      {
+        Melds.Add(new MeldViewModel(meld.Tiles));
+      }
+
+      Riichi = seat.DeclaredRiichi;
+      Score = $"{seat.Score}";
+      Direction = "東南西北".Substring(seat.SeatWind.TileTypeId - 27, 1);
+
+      UpdatePond(seat);
+    }
+
     private readonly int _seatIndex;
     private bool _hasRecentDraw;
     private bool _hasDeclaredRiichi;
     private int _recentDraw;
     private bool _riichi;
+    private string _score = "";
+    private string _direction = "";
 
     private void UpdatePond(IGameState state)
     {
@@ -165,6 +217,30 @@ namespace GraphicalFrontend.ViewModels
       {
         var tile = state.Ponds[_seatIndex][index];
         PondRow2.Add(tile.Tile.TileId);
+      }
+    }
+
+    private void UpdatePond(VisiblePlayer seat)
+    {
+      PondRow0.Clear();
+      PondRow1.Clear();
+      PondRow2.Clear();
+      for (var index = 0; index < 6 && index < seat.Discards.Count; index++)
+      {
+        var tile = seat.Discards[index];
+        PondRow0.Add(tile.TileId);
+      }
+
+      for (var index = 6; index < 12 && index < seat.Discards.Count; index++)
+      {
+        var tile = seat.Discards[index];
+        PondRow1.Add(tile.TileId);
+      }
+
+      for (var index = 12; index < seat.Discards.Count; index++)
+      {
+        var tile = seat.Discards[index];
+        PondRow2.Add(tile.TileId);
       }
     }
   }

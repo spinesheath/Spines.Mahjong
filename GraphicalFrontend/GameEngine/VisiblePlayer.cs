@@ -50,5 +50,9 @@ namespace GraphicalFrontend.GameEngine
     public IReadOnlyList<Client.Meld> Melds => _player.Melds;
 
     public TileType SeatWind => _player.SeatWind;
+
+    public int Score => _player.Score;
+
+    public IReadOnlyList<Tile> Discards => _player.Discards;
   }
 }

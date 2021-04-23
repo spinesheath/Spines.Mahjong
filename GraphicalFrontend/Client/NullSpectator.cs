@@ -1,4 +1,6 @@
-﻿namespace GraphicalFrontend.Client
+﻿using GraphicalFrontend.GameEngine;
+
+namespace GraphicalFrontend.Client
 {
   internal class NullSpectator : ISpectator
   {
@@ -15,6 +17,10 @@
     }
 
     public void Updated(IGameState state)
+    {
+    }
+
+    public void Updated(VisibleBoard board)
     {
     }
   }

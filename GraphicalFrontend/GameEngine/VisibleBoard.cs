@@ -3,14 +3,30 @@ using Spines.Mahjong.Analysis;
 
 namespace GraphicalFrontend.GameEngine
 {
-  /// <summary>
-  /// A single player's view on the board. All data is transformed such that this player is at index 0.
-  /// </summary>
   internal class VisibleBoard
   {
     private readonly Board _board;
     private readonly int _playerIndex;
 
+    /// <summary>
+    /// Shows the entire board including all private information.
+    /// </summary>
+    public VisibleBoard(Board board)
+    {
+      _board = board;
+      _playerIndex = 0;
+      var players = new List<VisiblePlayer>();
+      for (var i = 0; i < 4; i++)
+      {
+        players.Add(new VisiblePlayer(board.Seats[i], true));
+      }
+
+      Seats = players;
+    }
+
+    /// <summary>
+    /// A single player's view on the board. All data is transformed such that this player is at index 0.
+    /// </summary>
     public VisibleBoard(Board board, int playerIndex)
     {
       _board = board;
@@ -26,6 +42,8 @@ namespace GraphicalFrontend.GameEngine
     }
 
     public int RemainingDraws => _board.Wall.RemainingDraws;
+
+    public IEnumerable<Tile> DoraIndicators => _board.Wall.DoraIndicators;
 
     public int Honba => _board.Honba;
 
