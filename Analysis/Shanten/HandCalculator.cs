@@ -241,9 +241,9 @@ namespace Spines.Mahjong.Analysis.Shanten
       Debug.Assert(TilesInHand() == 13 && Shanten == 0, "furiten only makes sense at tenpai");
 
       var ukeIre = GetUkeIreFor13();
-      foreach (var i in ukeIre)
+      for (var i = 0; i < 34; i++)
       {
-        if (i >= 0)
+        if (ukeIre[i] >= 0)
         {
           yield return TileType.FromTileTypeId(i);
         }
