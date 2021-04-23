@@ -11,6 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\TenpaiShapeTransitions.txt" />
+    <None Remove="Resources\TenpaiShapeValues.txt" />
     <None Remove="Resources\Tiles\Flat\2j1.png" />
     <None Remove="Resources\Tiles\Flat\2j2.png" />
     <None Remove="Resources\Tiles\Flat\2j3.png" />
@@ -275,6 +277,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Resources\TenpaiShapeTransitions.txt" />
+    <EmbeddedResource Include="Resources\TenpaiShapeValues.txt" />
     <EmbeddedResource Include="Resources\Tiles\Flat\2j1.png" />
     <EmbeddedResource Include="Resources\Tiles\Flat\2j2.png" />
     <EmbeddedResource Include="Resources\Tiles\Flat\2j3.png" />

@@ -38,10 +38,13 @@ namespace Spines.Mahjong.Analysis.Shanten
              GetMeldString(0, 'M') + GetMeldString(1, 'P') + GetMeldString(2, 'S') + GetHonorMeldString();
     }
 
-    /// <summary>
-    /// The current shanten of the hand.
-    /// </summary>
     public int Shanten => CalculateShanten(ArrangementValues) - 1;
+
+    public int ChiitoitsuShanten => Chiitoi.Shanten - 1;
+
+    public int KokushiShanten => Kokushi.Shanten - 1;
+
+    public int NormalHandShanten => ArrangementClassifier.Classify(ArrangementValues) - 1;
 
     public void Init(IEnumerable<TileType> tiles)
     {
@@ -141,7 +144,6 @@ namespace Spines.Mahjong.Analysis.Shanten
       var index = tileType.Index;
       InHandByType[tileType.TileTypeId] += 1;
       _meldCount += 1;
-      // TODO this not the previous tiles at all, bug from refactoring?
       var previousTiles = ConcealedTiles[tileType.TileTypeId];
       ConcealedTiles[tileType.TileTypeId] -= 2;
       if (suitId < 3)

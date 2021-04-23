@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
+using GraphicalFrontend.GameEngine;
 using Spines.Mahjong.Analysis;
 
 namespace GraphicalFrontend.Client
@@ -33,6 +33,8 @@ namespace GraphicalFrontend.Client
 
     internal abstract bool CanExecute(IGameState state, DiscardActions possibleActions);
 
+    internal abstract bool CanExecute(VisibleBoard board, DiscardActions possibleActions);
+
     internal abstract void Execute(IClient client);
 
     protected static bool HasTile(IGameState state, Tile tile)
@@ -40,9 +42,19 @@ namespace GraphicalFrontend.Client
       return state.ConcealedTiles.Contains(tile);
     }
 
+    protected static bool HasTile(VisibleBoard board, Tile tile)
+    {
+      return board.Watashi.ConcealedTiles.Contains(tile);
+    }
+
     private class PassStrategy : DiscardResponse
     {
       internal override bool CanExecute(IGameState state, DiscardActions possibleActions)
+      {
+        return true;
+      }
+
+      internal override bool CanExecute(VisibleBoard board, DiscardActions possibleActions)
       {
         return true;
       }
@@ -56,6 +68,11 @@ namespace GraphicalFrontend.Client
     private class DaiminkanStrategy : DiscardResponse
     {
       internal override bool CanExecute(IGameState state, DiscardActions possibleActions)
+      {
+        return possibleActions.HasFlag(DiscardActions.Kan);
+      }
+
+      internal override bool CanExecute(VisibleBoard board, DiscardActions possibleActions)
       {
         return possibleActions.HasFlag(DiscardActions.Kan);
       }
@@ -94,6 +111,23 @@ namespace GraphicalFrontend.Client
                HasTile(state, _tile0) &&
                HasTile(state, _tile1) &&
                HasTile(state, _discardAfterCall);
+      }
+
+      internal override bool CanExecute(VisibleBoard board, DiscardActions possibleActions)
+      {
+        if (board.CurrentDiscard == null)
+        {
+          return false;
+        }
+
+        var tileType = board.CurrentDiscard.TileType;
+        return possibleActions.HasFlag(DiscardActions.Pon) &&
+               _tile0.TileType == tileType &&
+               _tile1.TileType == tileType &&
+               _discardAfterCall.TileType != tileType && // kuikae
+               HasTile(board, _tile0) &&
+               HasTile(board, _tile1) &&
+               HasTile(board, _discardAfterCall);
       }
 
       internal override void Execute(IClient client)
@@ -137,6 +171,28 @@ namespace GraphicalFrontend.Client
                HasTile(state, _discardAfterCall);
       }
 
+      internal override bool CanExecute(VisibleBoard board, DiscardActions possibleActions)
+      {
+        if (board.CurrentDiscard == null)
+        {
+          return false;
+        }
+
+        var tileType = board.CurrentDiscard.TileType;
+        var tileTypeIds = new[] { _tile0.TileType.TileTypeId, _tile1.TileType.TileTypeId, tileType.TileTypeId }.OrderBy(x => x).ToList();
+
+        var isValidDiscardForKanchanCase = tileTypeIds[1] == tileType.TileTypeId && _discardAfterCall.TileType != tileType;
+        var isValidDiscard = isValidDiscardForKanchanCase || Kuikae.IsValidDiscardForNonKanchanChii(tileType, _discardAfterCall.TileType);
+
+        return possibleActions.HasFlag(DiscardActions.Chii) &&
+               tileTypeIds[0] + 1 == tileTypeIds[1] &&
+               tileTypeIds[1] + 1 == tileTypeIds[2] &&
+               isValidDiscard &&
+               HasTile(board, _tile0) &&
+               HasTile(board, _tile1) &&
+               HasTile(board, _discardAfterCall);
+      }
+
       internal override void Execute(IClient client)
       {
         client.Chii(_tile0, _tile1, _discardAfterCall);
@@ -146,6 +202,11 @@ namespace GraphicalFrontend.Client
     private class RonStrategy : DiscardResponse
     {
       internal override bool CanExecute(IGameState state, DiscardActions possibleActions)
+      {
+        return possibleActions.HasFlag(DiscardActions.Ron);
+      }
+
+      internal override bool CanExecute(VisibleBoard board, DiscardActions possibleActions)
       {
         return possibleActions.HasFlag(DiscardActions.Ron);
       }

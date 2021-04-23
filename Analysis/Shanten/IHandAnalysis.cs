@@ -6,6 +6,12 @@ namespace Spines.Mahjong.Analysis.Shanten
   {
     int Shanten { get; }
 
+    int ChiitoitsuShanten { get; }
+
+    int KokushiShanten { get; }
+
+    int NormalHandShanten { get; }
+
     /// <summary>
     /// All tileTypeIds that would make the hand furiten if discarded.
     /// </summary>

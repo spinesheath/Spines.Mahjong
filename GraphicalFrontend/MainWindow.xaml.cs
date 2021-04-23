@@ -2,6 +2,7 @@
 using System.Windows;
 using GraphicalFrontend.Ai;
 using GraphicalFrontend.Client;
+using GraphicalFrontend.GameEngine;
 using GraphicalFrontend.Properties;
 using GraphicalFrontend.ViewModels;
 
@@ -18,16 +19,29 @@ namespace GraphicalFrontend
       var toimen = new PlayerViewModel(2);
       var shimocha = new PlayerViewModel(3);
       _messages = new MessagesViewModel();
-      var board = new BoardViewModel(watashi, kamicha, toimen, shimocha);
-      DataContext = new MainViewModel(_messages, board);
+      var boardViewModel = new BoardViewModel(watashi, kamicha, toimen, shimocha);
+      DataContext = new MainViewModel(_messages, boardViewModel);
 
       var ai = new SimpleAi(Settings.Default.TenhouId, "0", false);
-      var audience = new UiThreadAudience(_messages, board, watashi, kamicha, toimen, shimocha);
+      var audience = new UiThreadAudience(_messages, boardViewModel, watashi, kamicha, toimen, shimocha);
 
       //_client = new TenhouClient(ai, audience);
       //_client.LogOn();
 
-      _localClient = new LocalClient(ai, audience);
+      //_localClient = new LocalClient(ai, audience);
+
+      RunMatch();
+    }
+
+    private static void RunMatch()
+    {
+      var ai0 = new SimpleAi("A", "0", false);
+      var ai1 = new SimpleAi("B", "0", false);
+      var ai2 = new SimpleAi("C", "0", false);
+      var ai3 = new SimpleAi("D", "0", false);
+      var board = new Board();
+      var decider = new Decider(board, new[] {ai0, ai1, ai2, ai3});
+      Match.Start(decider, board);
     }
 
     private TenhouClient? _client;

@@ -115,12 +115,17 @@ namespace GraphicalFrontend.Client
             response.Execute(this);
           }
         }
-
+        
         if (!_owari)
         {
           OpponentDraw(1);
           OpponentDraw(2);
           OpponentDraw(3);
+        }
+
+        if (_isFirstGoAround)
+        {
+
         }
 
         _isFirstGoAround = false;
@@ -172,8 +177,7 @@ namespace GraphicalFrontend.Client
       {
         actions |= DiscardActions.Kan;
       }
-
-      // TODO yaku
+      
       if (_state.Hand.ShantenWithTile(tile.TileType) == -1)
       {
         actions |= DiscardActions.Ron;
@@ -225,10 +229,6 @@ namespace GraphicalFrontend.Client
       }
     }
 
-    // TODO abortive draws
-    // TODO daiminkan only possible if draw remaining
-    // TODO no kan after call of opponent's discard
-
     private Tile DrawTile()
     {
       Debug.Assert(_remainingDraws > 0, "Trying to draw from empty wall");
@@ -239,8 +239,7 @@ namespace GraphicalFrontend.Client
     private DrawActions GetPossibleDrawActions()
     {
       var suggestedActions = DrawActions.Discard;
-
-      // TODO yaku check
+      
       if (_state.Hand.Shanten == -1)
       {
         suggestedActions |= DrawActions.Tsumo;
@@ -307,8 +306,7 @@ namespace GraphicalFrontend.Client
 
       _spectator.Updated(_state);
       _spectator.Sent($"replacement draw {replacementDraw}");
-
-      // TODO chankan for kokushi
+      
       
       var suggestedActions = GetPossibleDrawActions();
       if (_state.DeclaredRiichi && suggestedActions == DrawActions.Discard)
@@ -338,8 +336,7 @@ namespace GraphicalFrontend.Client
       _state.Melds.Remove(oldMeld);
 
       _state.Melds.Add(Meld.Shouminkan(oldMeld.CalledTile!, tile));
-
-      // TODO Chankan, rinshanKaihou
+      
 
       var replacementDraw = DrawTile();
       _state.RecentDraw = replacementDraw;

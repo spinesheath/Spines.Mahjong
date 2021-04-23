@@ -8,6 +8,10 @@ namespace Spines.Mahjong.Analysis
     static TileType()
     {
       ByTileType = Enumerable.Range(0, 34).Select(i => new TileType(i)).ToArray();
+      Ton = TileType.FromSuitAndIndex(Suit.Jihai, 0);
+      Nan = TileType.FromSuitAndIndex(Suit.Jihai, 1);
+      Shaa = TileType.FromSuitAndIndex(Suit.Jihai, 2);
+      Pei = TileType.FromSuitAndIndex(Suit.Jihai, 3);
     }
 
     private TileType(int tileTypeId)
@@ -19,6 +23,8 @@ namespace Spines.Mahjong.Analysis
     }
 
     public int Index { get; }
+
+    public bool IsKyuuhai => Suit == Suit.Jihai || Index == 0 || Index == 8;
 
     public Suit Suit { get; }
 
@@ -64,5 +70,13 @@ namespace Spines.Mahjong.Analysis
     }
 
     private static readonly TileType[] ByTileType;
+
+    public static TileType Ton { get; }
+
+    public static TileType Nan { get; }
+
+    public static TileType Shaa { get; }
+
+    public static TileType Pei { get; }
   }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using GraphicalFrontend.GameEngine;
 using Spines.Mahjong.Analysis;
 using Spines.Mahjong.Analysis.Replay;
 
@@ -41,7 +42,14 @@ namespace GraphicalFrontend.Client
       return state.ConcealedTiles.Contains(tile);
     }
 
+    protected static bool HasTile(VisibleBoard board, Tile tile)
+    {
+      return board.Watashi.ConcealedTiles.Contains(tile);
+    }
+
     internal abstract bool CanExecute(IGameState state, DrawActions possibleActions);
+
+    internal abstract bool CanExecute(VisibleBoard board, DrawActions possibleActions);
 
     internal abstract void Execute(IClient client);
 
@@ -57,6 +65,11 @@ namespace GraphicalFrontend.Client
       internal override bool CanExecute(IGameState state, DrawActions possibleActions)
       {
         return HasTile(state, _tile);
+      }
+
+      internal override bool CanExecute(VisibleBoard board, DrawActions possibleActions)
+      {
+        return HasTile(board, _tile);
       }
 
       internal override void Execute(IClient client)
@@ -84,6 +97,16 @@ namespace GraphicalFrontend.Client
         return !state.DeclaredRiichi || !state.Hand.IsUkeIreChangedByAnkan(state.RecentDraw.TileType, _tileType);
       }
 
+      internal override bool CanExecute(VisibleBoard board, DrawActions possibleActions)
+      {
+        if (!possibleActions.HasFlag(DrawActions.Kan) || board.Watashi.ConcealedTiles.Count(t => t.TileType == _tileType) != 4 || board.Watashi.CurrentDraw == null)
+        {
+          return false;
+        }
+
+        return !board.Watashi.DeclaredRiichi || !board.Watashi.Hand.IsUkeIreChangedByAnkan(board.Watashi.CurrentDraw.TileType, _tileType);
+      }
+
       internal override void Execute(IClient client)
       {
         client.Ankan(_tileType);
@@ -107,6 +130,14 @@ namespace GraphicalFrontend.Client
                state.Melds.Any(m => m.MeldType == MeldType.Koutsu && m.LowestTile.TileType == _tile.TileType);
       }
 
+      internal override bool CanExecute(VisibleBoard board, DrawActions possibleActions)
+      {
+        return possibleActions.HasFlag(DrawActions.Kan) &&
+               !board.Watashi.DeclaredRiichi &&
+               HasTile(board, _tile) &&
+               board.Watashi.Melds.Any(m => m.MeldType == MeldType.Koutsu && m.LowestTile.TileType == _tile.TileType);
+      }
+
       internal override void Execute(IClient client)
       {
         client.Shouminkan(_tile);
@@ -116,6 +147,11 @@ namespace GraphicalFrontend.Client
     internal class TsumoStrategy : DrawResponse
     {
       internal override bool CanExecute(IGameState state, DrawActions possibleActions)
+      {
+        return possibleActions.HasFlag(DrawActions.Tsumo);
+      }
+
+      internal override bool CanExecute(VisibleBoard board, DrawActions possibleActions)
       {
         return possibleActions.HasFlag(DrawActions.Tsumo);
       }
@@ -142,6 +178,13 @@ namespace GraphicalFrontend.Client
                state.Hand.ShantenAfterDiscard(_tile.TileType) == 0;
       }
 
+      internal override bool CanExecute(VisibleBoard board, DrawActions possibleActions)
+      {
+        return possibleActions.HasFlag(DrawActions.Riichi) &&
+               HasTile(board, _tile) &&
+               board.Watashi.Hand.ShantenAfterDiscard(_tile.TileType) == 0;
+      }
+
       internal override void Execute(IClient client)
       {
         client.Riichi(_tile);
@@ -151,6 +194,11 @@ namespace GraphicalFrontend.Client
     internal class KyuushuStrategy : DrawResponse
     {
       internal override bool CanExecute(IGameState state, DrawActions possibleActions)
+      {
+        return possibleActions.HasFlag(DrawActions.KyuushuKyuuhai);
+      }
+
+      internal override bool CanExecute(VisibleBoard board, DrawActions possibleActions)
       {
         return possibleActions.HasFlag(DrawActions.KyuushuKyuuhai);
       }

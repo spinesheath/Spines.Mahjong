@@ -190,5 +190,12 @@ namespace Spines.Mahjong.Analysis.Shanten
       c.Pon(tileType);
       return c;
     }
+
+    public IUkeIreAnalysis WithTile(TileType tileType)
+    {
+      var c = Clone();
+      c.Draw(tileType);
+      return c;
+    }
   }
 }
