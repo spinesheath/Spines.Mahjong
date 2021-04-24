@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Linq;
 
 namespace GraphicalFrontend.GameEngine
 {
@@ -8,12 +8,14 @@ namespace GraphicalFrontend.GameEngine
 
     public override State Advance()
     {
-      throw new InvalidOperationException();
+      return new EndMatch();
     }
 
     public override void Update(Board board)
     {
-      throw new InvalidOperationException();
+      var highestScore = board.Seats.Max(s => s.Score);
+      var firstPlace = board.Seats.First(s => s.Score == highestScore);
+      firstPlace.Score += board.RiichiSticks * 1000;
     }
   }
 }

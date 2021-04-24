@@ -4,7 +4,6 @@ using Spines.Mahjong.Analysis;
 
 namespace GraphicalFrontend.GameEngine
 {
-  // TODO check if some helper states can be moved into an Update method of the preceding state
   internal class EndGame : State
   {
     public EndGame(IEnumerable<int> winningSeatIndexes)
@@ -19,15 +18,14 @@ namespace GraphicalFrontend.GameEngine
 
     public override void Update(Board board)
     {
-      // TODO what happens on Owari with unclaimed riichi sticks? -> go to first place
-
       if (board.Seats.Any(s => s.Score < 0))
       {
         _nextState = new Owari();
         return;
       }
 
-      if (board.RoundWind == TileType.Shaa && board.Seats.Any(s => s.Score >= 30000))
+      var oorasu = board.RoundWind == TileType.Nan && board.Seats[3].IsOya;
+      if ((oorasu || board.RoundWind == TileType.Shaa) && board.Seats.Any(s => s.Score >= 30000))
       {
         _nextState = new Owari();
         return;
@@ -36,17 +34,20 @@ namespace GraphicalFrontend.GameEngine
       var oyaWin = _winningSeatIndexes.Any(i => board.Seats[i].IsOya);
       var oyaTenpai = board.Oya.Hand.Shanten == 0;
       var oyaHighestScore = board.Oya.Score > board.Seats.Where(s => !s.IsOya).Max(s => s.Score);
-      if ((oyaWin || oyaTenpai) && oyaHighestScore)
-      {
-        _nextState = new Owari();
-        return;
-      }
 
       if (oyaWin || oyaTenpai)
       {
-        board.Honba += 1;
-        _nextState = new InitGame();
-        return;
+        if (oorasu && oyaHighestScore && board.Oya.Score >= 30000)
+        {
+          _nextState = new Owari();
+          return;
+        }
+        else
+        {
+          board.Honba += 1;
+          _nextState = new InitGame();
+          return;
+        }
       }
 
       if (!_winningSeatIndexes.Any())

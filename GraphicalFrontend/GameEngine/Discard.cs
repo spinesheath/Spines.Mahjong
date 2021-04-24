@@ -74,7 +74,7 @@ namespace GraphicalFrontend.GameEngine
       var ronCount = clients.Count(c => c.Ron);
       if (ronCount == 3)
       {
-        _nextState = new TripleRonAbort();
+        _nextState = new Abort();
         return;
       }
 

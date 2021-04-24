@@ -8,8 +8,6 @@ namespace GraphicalFrontend.GameEngine
 {
   internal class InitGame : State
   {
-
-    // TODO reset handcalculators
     public override State Advance()
     {
       Debug.Assert(_nextState != null, "call Decide() before Advance()");

@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using Spines.Mahjong.Analysis;
 using Spines.Mahjong.Analysis.Replay;
+using Spines.Mahjong.Analysis.Shanten;
 
 namespace GraphicalFrontend.GameEngine
 {
@@ -245,7 +248,7 @@ namespace GraphicalFrontend.GameEngine
       {
         return false;
       }
-      
+
       // kokushi
       if (hand.KokushiShanten == -1)
       {
@@ -322,7 +325,7 @@ namespace GraphicalFrontend.GameEngine
 
       // yakuhai
       // shousangen and daisangen always fulfill yakuhai
-      var yakuhaiTileTypeIds = new List<int> { board.RoundWind.TileTypeId, seat.SeatWind.TileTypeId, 31, 32, 33 };
+      var yakuhaiTileTypeIds = new List<int> {board.RoundWind.TileTypeId, seat.SeatWind.TileTypeId, 31, 32, 33};
       if (seat.Melds.Any(m => yakuhaiTileTypeIds.Contains(m.LowestTile.TileType.TileTypeId)) || yakuhaiTileTypeIds.Any(i => tileTypeCounts[i] == 3))
       {
         return true;
@@ -341,7 +344,7 @@ namespace GraphicalFrontend.GameEngine
       var pinzuFlags = ShapeBasedYakuFlags.GetFlagsForSuit(new ArraySegment<int>(tileTypeCounts, 9, 9));
       var souzuFlags = ShapeBasedYakuFlags.GetFlagsForSuit(new ArraySegment<int>(tileTypeCounts, 18, 9));
       var isOpenHand = seat.Melds.Any(m => m.MeldType != MeldType.ClosedKan);
-      var flagsBySuit = new[] { manzuFlags, pinzuFlags, souzuFlags };
+      var flagsBySuit = new[] {manzuFlags, pinzuFlags, souzuFlags};
       var chantaMelds = true;
 
       foreach (var meld in seat.Melds)
@@ -418,11 +421,11 @@ namespace GraphicalFrontend.GameEngine
       {
         if (winningTile.TileType.SuitId == i)
         {
-          ankouCount += (int)((flagsBySuit[i] >> (34 + 3 * winningTile.TileType.Index)) & 0b111);
+          ankouCount += (int) ((flagsBySuit[i] >> (34 + 3 * winningTile.TileType.Index)) & 0b111);
         }
         else
         {
-          ankouCount += (int)((flagsBySuit[i] >> 31) & 0b111);
+          ankouCount += (int) ((flagsBySuit[i] >> 31) & 0b111);
         }
       }
 
@@ -430,13 +433,13 @@ namespace GraphicalFrontend.GameEngine
       {
         return true;
       }
-      
+
       // chiihou
       if (board.IsFirstGoAround)
       {
         return true;
       }
-      
+
       // houtei raoyui
       if (board.Wall.RemainingDraws == 0)
       {

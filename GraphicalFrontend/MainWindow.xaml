@@ -38,6 +38,42 @@
       </ContentControl.LayoutTransform>
     </ContentControl>
 
+    <Grid Grid.Column="0" Grid.Row="0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="40"/>
+        <ColumnDefinition Width="4"/>
+        <ColumnDefinition Width="40"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="20"/>
+        <RowDefinition Height="20"/>
+        <RowDefinition Height="20"/>
+        <RowDefinition Height="*"/>
+      </Grid.RowDefinitions>
+
+      <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Board.RoundWind}" HorizontalAlignment="Right"/>
+      <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Board.HonbaCount}" HorizontalAlignment="Right"/>
+      <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Board.RiichiStickCount}" HorizontalAlignment="Right"/>
+
+      <Canvas Grid.Column="3" Grid.Row="2" HorizontalAlignment="Center" Height="10" Width="40" Background="White">
+        <Ellipse Canvas.Left="13" Canvas.Top="2" Width="2" Height="2" Fill="Black"/>
+        <Ellipse Canvas.Left="13" Canvas.Top="6" Width="2" Height="2" Fill="Black"/>
+        <Ellipse Canvas.Left="17" Canvas.Top="2" Width="2" Height="2" Fill="Black"/>
+        <Ellipse Canvas.Left="17" Canvas.Top="6" Width="2" Height="2" Fill="Black"/>
+        <Ellipse Canvas.Left="21" Canvas.Top="2" Width="2" Height="2" Fill="Black"/>
+        <Ellipse Canvas.Left="21" Canvas.Top="6" Width="2" Height="2" Fill="Black"/>
+        <Ellipse Canvas.Left="25" Canvas.Top="2" Width="2" Height="2" Fill="Black"/>
+        <Ellipse Canvas.Left="25" Canvas.Top="6" Width="2" Height="2" Fill="Black"/>
+      </Canvas>
+
+      <Canvas Grid.Column="3" Grid.Row="3" HorizontalAlignment="Center" Height="10" Width="40" Background="White">
+        <Ellipse Canvas.Left="17" Canvas.Top="3" Width="5" Height="5" Fill="Red"/>
+      </Canvas>
+    </Grid>
+
     <DockPanel Grid.Column="1" Grid.Row="0" Grid.RowSpan="2">
       <Button DockPanel.Dock="Top" Content="Testplay" Click="StartTestplay" />
       <Button DockPanel.Dock="Top" Content="Ippan" Click="StartIppan" />

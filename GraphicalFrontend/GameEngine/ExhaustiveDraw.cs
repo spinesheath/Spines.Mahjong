@@ -52,11 +52,15 @@ namespace GraphicalFrontend.GameEngine
       var paymentInformation = new PaymentInformation();
 
       var tenpaiCount = board.Seats.Count(s => s.Hand.Shanten == 0);
+      if (tenpaiCount == 4)
+      {
+        return paymentInformation;
+      }
+
       for (var i = 0; i < 4; i++)
       {
         if (board.Seats[i].Hand.Shanten == 0)
         {
-          tenpaiCount += 1;
           paymentInformation.ScoreChanges[i] = 3000 / tenpaiCount;
         }
         else

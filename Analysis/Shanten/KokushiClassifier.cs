@@ -8,8 +8,6 @@
   /// </summary>
   internal struct KokushiClassifier
   {
-    // TODO init method for fresh hands
-
     public static KokushiClassifier Create()
     {
       return new KokushiClassifier(14, 1);

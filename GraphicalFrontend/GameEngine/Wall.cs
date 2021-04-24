@@ -36,7 +36,8 @@ namespace GraphicalFrontend.GameEngine
     public void Shuffle()
     {
       var tiles = Enumerable.Range(0, 136).ToList();
-      var random = new Random();
+      _seed = (int)DateTime.Now.Ticks;
+      var random = new Random(_seed);
       var n = 136;
       while (n > 1)
       {
@@ -53,6 +54,7 @@ namespace GraphicalFrontend.GameEngine
 
     private List<Tile> _doraIndicators = new();
     private Queue<Tile> _tiles = new();
+    private int _seed;
 
     private IEnumerable<Tile> Draw(int count)
     {

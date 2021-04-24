@@ -136,14 +136,15 @@ namespace GraphicalFrontend.Ai
         return DiscardResponse.Ron();
       }
 
-      // Call value honors if it improves shanten
-      if (suggestedActions.HasFlag(DiscardActions.Pon) && !suggestedActions.HasFlag(DiscardActions.Kan))
+      // Call value honors if it improves shanten. But don't call if already tenpai (all discards would be furiten)
+      var shanten = board.Watashi.Hand.Shanten;
+      if (shanten > 0 && suggestedActions.HasFlag(DiscardActions.Pon) && !suggestedActions.HasFlag(DiscardActions.Kan))
       {
         var tileType = tile.TileType;
         if (tileType.TileTypeId >= 31 || tileType == board.RoundWind || tileType == board.Watashi.SeatWind)
         {
           var t = board.Watashi.Hand.WithPon(tileType);
-          if (t.Shanten < board.Watashi.Hand.Shanten)
+          if (t.Shanten < shanten)
           {
             var tilesInHand = board.Watashi.ConcealedTiles.Where(i => i.TileType.TileTypeId == tileType.TileTypeId).ToList();
 
@@ -179,7 +180,8 @@ namespace GraphicalFrontend.Ai
     {
       if (_withDelay)
       {
-        Thread.Sleep(_random.Next(100, max));
+        //Thread.Sleep(_random.Next(100, max));
+        Thread.Sleep(_random.Next(10, max / 10));
       }
     }
   }

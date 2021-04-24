@@ -3,6 +3,7 @@
   internal class PaymentInformation
   {
     // TODO expand payment info
+    // TODO saw some weird payment numbers
     
     public int Han { get; set; }
 

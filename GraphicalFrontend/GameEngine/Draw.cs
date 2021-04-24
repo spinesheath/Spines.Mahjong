@@ -50,7 +50,7 @@ namespace GraphicalFrontend.GameEngine
 
     public override void KyuushuKyuuhai()
     {
-      NextState = new KyuushuKyuuhai();
+      NextState = new Abort();
     }
 
     private readonly int _seatIndex;

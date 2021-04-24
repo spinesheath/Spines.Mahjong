@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Spines.Mahjong.Analysis;
 
 namespace GraphicalFrontend.GameEngine
@@ -22,7 +23,19 @@ namespace GraphicalFrontend.GameEngine
     {
       await _discard.Decide(board, decider);
       var nextState = _discard.Advance();
-      _nextState = nextState is Ron ? nextState : new RiichiPayment(nextState, board.ActiveSeatIndex);
+
+      if (nextState is Ron)
+      {
+        _nextState = nextState;
+      }
+      else if (board.Seats.All(s => s.DeclaredRiichi))
+      {
+        _nextState = new RiichiPayment(new Abort(), board.ActiveSeatIndex);
+      }
+      else
+      {
+        _nextState = new RiichiPayment(nextState, board.ActiveSeatIndex);
+      }
     }
 
     public override void Update(Board board)
