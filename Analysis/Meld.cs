@@ -2,6 +2,7 @@
 
 namespace Spines.Mahjong.Analysis
 {
+  // TODO should probably be internal
   public struct Meld
   {
     public Suit Suit { get; set; }
