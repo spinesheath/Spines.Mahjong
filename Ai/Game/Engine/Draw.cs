@@ -67,7 +67,7 @@ namespace Game.Engine
 
     private static bool CanTsumo(Board board)
     {
-      return AgariValidation.CanTsumo(board);
+      return AgariValidation.CanTsumo(board, false);
     }
 
     private static bool CanKyuushuKyuuhai(Board board)

@@ -27,13 +27,12 @@ namespace Game.Engine
 
     private static bool CanTsumo(Board board)
     {
-      // TODO rinshan info
-      return AgariValidation.CanTsumo(board);
+      return AgariValidation.CanTsumo(board, true);
     }
 
     public override void Discard(Tile tile)
     {
-      // TODO exact timing of dora indicator, like can opponents see dora when deciding on call? 
+      // TODO exact timing of dora indicator: opponents see dora when deciding on call 
       // TODO document in board that there is a pending dora flip - relevant information for calling a tile
       NextState = new DoraIndicator(new Discard(tile));
     }

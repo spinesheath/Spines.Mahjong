@@ -52,8 +52,7 @@ namespace Game.Engine
 
     private bool CanTsumo(Board board)
     {
-      // TODO rinshan info
-      return AgariValidation.CanTsumo(board);
+      return AgariValidation.CanTsumo(board, true);
     }
   }
 }

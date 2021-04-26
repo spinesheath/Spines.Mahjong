@@ -569,6 +569,7 @@ namespace Game.Tenhou
 
         if (decoder.MeldType == MeldType.AddedKan)
         {
+          // TODO insert shouminkan where pon used to be
           _board.Seats[who].Melds.Remove(_board.Seats[who].Melds.First(m => m.MeldType == MeldType.Koutsu && m.LowestTile.TileType.TileTypeId == decoder.LowestTile / 4));
         }
 

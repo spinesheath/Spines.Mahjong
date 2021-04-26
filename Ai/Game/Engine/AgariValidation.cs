@@ -10,7 +10,7 @@ namespace Game.Engine
   {
     // TODO consolidate methods
 
-    public static bool CanTsumo(Board board)
+    public static bool CanTsumo(Board board, bool isRinshanDraw)
     {
       var seat = board.ActiveSeat;
       if (seat.Hand.Shanten != -1)
@@ -214,9 +214,7 @@ namespace Game.Engine
       }
 
       // rinshan kaihou
-      // TODO rinshan
-      // TODO no haitei rinshan!
-      if (seat.CurrentDraw != null && false)
+      if (seat.CurrentDraw != null && isRinshanDraw && board.Wall.RemainingDraws > 0)
       {
         return true;
       }
