@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading;
+﻿using System.Linq;
 using Game.Shared;
 using Spines.Mahjong.Analysis;
 
@@ -8,12 +6,10 @@ namespace SimpleAi
 {
   public class SimpleAi : IPlayer
   {
-    public SimpleAi(string tenhouId, string lobby, bool withDelay)
+    public SimpleAi(string tenhouId, string lobby)
     {
-      _withDelay = withDelay;
       Id = tenhouId;
       Lobby = lobby;
-      _random = new Random();
     }
 
     public string Id { get; }
@@ -24,7 +20,6 @@ namespace SimpleAi
     {
       if (suggestedActions.HasFlag(DrawActions.Tsumo))
       {
-        Delay(500);
         return DrawResponse.Tsumo();
       }
 
@@ -32,13 +27,11 @@ namespace SimpleAi
       {
         var tileTypeId = board.Watashi.Hand.GetHighestUkeIreDiscard();
         var discard = board.Watashi.ConcealedTiles.First(i => i.TileType.TileTypeId == tileTypeId);
-        Delay(1000);
         return DrawResponse.Riichi(discard);
       }
 
-      if (suggestedActions.HasFlag(DrawActions.KyuushuKyuuhai) && board.Watashi.Hand.Shanten > 2)
+      if (suggestedActions.HasFlag(DrawActions.KyuushuKyuuhai) && (board.Watashi.Hand.Shanten > 2 || board.Seats.Any(s => s.DeclaredRiichi)))
       {
-        Delay(1000);
         return DrawResponse.KyuushuKyuuhai();
       }
 
@@ -47,12 +40,10 @@ namespace SimpleAi
         // Prefer tsumogiri
         if (tile.TileType.TileTypeId == tileTypeId)
         {
-          Delay(500);
           return DrawResponse.Discard(tile);
         }
 
         var discard = board.Watashi.ConcealedTiles.First(i => i.TileType.TileTypeId == tileTypeId);
-        Delay(1000);
         return DrawResponse.Discard(discard);
       }
     }
@@ -61,7 +52,6 @@ namespace SimpleAi
     {
       if (suggestedActions.HasFlag(DiscardActions.Ron))
       {
-        Delay(500);
         return DiscardResponse.Ron();
       }
 
@@ -79,33 +69,18 @@ namespace SimpleAi
 
             var tileTypeId = t.GetHighestUkeIreDiscard();
             var discard = board.Watashi.ConcealedTiles.First(i => i.TileType.TileTypeId == tileTypeId);
-
-            Delay(1000);
+            
             return DiscardResponse.Pon(tilesInHand[0], tilesInHand[1], discard);
           }
         }
       }
-
-      Delay(500);
+      
       return DiscardResponse.Pass();
     }
 
     public bool Chankan(VisibleBoard board, Tile tile, int who)
     {
-      Delay(500);
       return true;
-    }
-
-    private readonly Random _random;
-    private readonly bool _withDelay;
-
-    private void Delay(int max)
-    {
-      if (_withDelay)
-      {
-        //Thread.Sleep(_random.Next(100, max));
-        Thread.Sleep(_random.Next(10, max / 10));
-      }
     }
   }
 }

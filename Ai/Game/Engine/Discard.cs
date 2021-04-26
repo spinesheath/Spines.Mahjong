@@ -17,13 +17,12 @@ namespace Game.Engine
 
     public override State Advance()
     {
-      Debug.Assert(_nextState != null, "call Decide() before Advance()");
       if (_ignoredRonSeats.Any())
       {
-        return new IgnoredRon(_ignoredRonSeats, _nextState);
+        return new IgnoredRon(_ignoredRonSeats, _nextState!);
       }
 
-      return _nextState;
+      return _nextState!;
     }
 
     public override async Task Decide(Board board, Decider decider)
@@ -127,7 +126,6 @@ namespace Game.Engine
     }
 
     private readonly List<int> _ignoredRonSeats = new();
-
     private readonly Tile _tile;
     private State? _nextState;
 
@@ -143,6 +141,11 @@ namespace Game.Engine
 
     private bool CanKan(Board board, int seatIndex)
     {
+      if (board.Seats.SelectMany(s => s.Melds).Count(m => m.IsKan) == 4)
+      {
+        return false;
+      }
+
       var seat = board.Seats[seatIndex];
       return !seat.DeclaredRiichi && seat.ConcealedTiles.Count(t => t.TileType == _tile.TileType) == 3 && board.Wall.RemainingDraws > 0;
     }

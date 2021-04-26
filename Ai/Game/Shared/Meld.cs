@@ -22,6 +22,8 @@ namespace Game.Shared
       {
         AddedTile = Tile.FromTileId(decoder.AddedTile);
       }
+
+      IsKan = MeldType == MeldType.CalledKan || MeldType == MeldType.ClosedKan || MeldType == MeldType.AddedKan;
     }
 
     private Meld(IEnumerable<Tile> tiles, Tile? called, Tile? added, MeldType meldType)
@@ -30,7 +32,10 @@ namespace Game.Shared
       CalledTile = called;
       AddedTile = added;
       MeldType = meldType;
+      IsKan = meldType == MeldType.CalledKan || meldType == MeldType.ClosedKan || meldType == MeldType.AddedKan;
     }
+
+    public bool IsKan { get; }
 
     public Tile? AddedTile { get; }
 

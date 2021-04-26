@@ -72,6 +72,11 @@ namespace Game.Engine
         return false;
       }
 
+      if (board.Seats.SelectMany(s => s.Melds).Count(m => m.IsKan) == 4)
+      {
+        return false;
+      }
+
       var seat = board.ActiveSeat;
       var canAnkan = seat.ConcealedTiles.GroupBy(t => t.TileType).Any(g => g.Count() == 4);
       var canShouminkan = seat.Melds.Any(m => m.MeldType == MeldType.Koutsu && seat.ConcealedTiles.Any(t => t.TileType == m.LowestTile.TileType));

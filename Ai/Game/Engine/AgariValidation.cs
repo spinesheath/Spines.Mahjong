@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Game.Shared;
+using Spines.Mahjong.Analysis;
 using Spines.Mahjong.Analysis.Replay;
 
 namespace Game.Engine
@@ -444,11 +445,13 @@ namespace Game.Engine
       {
         return true;
       }
-
-      // TODO chankan
-      // chankan
-
+      
       return false;
+    }
+
+    public static bool CanChankan(Board board, int seatIndex, Tile addedTile)
+    {
+      return board.Seats[seatIndex].Hand.WithTile(addedTile.TileType).Shanten == -1;
     }
   }
 }
