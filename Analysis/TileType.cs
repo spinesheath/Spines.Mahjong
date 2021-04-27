@@ -8,10 +8,10 @@ namespace Spines.Mahjong.Analysis
     static TileType()
     {
       ByTileType = Enumerable.Range(0, 34).Select(i => new TileType(i)).ToArray();
-      Ton = TileType.FromSuitAndIndex(Suit.Jihai, 0);
-      Nan = TileType.FromSuitAndIndex(Suit.Jihai, 1);
-      Shaa = TileType.FromSuitAndIndex(Suit.Jihai, 2);
-      Pei = TileType.FromSuitAndIndex(Suit.Jihai, 3);
+      Ton = FromSuitAndIndex(Suit.Jihai, 0);
+      Nan = FromSuitAndIndex(Suit.Jihai, 1);
+      Shaa = FromSuitAndIndex(Suit.Jihai, 2);
+      Pei = FromSuitAndIndex(Suit.Jihai, 3);
     }
 
     private TileType(int tileTypeId)
@@ -20,17 +20,32 @@ namespace Spines.Mahjong.Analysis
       Index = tileTypeId % 9;
       SuitId = tileTypeId / 9;
       Suit = (Suit) SuitId;
+      IsKyuuhai = Suit == Suit.Jihai || Index == 0 || Index == 8;
+      KyuuhaiValue = IsKyuuhai ? 1 : 0;
     }
 
     public int Index { get; }
 
-    public bool IsKyuuhai => Suit == Suit.Jihai || Index == 0 || Index == 8;
+    public bool IsKyuuhai { get; }
+
+    /// <summary>
+    /// 1 if terminal or honor, 0 else.
+    /// </summary>
+    public int KyuuhaiValue { get; }
+
+    public static TileType Nan { get; }
+
+    public static TileType Pei { get; }
+
+    public static TileType Shaa { get; }
 
     public Suit Suit { get; }
 
     public int SuitId { get; }
 
     public int TileTypeId { get; }
+
+    public static TileType Ton { get; }
 
     public static TileType FromString(string tileType)
     {
@@ -70,13 +85,5 @@ namespace Spines.Mahjong.Analysis
     }
 
     private static readonly TileType[] ByTileType;
-
-    public static TileType Ton { get; }
-
-    public static TileType Nan { get; }
-
-    public static TileType Shaa { get; }
-
-    public static TileType Pei { get; }
   }
 }

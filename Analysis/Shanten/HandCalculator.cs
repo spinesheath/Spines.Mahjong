@@ -53,7 +53,7 @@ namespace Spines.Mahjong.Analysis.Shanten
         InHandByType[tileType.TileTypeId] += 1;
 
         var previousTileCount = ConcealedTiles[tileType.TileTypeId]++;
-        Kokushi.Draw(tileType.TileTypeId, previousTileCount);
+        Kokushi.Draw(tileType.KyuuhaiValue, previousTileCount);
         Chiitoi.Draw(previousTileCount);
 
         if (tileType.SuitId == 3)
@@ -79,7 +79,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       InHandByType[tileType.TileTypeId] += 1;
 
       var previousTileCount = ConcealedTiles[tileType.TileTypeId]++;
-      Kokushi.Draw(tileType.TileTypeId, previousTileCount);
+      Kokushi.Draw(tileType.KyuuhaiValue, previousTileCount);
       Chiitoi.Draw(previousTileCount);
 
       if (tileType.SuitId == 3)
@@ -101,7 +101,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       InHandByType[tileType.TileTypeId] -= 1;
 
       var tileCountAfterDiscard = --ConcealedTiles[tileType.TileTypeId];
-      Kokushi.Discard(tileType.TileTypeId, tileCountAfterDiscard);
+      Kokushi.Discard(tileType.KyuuhaiValue, tileCountAfterDiscard);
       Chiitoi.Discard(tileCountAfterDiscard);
 
       if (tileType.SuitId == 3)
@@ -270,7 +270,8 @@ namespace Spines.Mahjong.Analysis.Shanten
         {
           if (InHandByType[tileTypeId] != 4)
           {
-            Kokushi.Draw(tileTypeId, ConcealedTiles[tileTypeId]);
+            var kyuuhaiValue = (0b100000001 >> index) & 1;
+            Kokushi.Draw(kyuuhaiValue, ConcealedTiles[tileTypeId]);
             Chiitoi.Draw(ConcealedTiles[tileTypeId]);
 
             ConcealedTiles[tileTypeId] += 1;
@@ -286,7 +287,7 @@ namespace Spines.Mahjong.Analysis.Shanten
 
             ConcealedTiles[tileTypeId] -= 1;
             Base5Hashes[suit] -= Base5Table[index];
-            Kokushi.Discard(tileTypeId, ConcealedTiles[tileTypeId]);
+            Kokushi.Discard(kyuuhaiValue, ConcealedTiles[tileTypeId]);
             Chiitoi.Discard(ConcealedTiles[tileTypeId]);
           }
           else
@@ -305,7 +306,7 @@ namespace Spines.Mahjong.Analysis.Shanten
         if (InHandByType[tileTypeId] != 4)
         {
           var previousTileCount = ConcealedTiles[tileTypeId];
-          Kokushi.Draw(tileTypeId, previousTileCount);
+          Kokushi.Draw(1, previousTileCount);
           Chiitoi.Draw(previousTileCount);
           localArrangements[3] = HonorClassifier.Clone().Draw(ConcealedTiles[tileTypeId], JihaiMeldBit >> index & 1);
 
@@ -317,7 +318,7 @@ namespace Spines.Mahjong.Analysis.Shanten
           ukeIre[27 + index] = t;
 
           Chiitoi.Discard(previousTileCount);
-          Kokushi.Discard(tileTypeId, previousTileCount);
+          Kokushi.Discard(1, previousTileCount);
         }
         else
         {

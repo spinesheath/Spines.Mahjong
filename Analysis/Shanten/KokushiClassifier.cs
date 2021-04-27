@@ -23,16 +23,12 @@
     /// </summary>
     public int Shanten;
     
-    public void Draw(int tileTypeId, int previousTileCount)
+    public void Draw(int kyuuhaiValue, int previousTileCount)
     {
-      // (1 << x & 0b100000001100000001100000001) >> x | (x + 5) >> 5
-      // 1 if the tileType is a terminal or honor, else 0
-      var r = (1 << tileTypeId & 0b100000001100000001100000001) >> tileTypeId | (tileTypeId + 5) >> 5;
-
       // TODO I suspect this can be simplified
 
       // 1 if previousTileCount < 2, else 0
-      var s = (previousTileCount ^ 2) >> 1 & r;
+      var s = (previousTileCount ^ 2) >> 1 & kyuuhaiValue;
       // 1 if previousTileCount == 1, else 0
       var p = previousTileCount & s;
       // 1 if no pair was added or there were no pairs before, else 0
@@ -41,16 +37,12 @@
       Shanten -= t;
     }
 
-    public void Discard(int tileTypeId, int tileCountAfterDiscard)
+    public void Discard(int kyuuhaiValue, int tileCountAfterDiscard)
     {
-      // (1 << x & 0b100000001100000001100000001) >> x | (x + 5) >> 5
-      // 1 if the tileType is a terminal or honor, else 0
-      var r = (1 << tileTypeId & 0b100000001100000001100000001) >> tileTypeId | (tileTypeId + 5) >> 5;
-
       // TODO I suspect this can be simplified
 
       // 1 if tileCountAfterDiscard < 2, else 0
-      var s = (tileCountAfterDiscard ^ 2) >> 1 & r;
+      var s = (tileCountAfterDiscard ^ 2) >> 1 & kyuuhaiValue;
       // 1 if tileCountAfterDiscard == 1, else 0
       var p = tileCountAfterDiscard & s;
       _pairs >>= p;

@@ -39,9 +39,10 @@ namespace Spines.Mahjong.Analysis.Shanten
         {
           if (ConcealedTiles[tileTypeId] > 0)
           {
+            var kyuuhaiValue = (0b100000001 >> index) & 1;
             ConcealedTiles[tileTypeId] -= 1;
             InHandByType[tileTypeId] -= 1;
-            Kokushi.Discard(tileTypeId, ConcealedTiles[tileTypeId]);
+            Kokushi.Discard(kyuuhaiValue, ConcealedTiles[tileTypeId]);
             Chiitoi.Discard(ConcealedTiles[tileTypeId]);
             Base5Hashes[suit] -= Base5Table[index];
             
@@ -59,7 +60,7 @@ namespace Spines.Mahjong.Analysis.Shanten
             }
 
             Base5Hashes[suit] += Base5Table[index];
-            Kokushi.Draw(tileTypeId, ConcealedTiles[tileTypeId]);
+            Kokushi.Draw(kyuuhaiValue, ConcealedTiles[tileTypeId]);
             Chiitoi.Draw(ConcealedTiles[tileTypeId]);
             ConcealedTiles[tileTypeId] += 1;
             InHandByType[tileTypeId] += 1;
@@ -78,7 +79,7 @@ namespace Spines.Mahjong.Analysis.Shanten
           ConcealedTiles[tileTypeId] -= 1;
           InHandByType[tileTypeId] -= 1;
           var tileCountAfterDiscard = ConcealedTiles[tileTypeId];
-          Kokushi.Discard(tileTypeId, tileCountAfterDiscard);
+          Kokushi.Discard(1, tileCountAfterDiscard);
           Chiitoi.Discard(tileCountAfterDiscard);
 
           var localHonorClassifier = HonorClassifier.Clone();
@@ -96,7 +97,7 @@ namespace Spines.Mahjong.Analysis.Shanten
           }
 
           Chiitoi.Draw(tileCountAfterDiscard);
-          Kokushi.Draw(tileTypeId, tileCountAfterDiscard);
+          Kokushi.Draw(1, tileCountAfterDiscard);
           ConcealedTiles[tileTypeId] += 1;
           InHandByType[tileTypeId] += 1;
         }
@@ -119,7 +120,8 @@ namespace Spines.Mahjong.Analysis.Shanten
         {
           if (InHandByType[tileTypeId] != 4)
           {
-            Kokushi.Draw(tileTypeId, ConcealedTiles[tileTypeId]);
+            var kyuuhaiValue = (0b100000001 >> index) & 1;
+            Kokushi.Draw(kyuuhaiValue, ConcealedTiles[tileTypeId]);
             Chiitoi.Draw(ConcealedTiles[tileTypeId]);
             ConcealedTiles[tileTypeId] += 1;
             Base5Hashes[suit] += Base5Table[index];
@@ -134,7 +136,7 @@ namespace Spines.Mahjong.Analysis.Shanten
 
             ConcealedTiles[tileTypeId] -= 1;
             Base5Hashes[suit] -= Base5Table[index];
-            Kokushi.Discard(tileTypeId, ConcealedTiles[tileTypeId]);
+            Kokushi.Discard(kyuuhaiValue, ConcealedTiles[tileTypeId]);
             Chiitoi.Discard(ConcealedTiles[tileTypeId]);
           }
 
@@ -149,7 +151,7 @@ namespace Spines.Mahjong.Analysis.Shanten
         if (InHandByType[tileTypeId] != 4)
         {
           var previousTileCount = ConcealedTiles[tileTypeId];
-          Kokushi.Draw(tileTypeId, previousTileCount);
+          Kokushi.Draw(1, previousTileCount);
           Chiitoi.Draw(previousTileCount);
 
           localArrangements[3] = localHonorClassifier.Clone().Draw(previousTileCount, JihaiMeldBit >> index & 1);
@@ -160,8 +162,8 @@ namespace Spines.Mahjong.Analysis.Shanten
           var t = (4 - InHandByType[tileTypeId]) * a;
           ukeIre += t;
 
+          Kokushi.Discard(1, previousTileCount);
           Chiitoi.Discard(previousTileCount);
-          Kokushi.Discard(tileTypeId, previousTileCount);
         }
 
         tileTypeId += 1;
