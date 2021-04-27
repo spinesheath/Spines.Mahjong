@@ -6,6 +6,32 @@ namespace Game.Engine
 {
   internal class DaiminkanDraw : DrawBase
   {
+    public override void Ankan(TileType tileType)
+    {
+      NextState = new DoraIndicator(new Ankan(tileType));
+    }
+
+    public override void Discard(Tile tile)
+    {
+      // TODO document in board that there is a pending dora flip - relevant information for calling a tile
+      NextState = new DoraIndicator(new Discard(tile));
+    }
+
+    public override void KyuushuKyuuhai()
+    {
+      throw new InvalidOperationException();
+    }
+
+    public override void Riichi(Tile tile)
+    {
+      throw new InvalidOperationException();
+    }
+
+    public override void Shouminkan(Tile tile)
+    {
+      NextState = new DoraIndicator(new Shouminkan(tile));
+    }
+
     public override void Update(Board board, Wall wall)
     {
       var seat = board.ActiveSeat;
@@ -28,33 +54,6 @@ namespace Game.Engine
     private static bool CanTsumo(Board board)
     {
       return AgariValidation.CanTsumo(board, true);
-    }
-
-    public override void Discard(Tile tile)
-    {
-      // TODO exact timing of dora indicator: opponents see dora when deciding on call 
-      // TODO document in board that there is a pending dora flip - relevant information for calling a tile
-      NextState = new DoraIndicator(new Discard(tile));
-    }
-
-    public override void Ankan(TileType tileType)
-    {
-      NextState = new DoraIndicator(new Ankan(tileType));
-    }
-
-    public override void Shouminkan(Tile tile)
-    {
-      NextState = new DoraIndicator(new Shouminkan(tile));
-    }
-
-    public override void Riichi(Tile tile)
-    {
-      throw new InvalidOperationException();
-    }
-
-    public override void KyuushuKyuuhai()
-    {
-      throw new InvalidOperationException();
     }
   }
 }

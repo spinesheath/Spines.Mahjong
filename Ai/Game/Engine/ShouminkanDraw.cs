@@ -4,16 +4,16 @@ using Spines.Mahjong.Analysis;
 
 namespace Game.Engine
 {
-  internal class AnkanDraw : DrawBase
+  internal class ShouminkanDraw : DrawBase
   {
     public override void Ankan(TileType tileType)
     {
-      NextState = new Ankan(tileType);
+      NextState = new DoraIndicator(new Ankan(tileType));
     }
 
     public override void Discard(Tile tile)
     {
-      NextState = new Discard(tile);
+      NextState = new DoraIndicator(new Discard(tile));
     }
 
     public override void KyuushuKyuuhai()
@@ -23,12 +23,12 @@ namespace Game.Engine
 
     public override void Riichi(Tile tile)
     {
-      NextState = new Riichi(tile);
+      throw new InvalidOperationException();
     }
 
     public override void Shouminkan(Tile tile)
     {
-      NextState = new Shouminkan(tile);
+      NextState = new DoraIndicator(new Shouminkan(tile));
     }
 
     public override void Update(Board board, Wall wall)
@@ -45,7 +45,6 @@ namespace Game.Engine
     {
       var suggestedActions = DrawActions.Discard;
       suggestedActions |= CanTsumo(board) ? DrawActions.Tsumo : DrawActions.Discard;
-      suggestedActions |= CanRiichi(board) ? DrawActions.Riichi : DrawActions.Discard;
       suggestedActions |= CanKan(board) ? DrawActions.Kan : DrawActions.Discard;
       return suggestedActions;
     }

@@ -76,24 +76,16 @@ namespace Game.Engine
         return;
       }
 
-      if (board.Seats.SelectMany(s => s.Melds.Where(m => m.IsKan)).Count() == 4)
-      {
-        // TODO 4 kan abort if not by same player
-      }
-
-      _nextState = new DoraIndicator(new AnkanDraw());
+      _nextState = new ShouminkanDraw();
     }
 
     public override void Update(Board board, Wall wall)
     {
       var seat = board.ActiveSeat;
 
-      // kokushi chankan from ankan not allowed on tenhou
-      // TODO 4 kan abort for all kans: if all 4 kan by the same player, no more kans are possible. If 4 kans by multiple players, game ends after the discard, unless ronned
-
       seat.CurrentDraw = null;
-      seat.Hand.Ankan(_tile.TileType);
-      seat.ConcealedTiles.RemoveAll(t => t.TileType == _tile.TileType);
+      seat.Hand.Shouminkan(_tile.TileType);
+      seat.ConcealedTiles.Remove(_tile);
 
       for (var i = 0; i < seat.Melds.Count; i++)
       {

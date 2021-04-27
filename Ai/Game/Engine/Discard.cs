@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Game.Shared;
@@ -31,11 +30,13 @@ namespace Game.Engine
       {
         if (board.Seats.SelectMany(s => s.Discards).Count(t => t.TileType == _tile.TileType) == 4)
         {
-          _nextState = new FourWindsAbort();
+          _nextState = new Abort();
           return;
         }
       }
 
+      var fourKanAbortIfNoRon = board.Seats.SelectMany(s => s.Melds).Count(m => m.IsKan) == 4 && board.Seats.Count(s => s.Melds.Any(m => m.IsKan)) > 1;
+        
       var reactionTasks = new Task<DiscardResponse>[4];
       var clients = new Client[4];
       for (var i = 0; i < 4; i++)
@@ -46,8 +47,8 @@ namespace Game.Engine
           clients[i] = new Client(i, DiscardActions.Pass);
           continue;
         }
-
-        var actions = GetPossibleActions(board, i);
+        
+        var actions = GetPossibleActions(board, i, fourKanAbortIfNoRon);
         if (actions != DiscardActions.Pass)
         {
           reactionTasks[i] = decider.OnDiscard(actions, i);
@@ -80,6 +81,12 @@ namespace Game.Engine
       if (ronCount > 0)
       {
         _nextState = new Ron(clients.Where(r => r.Ron).Select(r => r.SeatIndex));
+        return;
+      }
+      
+      if (fourKanAbortIfNoRon)
+      {
+        _nextState = new Abort();
         return;
       }
 
@@ -129,13 +136,16 @@ namespace Game.Engine
     private readonly Tile _tile;
     private State? _nextState;
 
-    private DiscardActions GetPossibleActions(Board board, int seatIndex)
+    private DiscardActions GetPossibleActions(Board board, int seatIndex, bool fourKanAbortIfNoRon)
     {
       var suggestedActions = DiscardActions.Pass;
       suggestedActions |= CanRon(board, seatIndex) ? DiscardActions.Ron : DiscardActions.Pass;
-      suggestedActions |= CanChii(board, seatIndex) ? DiscardActions.Chii : DiscardActions.Pass;
-      suggestedActions |= CanPon(board, seatIndex) ? DiscardActions.Pon : DiscardActions.Pass;
-      suggestedActions |= CanKan(board, seatIndex) ? DiscardActions.Kan : DiscardActions.Pass;
+      if (!fourKanAbortIfNoRon)
+      {
+        suggestedActions |= CanChii(board, seatIndex) ? DiscardActions.Chii : DiscardActions.Pass;
+        suggestedActions |= CanPon(board, seatIndex) ? DiscardActions.Pon : DiscardActions.Pass;
+        suggestedActions |= CanKan(board, seatIndex) ? DiscardActions.Kan : DiscardActions.Pass;
+      }
       return suggestedActions;
     }
 
