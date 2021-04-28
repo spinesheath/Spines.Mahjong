@@ -110,6 +110,26 @@ namespace Spines.Mahjong.Analysis.Tests
     }
 
     [Theory]
+    [InlineData(1, 0, 0, 1, 0)]
+    [InlineData(1, 0, 1, 1, 0)]
+    [InlineData(1, 1, 0, 1, 1)]
+    [InlineData(1, 1, 1, 0, 1)]
+    [InlineData(1, 2, 0, 0, 0)]
+    [InlineData(1, 3, 0, 0, 0)]
+    [InlineData(0, 0, 0, 0, 0)]
+    [InlineData(0, 1, 0, 0, 0)]
+    [InlineData(0, 1, 1, 0, 0)]
+    [InlineData(0, 0, 1, 0, 0)]
+    public void KokushiDraw2(int kyuuhaiValue, int previousTileCount, int pairs, int expectedShantenChange, int expectedPairChange)
+    {
+      var p = (2 >> previousTileCount) & kyuuhaiValue;
+      var s = kyuuhaiValue >> (pairs * previousTileCount);
+
+      Assert.Equal(expectedShantenChange, s);
+      Assert.Equal(expectedPairChange, p);
+    }
+
+    [Theory]
     [InlineData(0, 0, 0b1, 1, 0)]
     [InlineData(0, 0, 0b10, 1, 0)]
     [InlineData(0, 1, 0b10, 1, 1)]
@@ -138,6 +158,28 @@ namespace Spines.Mahjong.Analysis.Tests
 
       Assert.Equal(expectedShantenChange, t);
       Assert.Equal(expectedPairShift, p);
+    }
+
+    [Theory]
+    [InlineData(1, 0, 0, 1, 0)]
+    [InlineData(1, 0, 1, 1, 0)]
+    [InlineData(1, 1, 1, 1, 1)]
+    [InlineData(1, 1, 2, 0, 1)]
+    [InlineData(1, 2, 1, 0, 0)]
+    [InlineData(1, 3, 1, 0, 0)]
+    [InlineData(0, 0, 0, 0, 0)]
+    [InlineData(0, 1, 1, 0, 0)]
+    [InlineData(0, 1, 2, 0, 0)]
+    [InlineData(0, 0, 1, 0, 0)]
+    [InlineData(0, 2, 1, 0, 0)]
+    [InlineData(0, 3, 1, 0, 0)]
+    public void KokushiDiscard2(int kyuuhaiValue, int tileCountAfterDiscard, int pairs, int expectedShantenChange, int expectedPairChange)
+    {
+      var p = (2 >> tileCountAfterDiscard) & kyuuhaiValue;
+      var s = (3 >> (pairs * tileCountAfterDiscard)) & kyuuhaiValue;
+
+      Assert.Equal(expectedShantenChange, s);
+      Assert.Equal(expectedPairChange, p);
     }
   }
 }

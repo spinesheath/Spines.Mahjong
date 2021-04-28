@@ -1,4 +1,6 @@
-﻿namespace Spines.Mahjong.Analysis.Shanten
+﻿using System.Runtime.CompilerServices;
+
+namespace Spines.Mahjong.Analysis.Shanten
 {
   /// <summary>
   /// Progressively calculates the Shanten for Kokushi.
@@ -10,7 +12,7 @@
   {
     public static KokushiClassifier Create()
     {
-      return new KokushiClassifier(14, 1);
+      return new KokushiClassifier(14, 0);
     }
 
     public KokushiClassifier Clone()
@@ -25,30 +27,18 @@
     
     public void Draw(int kyuuhaiValue, int previousTileCount)
     {
-      // TODO I suspect this can be simplified
-
-      // 1 if previousTileCount < 2, else 0
-      var s = (previousTileCount ^ 2) >> 1 & kyuuhaiValue;
-      // 1 if previousTileCount == 1, else 0
-      var p = previousTileCount & s;
-      // 1 if no pair was added or there were no pairs before, else 0
-      var t = (_pairs | ~p) & s;
-      _pairs <<= p;
-      Shanten -= t;
+      var s = kyuuhaiValue >> (_pairs * previousTileCount);
+      Shanten -= s;
+      var p = (2 >> previousTileCount) & kyuuhaiValue;
+      _pairs += p;
     }
-
+    
     public void Discard(int kyuuhaiValue, int tileCountAfterDiscard)
     {
-      // TODO I suspect this can be simplified
-
-      // 1 if tileCountAfterDiscard < 2, else 0
-      var s = (tileCountAfterDiscard ^ 2) >> 1 & kyuuhaiValue;
-      // 1 if tileCountAfterDiscard == 1, else 0
-      var p = tileCountAfterDiscard & s;
-      _pairs >>= p;
-      // 1 if no pair was removed or there were at least two pairs before, else 0
-      var t = (_pairs | ~p) & s;
-      Shanten += t;
+      var s = (3 >> (_pairs * tileCountAfterDiscard)) & kyuuhaiValue;
+      Shanten += s;
+      var p = (2 >> tileCountAfterDiscard) & kyuuhaiValue;
+      _pairs -= p;
     }
 
     private int _pairs;
