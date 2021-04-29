@@ -10,6 +10,198 @@ namespace Spines.Mahjong.Analysis.Replay
 {
   public static class ReplayParser
   {
+    public static void Parse(FileStream file, IReplayVisitor visitor)
+    {
+      var meldBuffer = new byte[6];
+      var haipaiBuffer = new byte[13];
+      var playerCount = 4;
+      
+      while (true)
+      {
+        var action = file.ReadByte();
+        if (action == -1)
+        {
+          visitor.End();
+          return;
+        }
+        if (action == 127)
+        {
+          visitor.EndMatch();
+          continue;
+        }
+
+        switch (action)
+        {
+          case 0: // GO flags: 1 byte
+            var flags = (GameTypeFlag)file.ReadByte();
+            if (flags.HasFlag(GameTypeFlag.Sanma))
+            {
+              playerCount = 3;
+            }
+
+            visitor.GameType(flags);
+            break;
+          case 1: // INIT seed: 6 bytes, ten: playerCount*4 bytes, oya: 1 byte
+          {
+            var buffer = new byte[6 + 4 * playerCount + 1];
+            file.Read(buffer);
+            
+            var scores = new int[playerCount];
+            for (var i = 0; i < playerCount; i++)
+            {
+              scores[i] = BitConverter.ToInt32(buffer, i * 4 + 6);
+            }
+            
+            visitor.Seed(TileType.FromTileTypeId(27 + buffer[0] / 4), buffer[1], buffer[2], buffer[3], buffer[4], Tile.FromTileId(buffer[5]));
+            visitor.Scores(scores);
+            visitor.Oya(buffer[^1]);
+            break;
+          }
+          case 2: // INIT haipai 1 byte playerId, 13 bytes tileIds
+          {
+            var playerId = file.ReadByte();
+            file.Read(haipaiBuffer);
+            var tiles = haipaiBuffer.Select(b => Tile.FromTileId(b));
+            visitor.Haipai(playerId, tiles);
+            break;
+          }
+          case 3: // Draw: 1 byte playerId, 1 byte tileId
+          {
+            var seatIndex = file.ReadByte();
+            var tileId = file.ReadByte();
+            var tile = Tile.FromTileId(tileId);
+            visitor.Draw(seatIndex, tile);
+            break;
+          }
+          case 4: // Discard: 1 byte playerId, 1 byte tileId
+          {
+            var seatIndex = file.ReadByte();
+            var tileId = file.ReadByte();
+            var tile = Tile.FromTileId(tileId);
+            visitor.Discard(seatIndex, tile);
+            break;
+          }
+          case 5: // Tsumogiri: 1 byte playerId, 1 byte tileId
+          {
+            var seatIndex = file.ReadByte();
+            var tileId = file.ReadByte();
+            var tile = Tile.FromTileId(tileId);
+            visitor.Draw(seatIndex, tile);
+            visitor.Discard(seatIndex, tile);
+            break;
+          }
+          case 6: //Chii: 1 byte who, 1 byte fromWho, 1 byte called tileId, 2 bytes tileIds from hand, 1 byte 0 (padding)
+          {
+            file.Read(meldBuffer);
+            var who = meldBuffer[0];
+            var fromWho = meldBuffer[1];
+            var calledTile = Tile.FromTileId(meldBuffer[2]);
+            var handTile0 = Tile.FromTileId(meldBuffer[3]);
+            var handTile1 = Tile.FromTileId(meldBuffer[4]);
+            visitor.Chii(who, fromWho, calledTile, handTile0, handTile1);
+            break;
+          }
+          case 7: //Pon: 1 byte who, 1 byte fromWho, 1 byte called tileId, 2 bytes tileIds from hand, 1 byte 0 (padding)
+          {
+            file.Read(meldBuffer);
+            var who = meldBuffer[0];
+            var fromWho = meldBuffer[1];
+            var calledTile = Tile.FromTileId(meldBuffer[2]);
+            var handTile0 = Tile.FromTileId(meldBuffer[3]);
+            var handTile1 = Tile.FromTileId(meldBuffer[4]);
+            visitor.Pon(who, fromWho, calledTile, handTile0, handTile1);
+            break;
+          }
+          case 8: //Daiminkan: 1 byte who, 1 byte fromWho, 1 byte called tileId, 3 bytes tileIds from hand
+          {
+            file.Read(meldBuffer);
+            var who = meldBuffer[0];
+            var fromWho = meldBuffer[1];
+            var calledTile = Tile.FromTileId(meldBuffer[2]);
+            var handTile0 = Tile.FromTileId(meldBuffer[3]);
+            var handTile1 = Tile.FromTileId(meldBuffer[4]);
+            var handTile2 = Tile.FromTileId(meldBuffer[5]);
+            visitor.Daiminkan(who, fromWho, calledTile, handTile0, handTile1, handTile2);
+            break;
+          }
+          case 9: //Shouminkan: 1 byte who, 1 byte fromWho, 1 byte called tileId, 1 byte added tileId, 2 bytes tileIds from hand
+          {
+            file.Read(meldBuffer);
+            var who = meldBuffer[0];
+            var fromWho = meldBuffer[1];
+            var calledTile = Tile.FromTileId(meldBuffer[2]);
+            var addedTile = Tile.FromTileId(meldBuffer[3]);
+            var handTile0 = Tile.FromTileId(meldBuffer[4]);
+            var handTile1 = Tile.FromTileId(meldBuffer[5]);
+            visitor.Shouminkan(who, fromWho, calledTile, addedTile, handTile0, handTile1);
+            break;
+          }
+          case 10: //Ankan: 1 byte who, 1 byte who (padding), 4 bytes tileIds from hand
+          {
+            file.Read(meldBuffer);
+            var who = meldBuffer[0];
+            var tileType = TileType.FromTileId(meldBuffer[2]);
+            visitor.Ankan(who, tileType);
+            break;
+          }
+          case 11: //Nuki: 1 byte who, 1 byte who (padding), 1 byte tileId, 3 bytes 0 (padding)
+          {
+            file.Read(meldBuffer);
+            break;
+          }
+          case 12: //Ron
+          case 13: //Tsumo
+          {
+            file.Read(new byte[2]); // ba
+            var haiLength = file.ReadByte();
+            file.Read(new byte[haiLength]);
+            var meldCount = file.ReadByte();
+            file.Read(new byte[meldCount * 7]);
+            file.ReadByte(); // machi
+            file.Read(new byte[3 * 4]); // ten
+            var yakuLength = file.ReadByte();
+            file.Read(new byte[yakuLength]);
+            var yakumanLength = file.ReadByte();
+            file.Read(new byte[yakumanLength]);
+            var doraHaiLength = file.ReadByte();
+            file.Read(new byte[doraHaiLength]);
+            var doraHaiUraLength = file.ReadByte();
+            file.Read(new byte[doraHaiUraLength]);
+            file.ReadByte(); // who
+            file.ReadByte(); // fromWho
+            file.ReadByte(); // paoWho
+            file.Read(new byte[2 * 4 * playerCount]); // sc
+
+            break;
+          }
+          case 14: //Ryuukyoku: 2 byte ba, 2*4*playerCount byte score, 1 byte ryuukyokuType, 4 byte tenpaiState
+          {
+            file.Read(new byte[2 + 2 * 4 * playerCount + 1 + 4]);
+            break;
+          }
+          case 15: //Dora: 1 byte tileId
+          {
+            file.ReadByte();
+            break;
+          }
+          case 16: //CallRiichi: 1 byte who
+          {
+            file.ReadByte();
+            break;
+          }
+          case 17: //PayRiichi: 1 byte who
+          {
+            file.ReadByte();
+            break;
+          }
+          default:
+          {
+            throw new NotImplementedException("Have to handle each value to read away the data");
+          }
+        }
+      }
+    }
+
     public static int Parse(FileStream file, bool ukeIre)
     {
       Func<HandCalculator, bool, int> evaluation = (c, b) => c.Shanten < 100 ? 1 : 0;

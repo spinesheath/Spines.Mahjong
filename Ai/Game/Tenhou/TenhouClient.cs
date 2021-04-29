@@ -305,7 +305,7 @@ namespace Game.Tenhou
 
       var seed = GetInts(message, "seed");
 
-      _board.RoundWind = TileType.FromTileTypeId(27 + seed[0]);
+      _board.RoundWind = TileType.FromTileTypeId(27 + seed[0] / 4);
       _board.Honba = seed[1];
       _board.RiichiSticks = seed[2];
       //_board.Dice0 = seed[3];

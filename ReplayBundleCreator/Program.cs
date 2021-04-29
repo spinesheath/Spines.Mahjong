@@ -5,8 +5,8 @@ namespace ReplayBundleCreator
 {
   class Program
   {
-    private static string _sourceDirectory;
-    private static string _targetDirectory;
+    private static string _sourceDirectory = "";
+    private static string _targetDirectory = "";
 
     static void Main(string[] args)
     {
@@ -34,7 +34,7 @@ namespace ReplayBundleCreator
 
       var i = 0;
       var j = 0;
-      FileStream targetFile = null;
+      FileStream? targetFile = null;
 
       try
       {
@@ -50,16 +50,16 @@ namespace ReplayBundleCreator
           }
 
           var source = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
-          source.CopyTo(targetFile);
-          targetFile.WriteByte(127);
+          source.CopyTo(targetFile!);
+          targetFile!.WriteByte(127);
 
           i += 1;
         }
       }
       finally
       {
-        targetFile.Flush();
-        targetFile.Dispose();
+        targetFile?.Flush();
+        targetFile?.Dispose();
       }
     }
   }

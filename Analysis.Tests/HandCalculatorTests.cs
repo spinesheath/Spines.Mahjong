@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -9,6 +10,13 @@ namespace Spines.Mahjong.Analysis.Tests
 {
   public class HandCalculatorTests
   {
+    static HandCalculatorTests()
+    {
+      var loadStatics = new HandCalculator();
+      loadStatics.Init(Enumerable.Range(0, 13).Select(TileType.FromTileTypeId));
+      Console.WriteLine(loadStatics.Shanten);
+    }
+
     [Fact]
     public void BundleUkeIre()
     {
@@ -33,11 +41,6 @@ namespace Spines.Mahjong.Analysis.Tests
     public void ParseBundles()
     {
       var sum = 0;
-
-      var loadStatics = new HandCalculator();
-      loadStatics.Init(Enumerable.Range(0, 13).Select(TileType.FromTileTypeId));
-      sum += loadStatics.Shanten < 100 ? 0 : 1;
-
       var files = BundlesFolders.SelectMany(Directory.EnumerateFiles);
       foreach (var file in files)
       {
@@ -50,14 +53,23 @@ namespace Spines.Mahjong.Analysis.Tests
     }
 
     [Fact]
+    public void ParseBundles2()
+    {
+      var files = BundlesFolders.SelectMany(Directory.EnumerateFiles);
+      var visitor = new ShantenEvaluatingVisitor();
+      foreach (var file in files)
+      {
+        using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
+        ReplayParser.Parse(fileStream, visitor);
+      }
+
+      Assert.Equal(1, visitor.EvaluationCount);
+    }
+
+    [Fact]
     public void ParseCompressed()
     {
       var sum = 0;
-
-      var loadStatics = new HandCalculator();
-      loadStatics.Init(Enumerable.Range(0, 13).Select(TileType.FromTileTypeId));
-      sum += loadStatics.Shanten < 100 ? 0 : 1;
-
       var files = Directory.EnumerateFiles(CompressedReplaysFolder);
       foreach (var file in files)
       {
@@ -73,13 +85,7 @@ namespace Spines.Mahjong.Analysis.Tests
     public void ParseWithXmlReader()
     {
       var sum = 0;
-
-      var loadStatics = new HandCalculator();
-      loadStatics.Init(Enumerable.Range(0, 13).Select(TileType.FromTileTypeId));
-      sum += loadStatics.Shanten < 100 ? 0 : 1;
-      
       var xmlReaderSettings = new XmlReaderSettings { NameTable = null };
-
       var files = Directory.EnumerateFiles(ReplaysFolder).Take(60000);
       foreach (var file in files)
       {
