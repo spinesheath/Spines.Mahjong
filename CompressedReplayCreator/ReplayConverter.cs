@@ -15,7 +15,7 @@ namespace CompressedReplayCreator
     /// </summary>
     public static int Compress(XmlReader xml, FileStream actions, StreamWriter metadata)
     {
-      string queuedDraw = null;
+      string? queuedDraw = null;
       var playerCount = 4;
 
       while (!xml.EOF)
@@ -50,8 +50,8 @@ namespace CompressedReplayCreator
           }
           case "GO":
           {
-            string type = null;
-            string lobby = null;
+            string? type = null;
+            string? lobby = null;
 
             while (xml.MoveToNextAttribute())
             {
@@ -153,7 +153,7 @@ namespace CompressedReplayCreator
 
     private static void WriteDora(XmlReader xml, FileStream actions)
     {
-      string hai = null;
+      string? hai = null;
 
       while (xml.MoveToNextAttribute())
       {
@@ -178,8 +178,8 @@ namespace CompressedReplayCreator
 
     private static void WriteReach(XmlReader xml, FileStream actions)
     {
-      string who = null;
-      string step = null;
+      string? who = null;
+      string? step = null;
 
       while (xml.MoveToNextAttribute())
       {
@@ -224,8 +224,8 @@ namespace CompressedReplayCreator
 
     private static void WriteNaki(XmlReader xml, FileStream actions)
     {
-      string who = null;
-      string m = null;
+      string? who = null;
+      string? m = null;
 
       while (xml.MoveToNextAttribute())
       {
@@ -253,9 +253,9 @@ namespace CompressedReplayCreator
 
     private static void WriteInit(XmlReader xml, FileStream actions, int playerCount)
     {
-      string seed = null;
-      string ten = null;
-      string oya = null;
+      string? seed = null;
+      string? ten = null;
+      string? oya = null;
       var hai = new string[4];
 
       while (xml.MoveToNextAttribute())
@@ -303,19 +303,19 @@ namespace CompressedReplayCreator
 
     private static void WriteAgari(XmlReader xml, FileStream actions, StreamWriter metadata)
     {
-      string ba = null;
-      string hai = null;
-      string m = null;
-      string machi = null;
-      string ten = null;
-      string yaku = null;
-      string yakuman = null;
-      string doraHai = null;
-      string doraHaiUra = null;
-      string who = null;
-      string fromWho = null;
-      string paoWho = null;
-      string sc = null;
+      string? ba = null;
+      string? hai = null;
+      string? m = null;
+      string? machi = null;
+      string? ten = null;
+      string? yaku = null;
+      string? yakuman = null;
+      string? doraHai = null;
+      string? doraHaiUra = null;
+      string? who = null;
+      string? fromWho = null;
+      string? paoWho = null;
+      string? sc = null;
 
       while (xml.MoveToNextAttribute())
       {
@@ -435,9 +435,9 @@ namespace CompressedReplayCreator
 
     private static void WriteRyuukyoku(XmlReader xml, FileStream actions, StreamWriter metadata)
     {
-      string ba = null;
-      string sc = null;
-      string type = null;
+      string? ba = null;
+      string? sc = null;
+      string? type = null;
       var hai = new string[4];
 
       while (xml.MoveToNextAttribute())

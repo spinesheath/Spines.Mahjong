@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Threading;
 using Game.Shared;
+using Spines.Mahjong.Analysis.State;
 
 namespace GraphicalFrontend.ViewModels
 {

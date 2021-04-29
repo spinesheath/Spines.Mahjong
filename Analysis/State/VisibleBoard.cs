@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
-using Spines.Mahjong.Analysis;
 
-namespace Game.Shared
+namespace Spines.Mahjong.Analysis.State
 {
   public class VisibleBoard
   {
@@ -11,7 +10,7 @@ namespace Game.Shared
     /// <summary>
     /// Shows the entire board including all private information.
     /// </summary>
-    internal VisibleBoard(Board board)
+    public VisibleBoard(Board board)
     {
       _board = board;
       _playerIndex = 0;
@@ -27,7 +26,7 @@ namespace Game.Shared
     /// <summary>
     /// A single player's view on the board. All data is transformed such that this player is at index 0.
     /// </summary>
-    internal VisibleBoard(Board board, int playerIndex)
+    public VisibleBoard(Board board, int playerIndex)
     {
       _board = board;
       _playerIndex = playerIndex;

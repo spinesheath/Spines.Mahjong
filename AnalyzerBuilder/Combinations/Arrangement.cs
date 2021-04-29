@@ -63,7 +63,7 @@ namespace AnalyzerBuilder.Combinations
     /// true if the current object is equal to the <paramref name="other" /> parameter; otherwise, false.
     /// </returns>
     /// <param name="other">An object to compare with this object.</param>
-    public bool Equals(Arrangement other)
+    public bool Equals(Arrangement? other)
     {
       if (ReferenceEquals(null, other))
       {
@@ -101,7 +101,7 @@ namespace AnalyzerBuilder.Combinations
     /// true if the specified object is equal to the current object; otherwise, false.
     /// </returns>
     /// <param name="obj">The object to compare with the current object. </param>
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
       if (ReferenceEquals(null, obj))
       {

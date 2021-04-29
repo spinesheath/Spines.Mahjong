@@ -4,7 +4,8 @@ using System.Threading.Tasks;
 using Game.Shared;
 using Spines.Mahjong.Analysis;
 using Spines.Mahjong.Analysis.Replay;
-using Meld = Game.Shared.Meld;
+using Spines.Mahjong.Analysis.State;
+using Meld = Spines.Mahjong.Analysis.State.Meld;
 
 namespace Game.Engine
 {

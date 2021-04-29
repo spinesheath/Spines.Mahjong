@@ -52,8 +52,8 @@ namespace AnalyzerBuilder.Creators
     private readonly Dictionary<int, int> _idToStateColumn = new Dictionary<int, int>();
     private readonly List<int> _stateColumnToId = new List<int>();
 
-    private ISet<int> _nullTransitionIds;
-    private int[] _transitions;
+    private ISet<int> _nullTransitionIds = null!;
+    private int[] _transitions = null!;
 
     private void CreateTransitions()
     {

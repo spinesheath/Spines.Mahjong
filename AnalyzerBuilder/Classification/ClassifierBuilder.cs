@@ -78,7 +78,7 @@ namespace AnalyzerBuilder.Classification
       SetLanguage(words, alphabetSize, wordLength);
     }
 
-    private StateManager _stateManager;
+    private StateManager _stateManager = null!;
 
     /// <summary>
     /// The length of the words.
@@ -95,7 +95,7 @@ namespace AnalyzerBuilder.Classification
       {
         if (curState.HasTransition(c))
         {
-          curState = curState.Advance(c);
+          curState = curState.Advance(c)!;
         }
         else
         {
@@ -120,11 +120,9 @@ namespace AnalyzerBuilder.Classification
       // We need the previous state for each state.
       monofluentStates.Push(curUnique);
       // Traverse common prefix before the first confluence state.
-      while (i < WordLength - 1 &&
-             curUnique.HasTransition(word.Word[i]) &&
-             !curUnique.Advance(word.Word[i]).IsConfluenceState)
+      while (i < WordLength - 1 && curUnique.HasTransition(word.Word[i]) && !curUnique.Advance(word.Word[i])!.IsConfluenceState)
       {
-        curUnique = curUnique.Advance(word.Word[i]);
+        curUnique = curUnique.Advance(word.Word[i])!;
         monofluentStates.Push(curUnique);
         i += 1;
       }
@@ -145,10 +143,9 @@ namespace AnalyzerBuilder.Classification
       var clones = new Stack<State>();
       // We need the previous state for each clone.
       clones.Push(lastAdded);
-      while (i < WordLength - 1 &&
-             curUnique.HasTransition(word.Word[i]))
+      while (i < WordLength - 1 && curUnique.HasTransition(word.Word[i]))
       {
-        curUnique = curUnique.Advance(word.Word[i]);
+        curUnique = curUnique.Advance(word.Word[i])!;
         var clone = curUnique.Clone(AlphabetSize);
         lastAdded.RedirectOutTransition(clone, word.Word[i]);
         lastAdded = clone;

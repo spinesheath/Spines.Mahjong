@@ -6,7 +6,7 @@ namespace AnalyzerBuilder.Classification
 {
   internal class StateComparer : IEqualityComparer<State>
   {
-    public bool Equals(State first, State second)
+    public bool Equals(State? first, State? second)
     {
       if (first == second)
       {

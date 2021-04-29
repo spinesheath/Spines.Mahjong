@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
-using Game.Engine;
-using Spines.Mahjong.Analysis;
 using Spines.Mahjong.Analysis.Shanten;
 
-namespace Game.Shared
+namespace Spines.Mahjong.Analysis.State
 {
   public class VisiblePlayer
   {

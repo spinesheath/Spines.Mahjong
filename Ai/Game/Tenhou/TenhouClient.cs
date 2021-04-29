@@ -13,6 +13,8 @@ using Game.Shared;
 using Spines.Mahjong.Analysis;
 using Spines.Mahjong.Analysis.Replay;
 using Spines.Mahjong.Analysis.Shanten;
+using Spines.Mahjong.Analysis.State;
+using Meld = Spines.Mahjong.Analysis.State.Meld;
 
 namespace Game.Tenhou
 {
@@ -421,20 +423,20 @@ namespace Game.Tenhou
       _spectator.Updated(_visibleBoard);
     }
 
-    private Shared.Meld ConvertMeld(MeldDecoder decoder)
+    private Meld ConvertMeld(MeldDecoder decoder)
     {
       switch (decoder.MeldType)
       {
         case MeldType.ClosedKan:
-          return Shared.Meld.Ankan(TileType.FromTileId(decoder.LowestTile));
+          return Meld.Ankan(TileType.FromTileId(decoder.LowestTile));
         case MeldType.CalledKan:
-          return Shared.Meld.Daiminkan(Tile.FromTileId(decoder.CalledTile));
+          return Meld.Daiminkan(Tile.FromTileId(decoder.CalledTile));
         case MeldType.AddedKan:
-          return Shared.Meld.Shouminkan(Tile.FromTileId(decoder.CalledTile), Tile.FromTileId(decoder.AddedTile));
+          return Meld.Shouminkan(Tile.FromTileId(decoder.CalledTile), Tile.FromTileId(decoder.AddedTile));
         case MeldType.Koutsu:
-          return Shared.Meld.Pon(decoder.Tiles.Select(Tile.FromTileId), Tile.FromTileId(decoder.CalledTile));
+          return Meld.Pon(decoder.Tiles.Select(Tile.FromTileId), Tile.FromTileId(decoder.CalledTile));
         case MeldType.Shuntsu:
-          return Shared.Meld.Chii(decoder.Tiles.Select(Tile.FromTileId), Tile.FromTileId(decoder.CalledTile));
+          return Meld.Chii(decoder.Tiles.Select(Tile.FromTileId), Tile.FromTileId(decoder.CalledTile));
         default:
           throw new NotImplementedException();
       }

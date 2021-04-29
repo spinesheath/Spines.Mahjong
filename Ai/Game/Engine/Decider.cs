@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Game.Shared;
 using Spines.Mahjong.Analysis;
+using Spines.Mahjong.Analysis.State;
 
 namespace Game.Engine
 {

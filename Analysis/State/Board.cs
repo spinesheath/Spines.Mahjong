@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Game.Engine;
-using Spines.Mahjong.Analysis;
 
-namespace Game.Shared
+namespace Spines.Mahjong.Analysis.State
 {
-  internal class Board
+  public class Board
   {
     public Board(IWall wall)
     {

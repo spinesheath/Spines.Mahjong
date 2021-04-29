@@ -8,6 +8,8 @@
     <RootNamespace>Spines.Mahjong.Analysis.Tests</RootNamespace>
 
     <AssemblyName>Spines.Mahjong.Analysis.Tests</AssemblyName>
+
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

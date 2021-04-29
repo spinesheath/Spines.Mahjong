@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Game.Engine;
 using Spines.Mahjong.Analysis;
+using Spines.Mahjong.Analysis.State;
 
 namespace Game.Shared
 {

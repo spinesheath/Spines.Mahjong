@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Game.Shared;
+using Spines.Mahjong.Analysis.State;
 
 namespace Game.Engine
 {

@@ -26,7 +26,7 @@ namespace AnalyzerBuilder.Classification
       {
         if (HasTransition(i))
         {
-          state.CreateOutTransition(Advance(i), i);
+          state.CreateOutTransition(Advance(i)!, i);
         }
       }
       return state;
@@ -37,7 +37,7 @@ namespace AnalyzerBuilder.Classification
       return Advance(character) != null;
     }
 
-    public State Advance(int character)
+    public State? Advance(int character)
     {
       return TargetStates[character];
     }
@@ -46,7 +46,7 @@ namespace AnalyzerBuilder.Classification
     {
       if (HasTransition(character))
       {
-        var nextState = Advance(character);
+        var nextState = Advance(character)!;
         nextState._incomingTransitions -= 1;
         SetTransition(target, character);
       }

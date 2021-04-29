@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace AnalyzerBuilder.Combinations
+﻿namespace AnalyzerBuilder.Combinations
 {
   /// <summary>
   /// Determines whether an arrangement is worse than another.
@@ -12,9 +10,6 @@ namespace AnalyzerBuilder.Combinations
     /// </summary>
     public bool IsWorseThan(Arrangement lhs, Arrangement rhs)
     {
-      Debug.Assert(lhs != null);
-      Debug.Assert(rhs != null);
-
       if (lhs == rhs)
       {
         return false;

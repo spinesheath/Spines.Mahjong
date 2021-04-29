@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
-using Spines.Mahjong.Analysis;
 
-namespace Game.Shared
+namespace Spines.Mahjong.Analysis.State
 {
-  internal interface IWall
+  public interface IWall
   {
     int RemainingDraws { get; }
 

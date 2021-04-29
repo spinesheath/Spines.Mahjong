@@ -22,7 +22,7 @@ namespace AnalyzerBuilder.Creators
     /// <summary>
     /// The transitions for the specified language.
     /// </summary>
-    public IReadOnlyList<int> Transitions { get; private set; }
+    public IReadOnlyList<int> Transitions { get; private set; } = new List<int>();
 
     /// <summary>
     /// The states at which the transitions can be entered.

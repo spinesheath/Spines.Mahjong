@@ -1,6 +1,7 @@
 ﻿using Game.Shared;
 using Spines.Mahjong.Analysis;
-using Meld = Game.Shared.Meld;
+using Spines.Mahjong.Analysis.State;
+using Meld = Spines.Mahjong.Analysis.State.Meld;
 
 namespace Game.Engine
 {

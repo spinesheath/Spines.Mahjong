@@ -2,6 +2,7 @@
 using System.Threading;
 using Game.Shared;
 using Spines.Mahjong.Analysis;
+using Spines.Mahjong.Analysis.State;
 
 namespace SimpleAi
 {

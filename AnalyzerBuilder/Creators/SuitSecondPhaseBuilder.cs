@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using AnalyzerBuilder;
 using AnalyzerBuilder.Classification;
 
 namespace AnalyzerBuilder.Creators
@@ -17,13 +16,13 @@ namespace AnalyzerBuilder.Creators
     /// <summary>
     /// The transitions for the specified language.
     /// </summary>
-    public IReadOnlyList<int> Transitions { get; private set; }
+    public IReadOnlyList<int> Transitions { get; private set; } = new List<int>();
 
     /// <summary>
     /// The states at which the transitions can be entered.
     /// </summary>
     /// <returns>The ids of the states.</returns>
-    public IReadOnlyList<int> EntryStates { get; private set; }
+    public IReadOnlyList<int> EntryStates { get; private set; } = new List<int>();
 
     /// <summary>
     /// The size of the alphabet.
@@ -47,7 +46,7 @@ namespace AnalyzerBuilder.Creators
       {
         oldToNewTransitions.Add(state, oldToNewTransitions.Count);
       }
-      _statesWithFinalValues = new HashSet<int>();
+      _statesWithFinalValues.Clear();
 
       var concealedTransitions = CreateArray(concealedStates.Count * 5);
       foreach (var state in concealedStates)
@@ -105,7 +104,7 @@ namespace AnalyzerBuilder.Creators
 
     private readonly string _workingDirectory;
     private readonly int _meldCount;
-    private HashSet<int> _statesWithFinalValues;
+    private readonly HashSet<int> _statesWithFinalValues = new HashSet<int>();
 
     private HashSet<int> GetEntryStates(List<int> transitions)
     {

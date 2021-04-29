@@ -24,7 +24,7 @@ namespace AnalyzerBuilder.Classification
     /// <summary>
     /// Indices of the transitions that contain a final value in the transitions array.
     /// </summary>
-    public ISet<int> ResultIndexes { get; private set; }
+    public ISet<int> ResultIndexes { get; } = new HashSet<int>();
 
     /// <summary>
     /// If this method is called before all states are finalized, the result will not be correct.
@@ -55,7 +55,7 @@ namespace AnalyzerBuilder.Classification
       // Create the actual machine.
       _transitions = new int[id * _alphabetSize];
       Array.Fill(_transitions, -1);
-      ResultIndexes = new HashSet<int>();
+      ResultIndexes.Clear();
       for (var i = _heights - 1; i > 0; --i)
       {
         var row = _uniqueStates[i];
@@ -97,7 +97,7 @@ namespace AnalyzerBuilder.Classification
       _uniqueStates[height].Add(state, state);
     }
 
-    public State TryGetEquivalentUniqueState(State state, int height)
+    public State? TryGetEquivalentUniqueState(State state, int height)
     {
       var statesAtHeight = _uniqueStates[height];
       var isRedundant = statesAtHeight.TryGetValue(state, out var uniqueState);
@@ -119,7 +119,7 @@ namespace AnalyzerBuilder.Classification
     private readonly Dictionary<int, FinalState> _finalStates;
     private readonly int _heights;
     private readonly Dictionary<State, State>[] _uniqueStates;
-    private int[] _transitions;
+    private int[] _transitions = new int[0];
 
     /// <summary>
     /// The index of a transition in the transition table.

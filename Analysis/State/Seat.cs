@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
-using Spines.Mahjong.Analysis;
 using Spines.Mahjong.Analysis.Shanten;
-using Meld = Game.Shared.Meld;
 
-namespace Game.Engine
+namespace Spines.Mahjong.Analysis.State
 {
-  internal class Seat
+  public class Seat
   {
     public List<Tile> ConcealedTiles { get; } = new();
 

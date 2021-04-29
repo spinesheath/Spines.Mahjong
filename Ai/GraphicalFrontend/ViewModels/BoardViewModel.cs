@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using Game.Shared;
+using Spines.Mahjong.Analysis.State;
 
 namespace GraphicalFrontend.ViewModels
 {

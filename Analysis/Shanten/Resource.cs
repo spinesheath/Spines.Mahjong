@@ -18,7 +18,7 @@ namespace Spines.Mahjong.Analysis.Shanten
     {
       var fullResourceName = "Spines.Mahjong.Analysis.Resources." + resourceName;
       var assembly = Assembly.GetExecutingAssembly();
-      Stream stream = null;
+      Stream? stream = null;
       try
       {
         stream = assembly.GetManifestResourceStream(fullResourceName);

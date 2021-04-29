@@ -15,6 +15,8 @@ namespace AnalyzerBuilder.Combinations
     protected CombinationCreatorBase(int typesInSuit)
     {
       TypesInSuit = typesInSuit;
+      Accumulator = new int[TypesInSuit];
+      TilesInExternalMelds = new int[TypesInSuit];
     }
 
     /// <summary>

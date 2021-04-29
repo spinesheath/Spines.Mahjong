@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Xml;
-using Spines.Mahjong.Analysis.Replay;
 
 namespace CompressedReplayCreator
 {
@@ -13,12 +9,12 @@ namespace CompressedReplayCreator
   /// </summary>
   class Program
   {
-    private static string _sourceDirectory;
-    private static string _targetDirectory;
-    private static string _sanmaActionsDirectory;
-    private static string _yonmaActionsDirectory;
-    private static string _sanmaMetadataDirectory;
-    private static string _yonmaMetadataDirectory;
+    private static string _sourceDirectory = "";
+    private static string _targetDirectory = "";
+    private static string _sanmaActionsDirectory = "";
+    private static string _yonmaActionsDirectory = "";
+    private static string _sanmaMetadataDirectory = "";
+    private static string _yonmaMetadataDirectory = "";
 
     static void Main(string[] args)
     {

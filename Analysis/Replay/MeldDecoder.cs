@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Spines.Mahjong.Analysis.Replay
 {
@@ -25,7 +24,7 @@ namespace Spines.Mahjong.Analysis.Replay
 
     public MeldType MeldType { get; }
 
-    public IReadOnlyList<int> Tiles { get; private set; }
+    public IReadOnlyList<int> Tiles { get; private set; } = null!;
 
     public int CalledTile => Tiles[_calledTileIndex];
 
