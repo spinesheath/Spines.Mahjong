@@ -16,14 +16,9 @@ namespace Game.Engine
     public override void Update(Board board, Wall wall)
     {
       var calledTile = board.CurrentDiscard!;
-      
       ClearCurrentDiscard(board);
-      
       board.ActiveSeatIndex = _seatIndex;
-      var seat = board.ActiveSeat;
-      seat.Hand.Daiminkan(calledTile.TileType);
-      seat.ConcealedTiles.RemoveAll(t => t.TileType == calledTile.TileType);
-      seat.Melds.Add(Meld.Daiminkan(calledTile));
+      board.ActiveSeat.Daiminkan(calledTile);
     }
 
     public override Task Decide(Board board, Decider decider)

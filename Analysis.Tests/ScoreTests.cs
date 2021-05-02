@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
 using Spines.Mahjong.Analysis.Replay;
-using Spines.Mahjong.Analysis.Shanten;
 using Xunit;
 
 namespace Spines.Mahjong.Analysis.Tests
@@ -9,23 +8,17 @@ namespace Spines.Mahjong.Analysis.Tests
   public class ScoreTests
   {
     [Fact]
-    public void ParseBundles()
+    public void BundlesWithVisitor()
     {
-      var sum = 0;
-
-      var loadStatics = new HandCalculator();
-      loadStatics.Init(Enumerable.Range(0, 13).Select(TileType.FromTileTypeId));
-      sum += loadStatics.Shanten < 100 ? 0 : 1;
-
       var files = BundlesFolders.SelectMany(Directory.EnumerateFiles);
+      var visitor = new ScoreCalculatingVisitor();
       foreach (var file in files)
       {
         using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
-        var r = ReplayParser.Parse(fileStream, false);
-        sum += r;
+        ReplayParser.Parse(fileStream, visitor);
       }
 
-      Assert.Equal(1, sum);
+      Assert.Equal(1, visitor.CalculationCount);
     }
 
     private static readonly string[] BundlesFolders = 

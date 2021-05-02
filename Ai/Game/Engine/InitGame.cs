@@ -36,18 +36,8 @@ namespace Game.Engine
 
       for (var i = 0; i < 4; i++)
       {
-        var seat = board.Seats[i];
-        seat.DeclaredRiichi = false;
-        seat.CurrentDiscard = null;
-        seat.CurrentDraw = null;
-        seat.ConcealedTiles.Clear();
-        seat.Melds.Clear();
-        seat.Discards.Clear();
-        seat.Hand = new UkeIreCalculator();
-        
-        var hand = wall.DrawInitialHand().ToList();
-        seat.ConcealedTiles.AddRange(hand);
-        seat.Hand.Init(hand.Select(t => t.TileType));
+        var hand = wall.DrawInitialHand();
+        board.Seats[i].Init(hand);
       }
     }
 

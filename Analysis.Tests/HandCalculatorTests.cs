@@ -53,7 +53,7 @@ namespace Spines.Mahjong.Analysis.Tests
     }
 
     [Fact]
-    public void ParseBundles2()
+    public void BundlesWithVisitor()
     {
       var files = BundlesFolders.SelectMany(Directory.EnumerateFiles);
       var visitor = new ShantenEvaluatingVisitor();

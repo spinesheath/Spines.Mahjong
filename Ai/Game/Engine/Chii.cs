@@ -1,9 +1,7 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Game.Shared;
 using Spines.Mahjong.Analysis;
 using Spines.Mahjong.Analysis.State;
-using Meld = Spines.Mahjong.Analysis.State.Meld;
 
 namespace Game.Engine
 {
@@ -25,17 +23,9 @@ namespace Game.Engine
     public override void Update(Board board, Wall wall)
     {
       var calledTile = board.CurrentDiscard!;
-      var tiles = new[] {_tile0, _tile1, calledTile};
-      var lowestTileType = tiles.Select(t => t.TileType).OrderBy(t => t.TileTypeId).First();
-
       ClearCurrentDiscard(board);
-
       board.ActiveSeatIndex = _seatIndex;
-      var seat = board.ActiveSeat;
-      seat.Hand.Chii(lowestTileType, calledTile.TileType);
-      seat.ConcealedTiles.Remove(_tile0);
-      seat.ConcealedTiles.Remove(_tile1);
-      seat.Melds.Add(Meld.Chii(tiles, calledTile));
+      board.ActiveSeat.Chii(calledTile, _tile0, _tile1);
     }
 
     public override Task Decide(Board board, Decider decider)

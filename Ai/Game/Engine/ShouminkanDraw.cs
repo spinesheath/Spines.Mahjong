@@ -34,12 +34,8 @@ namespace Game.Engine
 
     public override void Update(Board board, Wall wall)
     {
-      var seat = board.ActiveSeat;
-
       var tile = wall.DrawFromDeadWall();
-      seat.Hand.Draw(tile.TileType);
-      seat.ConcealedTiles.Add(tile);
-      seat.CurrentDraw = tile;
+      board.ActiveSeat.Draw(tile);
     }
 
     protected override DrawActions GetPossibleActions(Board board)

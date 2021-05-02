@@ -1,7 +1,6 @@
 ﻿using Game.Shared;
 using Spines.Mahjong.Analysis;
 using Spines.Mahjong.Analysis.State;
-using Meld = Spines.Mahjong.Analysis.State.Meld;
 
 namespace Game.Engine
 {
@@ -21,12 +20,7 @@ namespace Game.Engine
 
     public override void Update(Board board, Wall wall)
     {
-      var seat = board.ActiveSeat;
-
-      seat.CurrentDraw = null;
-      seat.Hand.Ankan(_tileType);
-      seat.ConcealedTiles.RemoveAll(t => t.TileType == _tileType);
-      seat.Melds.Add(Meld.Ankan(_tileType));
+      board.ActiveSeat.Ankan(_tileType);
     }
   }
 }

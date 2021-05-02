@@ -28,15 +28,15 @@ namespace Game.Engine
       foreach (var seatIndex in _seatIndexes)
       {
         // TODO calculate ron score (include honba and riichi sticks)
-
-        var paymentInformation = new PaymentInformation();
+        
+        var scoreChanges = new int[4];
         var getsBoardPoints = seatIndex == boardPointsToIndex;
         var honbaPoints = getsBoardPoints ? board.Honba * 300 : 0;
         var riichiPoints = getsBoardPoints ? board.RiichiSticks * 1000 : 0;
-        paymentInformation.ScoreChanges[seatIndex] = 4000 + riichiPoints + honbaPoints;
-        paymentInformation.ScoreChanges[board.ActiveSeatIndex] = -4000 - honbaPoints;
+        scoreChanges[seatIndex] = 4000 + riichiPoints + honbaPoints;
+        scoreChanges[board.ActiveSeatIndex] = -4000 - honbaPoints;
 
-        _nextState = new Payment(_nextState, paymentInformation);
+        _nextState = new Payment(_nextState, new PaymentInformation(0, 0, scoreChanges));
       }
 
       return Task.CompletedTask;

@@ -124,13 +124,7 @@ namespace Game.Engine
 
     public override void Update(Board board, Wall wall)
     {
-      var seat = board.ActiveSeat;
-
-      seat.Hand.Discard(_tile.TileType);
-      seat.ConcealedTiles.Remove(_tile);
-      seat.CurrentDraw = null;
-      seat.CurrentDiscard = _tile;
-      seat.Discards.Add(_tile);
+      board.ActiveSeat.Discard(_tile);
     }
 
     private readonly List<int> _ignoredRonSeats = new();

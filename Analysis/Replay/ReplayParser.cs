@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using Spines.Mahjong.Analysis.Shanten;
+using Spines.Mahjong.Analysis.State;
 
 namespace Spines.Mahjong.Analysis.Replay
 {
@@ -49,10 +50,10 @@ namespace Spines.Mahjong.Analysis.Replay
             var scores = new int[playerCount];
             for (var i = 0; i < playerCount; i++)
             {
-              scores[i] = BitConverter.ToInt32(buffer, i * 4 + 6);
+              scores[i] = BitConverter.ToInt32(buffer, i * 4 + 6) * 100;
             }
             
-            visitor.Seed(TileType.FromTileTypeId(27 + buffer[0] / 4), buffer[1], buffer[2], buffer[3], buffer[4], Tile.FromTileId(buffer[5]));
+            visitor.Seed(TileType.FromTileId(27 + buffer[0] / 4), buffer[1], buffer[2], buffer[3], buffer[4], Tile.FromTileId(buffer[5]));
             visitor.Scores(scores);
             visitor.Oya(buffer[^1]);
             break;
@@ -147,51 +148,182 @@ namespace Spines.Mahjong.Analysis.Replay
           case 11: //Nuki: 1 byte who, 1 byte who (padding), 1 byte tileId, 3 bytes 0 (padding)
           {
             file.Read(meldBuffer);
+            var who = meldBuffer[0];
+            var tile = Tile.FromTileId(meldBuffer[2]);
+            visitor.Nuki(who, tile);
             break;
           }
           case 12: //Ron
+          {
+            file.Read(new byte[2]); // ba
+
+            var haiLength = file.ReadByte();
+            var haiBuffer = new byte[haiLength];
+            file.Read(haiBuffer);
+
+            var meldCount = file.ReadByte();
+            var ronMeldBuffer = new byte[meldCount * 7];
+            file.Read(ronMeldBuffer);
+
+            var machi = file.ReadByte(); // machi
+
+            var tenBuffer = new byte[3 * 4];
+            file.Read(tenBuffer); // ten
+            var fu = BitConverter.ToInt32(tenBuffer, 0);
+            var han = BitConverter.ToInt32(tenBuffer, 4);
+            var yakumanCount = BitConverter.ToInt32(tenBuffer, 8);
+
+            var yakuLength = file.ReadByte();
+            var yakuBuffer = new byte[yakuLength];
+            file.Read(yakuBuffer);
+
+            var yakumanLength = file.ReadByte();
+            var yakumanBuffer = new byte[yakumanLength];
+            file.Read(yakumanBuffer);
+
+            var doraHaiLength = file.ReadByte();
+            var doraBuffer = new byte[doraHaiLength];
+            file.Read(doraBuffer);
+            var dora = doraBuffer.Select(i => Tile.FromTileId(i));
+
+            var doraHaiUraLength = file.ReadByte();
+            var uraDoraBuffer = new byte[doraHaiUraLength];
+            file.Read(uraDoraBuffer);
+            var uraDora = uraDoraBuffer.Select(i => Tile.FromTileId(i));
+
+            var who = file.ReadByte(); // who
+            var fromWho = file.ReadByte(); // fromWho
+            var paoWho = file.ReadByte(); // paoWho
+
+            var scoreBuffer = new byte[2 * 4 * playerCount];
+            file.Read(scoreBuffer); // sc
+            var scores = new int[playerCount];
+            for (var i = 0; i < playerCount; i++)
+            {
+              scores[i] = BitConverter.ToInt32(scoreBuffer, i * 8);
+            }
+
+            var scoreChanges = new int[playerCount];
+            for (var i = 0; i < playerCount; i++)
+            {
+              scores[i] = BitConverter.ToInt32(scoreBuffer, i * 8 + 4);
+            }
+
+            var payment = new PaymentInformation(fu, han, scoreChanges);
+
+            visitor.Ron(who, fromWho, payment);
+
+            break;
+          }
           case 13: //Tsumo
           {
             file.Read(new byte[2]); // ba
+            
             var haiLength = file.ReadByte();
-            file.Read(new byte[haiLength]);
+            var haiBuffer = new byte[haiLength];
+            file.Read(haiBuffer);
+            
             var meldCount = file.ReadByte();
-            file.Read(new byte[meldCount * 7]);
-            file.ReadByte(); // machi
-            file.Read(new byte[3 * 4]); // ten
+            var tsumoMeldBuffer = new byte[meldCount * 7];
+            file.Read(tsumoMeldBuffer);
+
+            var machi = file.ReadByte(); // machi
+
+            var tenBuffer = new byte[3 * 4];
+            file.Read(tenBuffer); // ten
+            var fu = BitConverter.ToInt32(tenBuffer, 0);
+            var han = BitConverter.ToInt32(tenBuffer, 4);
+            var yakumanCount = BitConverter.ToInt32(tenBuffer, 8);
+
             var yakuLength = file.ReadByte();
-            file.Read(new byte[yakuLength]);
+            var yakuBuffer = new byte[yakuLength];
+            file.Read(yakuBuffer);
+
             var yakumanLength = file.ReadByte();
-            file.Read(new byte[yakumanLength]);
+            var yakumanBuffer = new byte[yakumanLength];
+            file.Read(yakumanBuffer);
+
             var doraHaiLength = file.ReadByte();
-            file.Read(new byte[doraHaiLength]);
+            var doraBuffer = new byte[doraHaiLength];
+            file.Read(doraBuffer);
+            var dora = doraBuffer.Select(i => Tile.FromTileId(i));
+
             var doraHaiUraLength = file.ReadByte();
-            file.Read(new byte[doraHaiUraLength]);
-            file.ReadByte(); // who
-            file.ReadByte(); // fromWho
-            file.ReadByte(); // paoWho
-            file.Read(new byte[2 * 4 * playerCount]); // sc
+            var uraDoraBuffer = new byte[doraHaiUraLength];
+            file.Read(uraDoraBuffer);
+            var uraDora = uraDoraBuffer.Select(i => Tile.FromTileId(i));
+
+            var who = file.ReadByte(); // who
+            var fromWho = file.ReadByte(); // fromWho
+            var paoWho = file.ReadByte(); // paoWho
+
+            var scoreBuffer = new byte[2 * 4 * playerCount];
+            file.Read(scoreBuffer); // sc
+            var scores = new int[playerCount];
+            for (var i = 0; i < playerCount; i++)
+            {
+              scores[i] = BitConverter.ToInt32(scoreBuffer, i * 8);
+            }
+
+            var scoreChanges = new int[playerCount];
+            for (var i = 0; i < playerCount; i++)
+            {
+              scores[i] = BitConverter.ToInt32(scoreBuffer, i * 8 + 4);
+            }
+
+            var payment = new PaymentInformation(fu, han, scoreChanges);
+
+            visitor.Tsumo(who, payment);
 
             break;
           }
           case 14: //Ryuukyoku: 2 byte ba, 2*4*playerCount byte score, 1 byte ryuukyokuType, 4 byte tenpaiState
           {
-            file.Read(new byte[2 + 2 * 4 * playerCount + 1 + 4]);
+            var buffer = new byte[2 + 2 * 4 * playerCount + 1 + 4];
+            file.Read(buffer);
+
+            var honba = buffer[0];
+            var riichiSticks = buffer[1];
+
+            var scores = new int[playerCount];
+            for (var i = 0; i < playerCount; i++)
+            {
+              scores[i] = BitConverter.ToInt32(buffer, i * 8 + 2);
+            }
+
+            var scoreChanges = new int[playerCount];
+            for (var i = 0; i < playerCount; i++)
+            {
+              scores[i] = BitConverter.ToInt32(buffer, i * 8 + 6);
+            }
+
+            var ryuukyokuType = (RyuukyokuType) buffer[2 + 2 * 4 * playerCount];
+
+            var isTenpai = new bool[playerCount];
+            for (var i = 0; i < playerCount; i++)
+            {
+              isTenpai[i] = buffer[2 + 2 * 4 * playerCount + 1 + i] != 0;
+            }
+
+            visitor.Ryuukyoku(ryuukyokuType, honba, riichiSticks, scores, scoreChanges);
             break;
           }
           case 15: //Dora: 1 byte tileId
           {
-            file.ReadByte();
+            var tileId = file.ReadByte();
+            visitor.Dora(Tile.FromTileId(tileId));
             break;
           }
           case 16: //CallRiichi: 1 byte who
           {
-            file.ReadByte();
+            var who = file.ReadByte();
+            visitor.DeclareRiichi(who);
             break;
           }
           case 17: //PayRiichi: 1 byte who
           {
-            file.ReadByte();
+            var who = file.ReadByte();
+            visitor.PayRiichi(who);
             break;
           }
           default:

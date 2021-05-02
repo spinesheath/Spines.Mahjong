@@ -16,17 +16,9 @@ namespace Spines.Mahjong.Analysis.Tests
 
     public int EvaluationCount { get; private set; }
 
-    public void End()
-    {
-    }
-
     public void EndMatch()
     {
       _shantenCalculators = new List<HandCalculator>();
-    }
-
-    public void GameType(GameTypeFlag flags)
-    {
     }
 
     public void Seed(TileType roundWind, int honba, int riichiSticks, int dice0, int dice1, Tile doraIndicator)
@@ -36,14 +28,6 @@ namespace Spines.Mahjong.Analysis.Tests
       {
         _shantenCalculators.Add(new HandCalculator());
       }
-    }
-
-    public void Oya(int seatIndex)
-    {
-    }
-
-    public void Scores(IEnumerable<int> scores)
-    {
     }
 
     public void Haipai(int seatIndex, IEnumerable<Tile> tiles)

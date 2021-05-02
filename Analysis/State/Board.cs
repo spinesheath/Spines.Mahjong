@@ -29,5 +29,13 @@ namespace Spines.Mahjong.Analysis.State
     public IWall Wall { get; }
 
     public Seat Oya => Seats.First(s => s.IsOya);
+
+    public void SetSeatWinds(int oya)
+    {
+      Seats[oya].SeatWind = TileType.Ton;
+      Seats[(oya + 1) % 4].SeatWind = TileType.Nan;
+      Seats[(oya + 2) % 4].SeatWind = TileType.Shaa;
+      Seats[(oya + 3) % 4].SeatWind = TileType.Pei;
+    }
   }
 }

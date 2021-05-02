@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
-using Spines.Mahjong.Analysis;
-using Spines.Mahjong.Analysis.State;
 
-namespace Game.Tenhou
+namespace Spines.Mahjong.Analysis.State
 {
-  internal class TenhouWall : IWall
+  public class FakeWall : IWall
   {
     private readonly List<Tile> _doraIndicators = new();
 
@@ -21,6 +19,11 @@ namespace Game.Tenhou
     public void RevealDoraIndicator(Tile tile)
     {
       _doraIndicators.Add(tile);
+    }
+
+    public void Draw()
+    {
+      RemainingDraws -= 1;
     }
   }
 }

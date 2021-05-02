@@ -19,10 +19,7 @@ namespace Game.Engine
       board.ActiveSeatIndex = _seatIndex;
       var seat = board.ActiveSeat;
 
-      var tile = wall.Draw();
-      seat.Hand.Draw(tile.TileType);
-      seat.ConcealedTiles.Add(tile);
-      seat.CurrentDraw = tile;
+      seat.Draw(wall.Draw());
       if (!seat.DeclaredRiichi)
       {
         seat.IgnoredRonFuriten = false;

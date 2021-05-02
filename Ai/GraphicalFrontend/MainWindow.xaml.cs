@@ -34,14 +34,14 @@ namespace GraphicalFrontend
 
     private static async void RunMatch(ISpectator spectator)
     {
-      //var ai0 = new Delayed(new SimpleAi.SimpleAi("A", "0"));
-      //var ai1 = new Delayed(new SimpleAi.SimpleAi("B", "0"));
-      //var ai2 = new Delayed(new SimpleAi.SimpleAi("C", "0"));
-      //var ai3 = new Delayed(new SimpleAi.SimpleAi("D", "0"));
-      var ai0 = new Delayed(new KanAi());
-      var ai1 = new Delayed(new KanAi());
-      var ai2 = new Delayed(new KanAi());
-      var ai3 = new Delayed(new KanAi());
+      var ai0 = new Delayed(new SimpleAi.SimpleAi("A", "0"));
+      var ai1 = new Delayed(new SimpleAi.SimpleAi("B", "0"));
+      var ai2 = new Delayed(new SimpleAi.SimpleAi("C", "0"));
+      var ai3 = new Delayed(new SimpleAi.SimpleAi("D", "0"));
+      //var ai0 = new Delayed(new KanAi());
+      //var ai1 = new Delayed(new KanAi());
+      //var ai2 = new Delayed(new KanAi());
+      //var ai3 = new Delayed(new KanAi());
       await Match.Start(ai0, ai1, ai2, ai3, spectator);
     }
 

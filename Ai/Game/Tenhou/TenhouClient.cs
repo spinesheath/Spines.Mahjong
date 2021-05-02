@@ -37,7 +37,7 @@ namespace Game.Tenhou
 
       _sessionLogFileName = Path.Combine(_directory, Path.GetRandomFileName() + ".txt");
 
-      _wall = new TenhouWall();
+      _wall = new FakeWall();
       _board = new Board(_wall);
       _visibleBoard = new VisibleBoard(_board);
     }
@@ -133,7 +133,7 @@ namespace Game.Tenhou
     private readonly ISpectator _spectator;
 
     // TODO update remaining draws on draw or reinit
-    private readonly TenhouWall _wall;
+    private readonly FakeWall _wall;
     private readonly Board _board;
     private readonly VisibleBoard _visibleBoard;
 
@@ -314,32 +314,24 @@ namespace Game.Tenhou
       _wall.RevealDoraIndicator(Tile.FromTileId(seed[5]));
 
       var oya = GetInt(message, "oya");
-      _board.Seats[oya].SeatWind = TileType.Ton;
-      _board.Seats[(oya + 1) % 4].SeatWind = TileType.Nan;
-      _board.Seats[(oya + 2) % 4].SeatWind = TileType.Shaa;
-      _board.Seats[(oya + 3) % 4].SeatWind = TileType.Pei;
-
+      _board.SetSeatWinds(oya);
+      
       var scores = GetInts(message, "ten");
       for (var i = 0; i < 4; i++)
       {
         _board.Seats[i].Score = scores[i];
       }
 
-      var watashi = _board.Seats[0];
-      watashi.Hand = new UkeIreCalculator();
       var hai = GetInts(message, "hai");
-      watashi.Hand.Init(hai.Select(TileType.FromTileId));
-      watashi.ConcealedTiles.Clear();
-      watashi.ConcealedTiles.AddRange(hai.Select(Tile.FromTileId));
-
-      watashi.CurrentDraw = null;
-      watashi.CurrentDiscard = null;
-      watashi.Melds.Clear();
+      var watashi = _board.Seats[0];
+      watashi.Init(hai.Select(Tile.FromTileId));
 
       if (message.Name.LocalName != "REINIT")
       {
         return;
       }
+
+      // TODO this will likely fail on reinit if melds have been called since the initial tile count in the hand won't be 13 or 14.
 
       var hand = watashi.Hand;
       var meldCodes = GetInts(message, "m0");
@@ -423,7 +415,7 @@ namespace Game.Tenhou
       _spectator.Updated(_visibleBoard);
     }
 
-    private Meld ConvertMeld(MeldDecoder decoder)
+    private static Meld ConvertMeld(MeldDecoder decoder)
     {
       switch (decoder.MeldType)
       {
@@ -621,15 +613,10 @@ namespace Game.Tenhou
       var playerIndex = nodeName[0] - (isTsumogiri ? 'd' : 'D');
       var tileId = Convert.ToInt32(nodeName.Substring(1), CultureInfo.InvariantCulture);
       var tile = Tile.FromTileId(tileId);
-      _board.Seats[0].CurrentDiscard = tile;
-      // TODO called tiles, riichi tile
-      _board.Seats[0].Discards.Add(tile);
-
+      
       if (playerIndex == 0)
       {
-        _board.Seats[0].Hand.Discard(TileType.FromTileId(tileId));
-        _board.Seats[0].ConcealedTiles.Remove(tile);
-        _board.Seats[0].CurrentDraw = null;
+        _board.Seats[0].Discard(tile);
       }
       else if (actions != DiscardActions.Pass)
       {
@@ -653,9 +640,7 @@ namespace Game.Tenhou
       var nodeName = xElement.Name.LocalName;
       var tileId = Convert.ToInt32(nodeName.Substring(1), CultureInfo.InvariantCulture);
       var tile = Tile.FromTileId(tileId);
-      _board.Seats[0].Hand.Draw(TileType.FromTileId(tileId));
-      _board.Seats[0].ConcealedTiles.Add(tile);
-      _board.Seats[0].CurrentDraw = tile;
+      _board.Seats[0].Draw(tile);;
 
       var callable = xElement.Attributes("t").Any();
       var actions = callable ? (DrawActions) GetInt(xElement, "t") : DrawActions.Discard;

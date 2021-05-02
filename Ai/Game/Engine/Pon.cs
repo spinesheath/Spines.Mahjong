@@ -2,7 +2,6 @@
 using Game.Shared;
 using Spines.Mahjong.Analysis;
 using Spines.Mahjong.Analysis.State;
-using Meld = Spines.Mahjong.Analysis.State.Meld;
 
 namespace Game.Engine
 {
@@ -29,16 +28,9 @@ namespace Game.Engine
     public override void Update(Board board, Wall wall)
     {
       var calledTile = board.CurrentDiscard!;
-      var tiles = new[] {_tile0, _tile1, calledTile};
-
       ClearCurrentDiscard(board);
-
       board.ActiveSeatIndex = _seatIndex;
-      var seat = board.ActiveSeat;
-      seat.Hand.Pon(calledTile.TileType);
-      seat.ConcealedTiles.Remove(_tile0);
-      seat.ConcealedTiles.Remove(_tile1);
-      seat.Melds.Add(Meld.Pon(tiles, calledTile));
+      board.ActiveSeat.Pon(calledTile, _tile0, _tile1);
     }
 
     private readonly Tile _discardAfterCall;

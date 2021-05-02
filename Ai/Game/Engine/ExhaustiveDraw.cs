@@ -22,8 +22,7 @@ namespace Game.Engine
       for (var i = 0; i < 4; i++)
       {
         var seat = board.Seats[i];
-        var discards = seat.Discards;
-        if (discards.All(t => t.TileType.IsKyuuhai) && !discards.Intersect(calledTiles).Any())
+        if (seat.Discards.All(t => t.TileType.IsKyuuhai) && !seat.Discards.Intersect(calledTiles).Any())
         {
           anyNagashi = true;
           var paymentInformation = CalculateNagashiPayment(board, i);
@@ -47,43 +46,44 @@ namespace Game.Engine
 
     private static PaymentInformation CalculateTenpaiPayment(Board board)
     {
-      var paymentInformation = new PaymentInformation();
-
+      var scoreChanges = new int[4];
+      
       var tenhouTenpai = board.Seats.Select(s => TenhouShanten.IsTenpai(s.Hand, s.ConcealedTiles, s.Melds.Count)).ToList();
       var tenpaiCount = tenhouTenpai.Count(s => s);
       if (tenpaiCount == 4)
       {
-        return paymentInformation;
+        return new PaymentInformation(0, 0, scoreChanges);
       }
 
       for (var i = 0; i < 4; i++)
       {
         if (tenhouTenpai[i])
         {
-          paymentInformation.ScoreChanges[i] = 3000 / tenpaiCount;
+          scoreChanges[i] = 3000 / tenpaiCount;
         }
         else
         {
-          paymentInformation.ScoreChanges[i] = -3000 / (4 - tenpaiCount);
+          scoreChanges[i] = -3000 / (4 - tenpaiCount);
         }
       }
 
-      return paymentInformation;
+      return new PaymentInformation(0, 0, scoreChanges);
     }
 
     private static PaymentInformation CalculateNagashiPayment(Board board, int seatIndex)
     {
-      var paymentInformation = new PaymentInformation();
+      var scoreChanges = new int[4];
+
       var isOya = board.Seats[seatIndex].IsOya;
-      paymentInformation.ScoreChanges[seatIndex] = isOya ? 12000 : 8000;
+      scoreChanges[seatIndex] = isOya ? 12000 : 8000;
       for (var i = 1; i < 4; i++)
       {
         var otherSeatIndex = (seatIndex + 1) % 4;
         var otherIsOya = board.Seats[otherSeatIndex].IsOya;
-        paymentInformation.ScoreChanges[otherSeatIndex] = isOya || otherIsOya ? -4000 : -2000;
+        scoreChanges[otherSeatIndex] = isOya || otherIsOya ? -4000 : -2000;
       }
 
-      return paymentInformation;
+      return new PaymentInformation(0, 0, scoreChanges);
     }
   }
 }

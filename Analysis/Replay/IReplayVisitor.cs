@@ -1,35 +1,92 @@
 using System.Collections.Generic;
+using Spines.Mahjong.Analysis.State;
 
 namespace Spines.Mahjong.Analysis.Replay
 {
   public interface IReplayVisitor
   {
-    void End();
+    void Ankan(int who, TileType tileType)
+    {
+    }
 
-    void EndMatch();
+    void Chii(int who, int fromWho, Tile calledTile, Tile handTile0, Tile handTile1)
+    {
+    }
 
-    void GameType(GameTypeFlag flags);
+    void Daiminkan(int who, int fromWho, Tile calledTile, Tile handTile0, Tile handTile1, Tile handTile2)
+    {
+    }
 
-    void Seed(TileType roundWind, int honba, int riichiSticks, int dice0, int dice1, Tile doraIndicator);
+    void DeclareRiichi(int who)
+    {
+    }
 
-    void Oya(int seatIndex);
+    void Discard(int seatIndex, Tile tile)
+    {
+    }
 
-    void Scores(IEnumerable<int> scores);
+    void Dora(Tile tile)
+    {
+    }
 
-    void Haipai(int seatIndex, IEnumerable<Tile> tiles);
+    void Draw(int seatIndex, Tile tile)
+    {
+    }
 
-    void Draw(int seatIndex, Tile tile);
+    void End()
+    {
+    }
 
-    void Discard(int seatIndex, Tile tile);
+    void EndMatch()
+    {
+    }
 
-    void Chii(int who, int fromWho, Tile calledTile, Tile handTile0, Tile handTile1);
+    void GameType(GameTypeFlag flags)
+    {
+    }
 
-    void Pon(int who, int fromWho, Tile calledTile, Tile handTile0, Tile handTile1);
+    void Haipai(int seatIndex, IEnumerable<Tile> tiles)
+    {
+    }
 
-    void Daiminkan(int who, int fromWho, Tile calledTile, Tile handTile0, Tile handTile1, Tile handTile2);
+    void Nuki(int who, Tile tile)
+    {
+    }
 
-    void Shouminkan(int who, int fromWho, Tile calledTile, Tile addedTile, Tile handTile0, Tile handTile1);
+    void Oya(int seatIndex)
+    {
+    }
 
-    void Ankan(int who, TileType tileType);
+    void PayRiichi(int who)
+    {
+    }
+
+    void Pon(int who, int fromWho, Tile calledTile, Tile handTile0, Tile handTile1)
+    {
+    }
+
+    void Ron(int who, int fromWho, PaymentInformation payment)
+    {
+    }
+
+    void Ryuukyoku(RyuukyokuType ryuukyokuType, int honba, int riichiSticks, IReadOnlyList<int> scores, IReadOnlyList<int> scoreChanges)
+    {
+    }
+
+    void Scores(IEnumerable<int> scores)
+    {
+    }
+
+    void Seed(TileType roundWind, int honba, int riichiSticks, int dice0, int dice1, Tile doraIndicator)
+    {
+    }
+
+    void Shouminkan(int who, int fromWho, Tile calledTile, Tile addedTile, Tile handTile0, Tile handTile1)
+    {
+    }
+
+    void Tsumo(int who, PaymentInformation payment)
+    {
+    }
   }
 }

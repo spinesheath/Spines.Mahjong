@@ -16,13 +16,13 @@ namespace Game.Engine
     {
       // TODO calculate score
 
-      var paymentInformation = new PaymentInformation();
+      var scoreChanges = new int[4];
       for (var i = 0; i < 4; i++)
       {
-        paymentInformation.ScoreChanges[i] = i == board.ActiveSeatIndex ? 6000 + board.RiichiSticks * 1000 + board.Honba * 300 : -2000 - board.Honba * 100;
+        scoreChanges[i] = i == board.ActiveSeatIndex ? 6000 + board.RiichiSticks * 1000 + board.Honba * 300 : -2000 - board.Honba * 100;
       }
 
-      _nextState = new Payment(new EndGame(new [] {board.ActiveSeatIndex}), paymentInformation);
+      _nextState = new Payment(new EndGame(new [] {board.ActiveSeatIndex}), new PaymentInformation(0, 0, scoreChanges));
     }
   }
 }

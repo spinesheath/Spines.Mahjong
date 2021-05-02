@@ -3,9 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Game.Shared;
 using Spines.Mahjong.Analysis;
-using Spines.Mahjong.Analysis.Replay;
 using Spines.Mahjong.Analysis.State;
-using Meld = Spines.Mahjong.Analysis.State.Meld;
 
 namespace Game.Engine
 {
@@ -82,21 +80,7 @@ namespace Game.Engine
 
     public override void Update(Board board, Wall wall)
     {
-      var seat = board.ActiveSeat;
-
-      seat.CurrentDraw = null;
-      seat.Hand.Shouminkan(_tile.TileType);
-      seat.ConcealedTiles.Remove(_tile);
-
-      for (var i = 0; i < seat.Melds.Count; i++)
-      {
-        var meld = seat.Melds[i];
-        if (meld.MeldType == MeldType.Koutsu && meld.LowestTile.TileType == _tile.TileType)
-        {
-          seat.Melds[i] = Meld.Shouminkan(meld.CalledTile!, _tile);
-          break;
-        }
-      }
+      board.ActiveSeat.Shouminkan(_tile);
     }
   }
 }
