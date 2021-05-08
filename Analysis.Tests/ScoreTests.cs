@@ -18,7 +18,8 @@ namespace Spines.Mahjong.Analysis.Tests
         ReplayParser.Parse(fileStream, visitor);
       }
 
-      Assert.Equal(1, visitor.CalculationCount);
+      Assert.Equal(0, visitor.FailureCount);
+      Assert.Equal(0, visitor.CalculationCount);
     }
 
     private static readonly string[] BundlesFolders = 

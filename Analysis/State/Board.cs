@@ -20,6 +20,8 @@ namespace Spines.Mahjong.Analysis.State
 
     public bool IsFirstGoAround => Wall.RemainingDraws >= 66 && !Seats.SelectMany(s => s.Melds).Any();
 
+    public Seat Oya => Seats.First(s => s.IsOya);
+
     public int RiichiSticks { get; set; }
 
     public TileType RoundWind { get; set; } = TileType.FromSuitAndIndex(Suit.Jihai, 0);
@@ -28,7 +30,13 @@ namespace Spines.Mahjong.Analysis.State
 
     public IWall Wall { get; }
 
-    public Seat Oya => Seats.First(s => s.IsOya);
+    public void ClearCurrentDiscard()
+    {
+      foreach (var s in Seats)
+      {
+        s.CurrentDiscard = null;
+      }
+    }
 
     public void SetSeatWinds(int oya)
     {

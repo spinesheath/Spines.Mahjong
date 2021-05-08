@@ -11,6 +11,10 @@
   <ItemGroup>
     <None Remove="Resources\ArrangementTransitions.txt" />
     <None Remove="Resources\ProgressiveHonorStateMachine.txt" />
+    <None Remove="Resources\Scoring\HonorMeldScoringLookup.dat" />
+    <None Remove="Resources\Scoring\HonorScoringLookup.dat" />
+    <None Remove="Resources\Scoring\SuitMeldScoringLookup.dat" />
+    <None Remove="Resources\Scoring\SuitScoringLookup.dat" />
     <None Remove="Resources\suitArrangementsBase5NoMelds.dat" />
     <None Remove="Resources\SuitFirstPhase.txt" />
     <None Remove="Resources\SuitSecondPhase0.txt" />
@@ -18,11 +22,17 @@
     <None Remove="Resources\SuitSecondPhase2.txt" />
     <None Remove="Resources\SuitSecondPhase3.txt" />
     <None Remove="Resources\SuitSecondPhase4.txt" />
+    <None Remove="Resources\TenpaiShapeTransitions.txt" />
+    <None Remove="Resources\TenpaiShapeValues.txt" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\ArrangementTransitions.txt" />
     <EmbeddedResource Include="Resources\ProgressiveHonorStateMachine.txt" />
+    <EmbeddedResource Include="Resources\Scoring\HonorMeldScoringLookup.dat" />
+    <EmbeddedResource Include="Resources\Scoring\HonorScoringLookup.dat" />
+    <EmbeddedResource Include="Resources\Scoring\SuitMeldScoringLookup.dat" />
+    <EmbeddedResource Include="Resources\Scoring\SuitScoringLookup.dat" />
     <EmbeddedResource Include="Resources\suitArrangementsBase5NoMelds.dat" />
     <EmbeddedResource Include="Resources\SuitFirstPhase.txt" />
     <EmbeddedResource Include="Resources\SuitSecondPhase0.txt" />
@@ -30,6 +40,8 @@
     <EmbeddedResource Include="Resources\SuitSecondPhase2.txt" />
     <EmbeddedResource Include="Resources\SuitSecondPhase3.txt" />
     <EmbeddedResource Include="Resources\SuitSecondPhase4.txt" />
+    <EmbeddedResource Include="Resources\TenpaiShapeTransitions.txt" />
+    <EmbeddedResource Include="Resources\TenpaiShapeValues.txt" />
   </ItemGroup>
 
 </Project>

@@ -6,17 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Resources\TenpaiShapeTransitions.txt" />
-    <None Remove="Resources\TenpaiShapeValues.txt" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\TenpaiShapeTransitions.txt" />
-    <EmbeddedResource Include="Resources\TenpaiShapeValues.txt" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\Analysis\Analysis.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Resources\" />
   </ItemGroup>
 
 </Project>

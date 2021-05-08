@@ -28,7 +28,7 @@ namespace Game.Engine
     public override void Update(Board board, Wall wall)
     {
       var calledTile = board.CurrentDiscard!;
-      ClearCurrentDiscard(board);
+      board.ClearCurrentDiscard();
       board.ActiveSeatIndex = _seatIndex;
       board.ActiveSeat.Pon(calledTile, _tile0, _tile1);
     }

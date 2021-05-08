@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using Spines.Mahjong.Analysis.Score;
 using Spines.Mahjong.Analysis.Shanten;
 using Spines.Mahjong.Analysis.State;
 
@@ -16,7 +17,7 @@ namespace Spines.Mahjong.Analysis.Replay
       var meldBuffer = new byte[6];
       var haipaiBuffer = new byte[13];
       var playerCount = 4;
-      
+
       while (true)
       {
         var action = file.ReadByte();
@@ -165,13 +166,13 @@ namespace Spines.Mahjong.Analysis.Replay
             var ronMeldBuffer = new byte[meldCount * 7];
             file.Read(ronMeldBuffer);
 
-            var machi = file.ReadByte(); // machi
+            var machi = Tile.FromTileId(file.ReadByte()); // machi
 
             var tenBuffer = new byte[3 * 4];
             file.Read(tenBuffer); // ten
-            var fu = BitConverter.ToInt32(tenBuffer, 0);
-            var han = BitConverter.ToInt32(tenBuffer, 4);
-            var yakumanCount = BitConverter.ToInt32(tenBuffer, 8);
+            var fu = BitConverter.ToInt32(tenBuffer, 0); // wrong
+            var han = BitConverter.ToInt32(tenBuffer, 4); // wrong
+            var yakumanCount = BitConverter.ToInt32(tenBuffer, 8); // wrong
 
             var yakuLength = file.ReadByte();
             var yakuBuffer = new byte[yakuLength];
@@ -209,7 +210,7 @@ namespace Spines.Mahjong.Analysis.Replay
               scores[i] = BitConverter.ToInt32(scoreBuffer, i * 8 + 4);
             }
 
-            var payment = new PaymentInformation(fu, han, scoreChanges);
+            var payment = new PaymentInformation(fu, han, scoreChanges, Yaku.None);
 
             visitor.Ron(who, fromWho, payment);
 
@@ -271,7 +272,7 @@ namespace Spines.Mahjong.Analysis.Replay
               scores[i] = BitConverter.ToInt32(scoreBuffer, i * 8 + 4);
             }
 
-            var payment = new PaymentInformation(fu, han, scoreChanges);
+            var payment = new PaymentInformation(fu, han, scoreChanges, Yaku.None);
 
             visitor.Tsumo(who, payment);
 

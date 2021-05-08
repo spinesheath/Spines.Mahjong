@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Spines.Mahjong.Analysis.Resources;
 
 namespace Spines.Mahjong.Analysis.Shanten
 {

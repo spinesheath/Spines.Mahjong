@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Game.Shared;
 using Spines.Mahjong.Analysis.Replay;
+using Spines.Mahjong.Analysis.Score;
 using Spines.Mahjong.Analysis.State;
 
 namespace Game.Engine
@@ -52,7 +53,7 @@ namespace Game.Engine
       var tenpaiCount = tenhouTenpai.Count(s => s);
       if (tenpaiCount == 4)
       {
-        return new PaymentInformation(0, 0, scoreChanges);
+        return new PaymentInformation(0, 0, scoreChanges, Yaku.None);
       }
 
       for (var i = 0; i < 4; i++)
@@ -67,7 +68,7 @@ namespace Game.Engine
         }
       }
 
-      return new PaymentInformation(0, 0, scoreChanges);
+      return new PaymentInformation(0, 0, scoreChanges, Yaku.None);
     }
 
     private static PaymentInformation CalculateNagashiPayment(Board board, int seatIndex)
@@ -83,7 +84,7 @@ namespace Game.Engine
         scoreChanges[otherSeatIndex] = isOya || otherIsOya ? -4000 : -2000;
       }
 
-      return new PaymentInformation(0, 0, scoreChanges);
+      return new PaymentInformation(0, 0, scoreChanges, Yaku.None);
     }
   }
 }

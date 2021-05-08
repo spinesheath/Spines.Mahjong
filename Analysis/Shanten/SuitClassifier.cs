@@ -1,4 +1,6 @@
-﻿namespace Spines.Mahjong.Analysis.Shanten
+﻿using Spines.Mahjong.Analysis.Resources;
+
+namespace Spines.Mahjong.Analysis.Shanten
 {
   /// <summary>
   /// Calculates arrangement value of a suit.

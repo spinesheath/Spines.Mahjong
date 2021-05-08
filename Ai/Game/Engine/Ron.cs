@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Game.Shared;
+using Spines.Mahjong.Analysis.Score;
 using Spines.Mahjong.Analysis.State;
 
 namespace Game.Engine
@@ -36,7 +37,7 @@ namespace Game.Engine
         scoreChanges[seatIndex] = 4000 + riichiPoints + honbaPoints;
         scoreChanges[board.ActiveSeatIndex] = -4000 - honbaPoints;
 
-        _nextState = new Payment(_nextState, new PaymentInformation(0, 0, scoreChanges));
+        _nextState = new Payment(_nextState, new PaymentInformation(0, 0, scoreChanges, Yaku.None));
       }
 
       return Task.CompletedTask;

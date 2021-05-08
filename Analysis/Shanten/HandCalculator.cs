@@ -128,9 +128,9 @@ namespace Spines.Mahjong.Analysis.Shanten
       ConcealedTiles[lowestTileType.TileTypeId + 2] -= 1;
       ConcealedTiles[calledTileType.TileTypeId] += 1;
 
+      _meldCount += 1;
       _melds[suitId] <<= 6;
       _melds[suitId] += 1 + lowestTileTypeIdInSuit;
-      _meldCount += 1;
       InHandByType[calledTileType.TileTypeId] += 1;
       SuitClassifiers[suitId].SetMelds(_melds[suitId]);
       UpdateValue(suitId);
@@ -143,13 +143,14 @@ namespace Spines.Mahjong.Analysis.Shanten
       var suitId = tileType.SuitId;
       var index = tileType.Index;
       InHandByType[tileType.TileTypeId] += 1;
-      _meldCount += 1;
       var previousTiles = ConcealedTiles[tileType.TileTypeId];
       ConcealedTiles[tileType.TileTypeId] -= 2;
+      _meldCount += 1;
+      _melds[suitId] <<= 6;
+      _melds[suitId] += 1 + 7 + index;
+
       if (suitId < 3)
       {
-        _melds[suitId] <<= 6;
-        _melds[suitId] += 1 + 7 + index;
         SuitClassifiers[suitId].SetMelds(_melds[suitId]);
         UpdateValue(suitId);
       }
@@ -167,18 +168,18 @@ namespace Spines.Mahjong.Analysis.Shanten
       var suitId = tileType.SuitId;
       ConcealedTiles[tileType.TileTypeId] -= 1;
 
+      for (var i = 0; i < 4; i++)
+      {
+        var pon = 1 + 7 + tileType.Index;
+        if ((_melds[suitId] >> 6 * i & 0b111111) == pon)
+        {
+          _melds[suitId] += 9 << 6 * i;
+          break;
+        }
+      }
+
       if (suitId < 3)
       {
-        for (var i = 0; i < 4; i++)
-        {
-          var pon = 1 + 7 + tileType.Index;
-          if ((_melds[suitId] >> 6 * i & 0b111111) == pon)
-          {
-            _melds[suitId] += 9 << 6 * i;
-            break;
-          }
-        }
-        
         SuitClassifiers[suitId].SetMelds(_melds[suitId]);
         UpdateValue(suitId);
       }
@@ -196,11 +197,11 @@ namespace Spines.Mahjong.Analysis.Shanten
       var index = tileType.Index;
       ConcealedTiles[tileType.TileTypeId] -= 4;
       _meldCount += 1;
+      _melds[suitId] <<= 6;
+      _melds[suitId] += 1 + 7 + 9 + index;
 
       if (suitId < 3)
       {
-        _melds[suitId] <<= 6;
-        _melds[suitId] += 1 + 7 + 9 + index;
         SuitClassifiers[suitId].SetMelds(_melds[suitId]);
         UpdateValue(suitId);
       }
@@ -219,11 +220,11 @@ namespace Spines.Mahjong.Analysis.Shanten
       InHandByType[tileType.TileTypeId] += 1;
       ConcealedTiles[tileType.TileTypeId] -= 3;
       _meldCount += 1;
+      _melds[suitId] <<= 6;
+      _melds[suitId] += 1 + 7 + 9 + index;
 
       if (suitId < 3)
       {
-        _melds[suitId] <<= 6;
-        _melds[suitId] += 1 + 7 + 9 + index;
         SuitClassifiers[suitId].SetMelds(_melds[suitId]);
         UpdateValue(suitId);
       }
@@ -431,13 +432,25 @@ namespace Spines.Mahjong.Analysis.Shanten
     private protected readonly int[] Base5Hashes = new int[3]; // base 5 representation of concealed suits. Not relevant with a meld.
     private protected readonly byte[] ConcealedTiles = new byte[34];
     private protected readonly byte[] InHandByType = new byte[34]; // tiles in hand by tile type, including melds, kan is 4 tiles here
-    private readonly int[] _melds = new int[3]; // non-honors, identified by meldId, youngest meld in least significant bits
+    private readonly int[] _melds = new int[4]; // identified by meldId, youngest meld in least significant bits
     private protected int JihaiMeldBit; // bit=1 for honor pon, least significant bit represents east wind. bit=0 for both kan and no meld.
-    private protected readonly SuitClassifier[] SuitClassifiers = {new SuitClassifier(), new SuitClassifier(), new SuitClassifier()};
+    private protected readonly SuitClassifier[] SuitClassifiers = {new(), new(), new()};
     private protected ChiitoiClassifier Chiitoi = ChiitoiClassifier.Create();
     private protected ProgressiveHonorClassifier HonorClassifier;
     private protected KokushiClassifier Kokushi = KokushiClassifier.Create();
     private int _meldCount;
+
+    internal IEnumerable<int> MeldIds(int suitId)
+    {
+      var t = _melds[suitId];
+      var m = t & 0b111111;
+      while (m != 0)
+      {
+        yield return m - 1;
+        t >>= 6;
+        m = t & 0b111111;
+      }
+    }
 
     protected int TilesInHand()
     {
@@ -586,7 +599,7 @@ namespace Spines.Mahjong.Analysis.Shanten
         }
       }
 
-      return sb.ToString();
+      return sb.Length > 0 ? " " + sb : string.Empty;
     }
 
     private string GetConcealedString(int suitId, char suit)

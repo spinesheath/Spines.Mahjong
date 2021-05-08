@@ -16,13 +16,5 @@ namespace Game.Engine
     }
 
     public abstract void Update(Board board, Wall wall);
-
-    protected static void ClearCurrentDiscard(Board board)
-    {
-      foreach (var s in board.Seats)
-      {
-        s.CurrentDiscard = null;
-      }
-    }
   }
 }

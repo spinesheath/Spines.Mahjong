@@ -15,7 +15,7 @@ namespace Spines.Mahjong.Analysis
       _hand = hand;
     }
 
-    public IEnumerable<TileType> Tiles
+    internal IEnumerable<TileType> Tiles
     {
       get
       {
@@ -30,7 +30,7 @@ namespace Spines.Mahjong.Analysis
       }
     }
 
-    public IEnumerable<Meld> Melds
+    internal IEnumerable<Meld> Melds
     {
       get
       {

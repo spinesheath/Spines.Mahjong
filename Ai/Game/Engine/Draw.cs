@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Game.Shared;
 using Spines.Mahjong.Analysis;
+using Spines.Mahjong.Analysis.Score;
 using Spines.Mahjong.Analysis.State;
 
 namespace Game.Engine
@@ -14,8 +15,7 @@ namespace Game.Engine
 
     public override void Update(Board board, Wall wall)
     {
-      ClearCurrentDiscard(board);
-
+      board.ClearCurrentDiscard();
       board.ActiveSeatIndex = _seatIndex;
       var seat = board.ActiveSeat;
 

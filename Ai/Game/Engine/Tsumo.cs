@@ -1,4 +1,5 @@
 ﻿using Game.Shared;
+using Spines.Mahjong.Analysis.Score;
 using Spines.Mahjong.Analysis.State;
 
 namespace Game.Engine
@@ -22,7 +23,7 @@ namespace Game.Engine
         scoreChanges[i] = i == board.ActiveSeatIndex ? 6000 + board.RiichiSticks * 1000 + board.Honba * 300 : -2000 - board.Honba * 100;
       }
 
-      _nextState = new Payment(new EndGame(new [] {board.ActiveSeatIndex}), new PaymentInformation(0, 0, scoreChanges));
+      _nextState = new Payment(new EndGame(new [] {board.ActiveSeatIndex}), new PaymentInformation(0, 0, scoreChanges, Yaku.None));
     }
   }
 }

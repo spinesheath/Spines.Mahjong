@@ -2,12 +2,11 @@
 
 namespace Spines.Mahjong.Analysis
 {
-  // TODO should probably be internal
-  public struct Meld
+  internal struct Meld
   {
-    public Suit Suit { get; set; }
+    public Suit Suit { get; }
 
-    public int MeldId { get; set; }
+    public int MeldId { get; }
 
     public IEnumerable<TileType> Tiles => GetTiles();
 
