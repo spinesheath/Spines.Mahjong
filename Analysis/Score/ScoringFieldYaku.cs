@@ -50,6 +50,12 @@ namespace Spines.Mahjong.Analysis.Score
     BakazePei = 1L << 41,
     Haku = 1L << 42,
     Hatsu = 1L << 43,
-    Chun = 1L << 44
+    Chun = 1L << 44,
+    Iipeikou = 1L << 45,
+    Ryanpeikou = 1L << 46,
+    Shousangen = 1L << 49,
+    Daisangen = 1L << 52,
+    Shousuushi = 1L << 55,
+    Daisuushi = 1L << 58
   }
 }

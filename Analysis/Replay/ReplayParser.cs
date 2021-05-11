@@ -156,7 +156,8 @@ namespace Spines.Mahjong.Analysis.Replay
           }
           case 12: //Ron
           {
-            file.Read(new byte[2]); // ba
+            var honbaAndRiichiSticksBuffer = new byte[2];
+            file.Read(honbaAndRiichiSticksBuffer); // ba
 
             var haiLength = file.ReadByte();
             var haiBuffer = new byte[haiLength];
@@ -170,9 +171,9 @@ namespace Spines.Mahjong.Analysis.Replay
 
             var tenBuffer = new byte[3 * 4];
             file.Read(tenBuffer); // ten
-            var fu = BitConverter.ToInt32(tenBuffer, 0); // wrong
-            var han = BitConverter.ToInt32(tenBuffer, 4); // wrong
-            var yakumanCount = BitConverter.ToInt32(tenBuffer, 8); // wrong
+            var fu = BitConverter.ToInt32(tenBuffer, 0);
+            var han = BitConverter.ToInt32(tenBuffer, 4);
+            var yakumanCount = BitConverter.ToInt32(tenBuffer, 8); // limit kind: 1 for mangan, ... 5 for yakuman
 
             var yakuLength = file.ReadByte();
             var yakuBuffer = new byte[yakuLength];
@@ -181,6 +182,8 @@ namespace Spines.Mahjong.Analysis.Replay
             var yakumanLength = file.ReadByte();
             var yakumanBuffer = new byte[yakumanLength];
             file.Read(yakumanBuffer);
+
+            var yaku = ToYakuEnum(yakuBuffer, yakumanBuffer, meldBuffer);
 
             var doraHaiLength = file.ReadByte();
             var doraBuffer = new byte[doraHaiLength];
@@ -207,10 +210,10 @@ namespace Spines.Mahjong.Analysis.Replay
             var scoreChanges = new int[playerCount];
             for (var i = 0; i < playerCount; i++)
             {
-              scores[i] = BitConverter.ToInt32(scoreBuffer, i * 8 + 4);
+              scoreChanges[i] = BitConverter.ToInt32(scoreBuffer, i * 8 + 4);
             }
 
-            var payment = new PaymentInformation(fu, han, scoreChanges, Yaku.None);
+            var payment = new PaymentInformation(fu, han, scoreChanges, yaku);
 
             visitor.Ron(who, fromWho, payment);
 
@@ -218,7 +221,8 @@ namespace Spines.Mahjong.Analysis.Replay
           }
           case 13: //Tsumo
           {
-            file.Read(new byte[2]); // ba
+            var honbaAndRiichiSticksBuffer = new byte[2];
+            file.Read(honbaAndRiichiSticksBuffer); // ba
             
             var haiLength = file.ReadByte();
             var haiBuffer = new byte[haiLength];
@@ -234,7 +238,7 @@ namespace Spines.Mahjong.Analysis.Replay
             file.Read(tenBuffer); // ten
             var fu = BitConverter.ToInt32(tenBuffer, 0);
             var han = BitConverter.ToInt32(tenBuffer, 4);
-            var yakumanCount = BitConverter.ToInt32(tenBuffer, 8);
+            var yakumanCount = BitConverter.ToInt32(tenBuffer, 8); // limit kind: 1 for mangan, ... 5 for yakuman
 
             var yakuLength = file.ReadByte();
             var yakuBuffer = new byte[yakuLength];
@@ -243,6 +247,8 @@ namespace Spines.Mahjong.Analysis.Replay
             var yakumanLength = file.ReadByte();
             var yakumanBuffer = new byte[yakumanLength];
             file.Read(yakumanBuffer);
+
+            var yaku = ToYakuEnum(yakuBuffer, yakumanBuffer, meldBuffer);
 
             var doraHaiLength = file.ReadByte();
             var doraBuffer = new byte[doraHaiLength];
@@ -269,10 +275,10 @@ namespace Spines.Mahjong.Analysis.Replay
             var scoreChanges = new int[playerCount];
             for (var i = 0; i < playerCount; i++)
             {
-              scores[i] = BitConverter.ToInt32(scoreBuffer, i * 8 + 4);
+              scoreChanges[i] = BitConverter.ToInt32(scoreBuffer, i * 8 + 4);
             }
 
-            var payment = new PaymentInformation(fu, han, scoreChanges, Yaku.None);
+            var payment = new PaymentInformation(fu, han, scoreChanges, yaku);
 
             visitor.Tsumo(who, payment);
 
@@ -333,6 +339,37 @@ namespace Spines.Mahjong.Analysis.Replay
           }
         }
       }
+    }
+
+    private static Yaku ToYakuEnum(byte[] yakuBuffer, byte[] yakumanBuffer, byte[] meldBuffer)
+    {
+      var isOpen = meldBuffer.Length == 0 || HasOpenMeld(meldBuffer);
+      var lookup = isOpen ? TenhouYakuIdToOpenYaku : TenhouYakuIdToClosedYaku;
+      var result = Yaku.None;
+      for (var i = 0; i < yakuBuffer.Length; i += 2)
+      {
+        result |= lookup[yakuBuffer[i]];
+      }
+
+      for (var i = 0; i < yakumanBuffer.Length; i++)
+      {
+        result |= lookup[yakumanBuffer[i]];
+      }
+
+      return result;
+    }
+
+    private static bool HasOpenMeld(byte[] meldBuffer)
+    {
+      for (var i = 0; i < meldBuffer.Length; i += 7)
+      {
+        if (meldBuffer[i] != 10)
+        {
+          return true;
+        }
+      }
+
+      return false;
     }
 
     public static int Parse(FileStream file, bool ukeIre)
@@ -636,5 +673,123 @@ namespace Spines.Mahjong.Analysis.Replay
     {
       return Convert.ToInt32(value, CultureInfo.InvariantCulture);
     }
+
+    private static readonly Yaku[] TenhouYakuIdToOpenYaku = new[]
+    {
+      Yaku.MenzenTsumo, // 0
+      Yaku.Riichi, // 1
+      Yaku.Ippatsu, // 2
+      Yaku.Chankan, // 3
+      Yaku.RinshanKaihou, // 4
+      Yaku.HaiteiRaoyue, // 5
+      Yaku.HouteiRaoyui, // 6
+      Yaku.Pinfu, // 7
+      Yaku.OpenTanyao, // 8
+      Yaku.Iipeikou, // 9
+      Yaku.JikazeTon, // 10
+      Yaku.JikazeNan, // 11
+      Yaku.JikazeShaa, // 12
+      Yaku.JikazePei, // 13
+      Yaku.BakazeTon, // 14
+      Yaku.BakazeNan, // 15
+      Yaku.BakazeShaa, // 16
+      Yaku.BakazePei, // 17
+      Yaku.Haku, // 18
+      Yaku.Hatsu, // 19
+      Yaku.Chun, // 20
+      Yaku.DoubleRiichi, // 21
+      Yaku.Chiitoitsu, // 22
+      Yaku.OpenChanta, // 23
+      Yaku.OpenIttsuu, // 24
+      Yaku.OpenSanshokuDoujun, // 25
+      Yaku.SanshokuDoukou, // 26
+      Yaku.Sankantsu, // 27
+      Yaku.Toitoihou, // 28
+      Yaku.Sanankou, // 29
+      Yaku.Shousangen, // 30
+      Yaku.Honroutou, // 31
+      Yaku.Ryanpeikou, // 32
+      Yaku.OpenJunchan, // 33
+      Yaku.OpenHonitsu, // 34
+      Yaku.OpenChinitsu, // 35
+      Yaku.Renhou, // 36
+      Yaku.Tenhou, // 37,
+      Yaku.Chiihou, // 38,
+      Yaku.Daisangen, // 39,
+      Yaku.Suuankou, // 40,
+      Yaku.SuuankouTanki, // 41
+      Yaku.Tsuuiisou, // 42
+      Yaku.Ryuuiisou, // 43
+      Yaku.Chinroutou, // 44
+      Yaku.ChuurenPoutou, // 45
+      Yaku.JunseiChuurenPoutou, // 46
+      Yaku.KokushiMusou, // 47
+      Yaku.KokushiMusouJuusanMen, // 48
+      Yaku.Daisuushi, // 49
+      Yaku.Shousuushi, // 50
+      Yaku.Suukantsu, // 51
+      Yaku.Dora, // 52
+      Yaku.UraDora, // 53
+      Yaku.AkaDora, // 54
+    };
+
+    private static readonly Yaku[] TenhouYakuIdToClosedYaku = new[]
+    {
+      Yaku.MenzenTsumo, // 0
+      Yaku.Riichi, // 1
+      Yaku.Ippatsu, // 2
+      Yaku.Chankan, // 3
+      Yaku.RinshanKaihou, // 4
+      Yaku.HaiteiRaoyue, // 5
+      Yaku.HouteiRaoyui, // 6
+      Yaku.Pinfu, // 7
+      Yaku.ClosedTanyao, // 8
+      Yaku.Iipeikou, // 9
+      Yaku.JikazeTon, // 10
+      Yaku.JikazeNan, // 11
+      Yaku.JikazeShaa, // 12
+      Yaku.JikazePei, // 13
+      Yaku.BakazeTon, // 14
+      Yaku.BakazeNan, // 15
+      Yaku.BakazeShaa, // 16
+      Yaku.BakazePei, // 17
+      Yaku.Haku, // 18
+      Yaku.Hatsu, // 19
+      Yaku.Chun, // 20
+      Yaku.DoubleRiichi, // 21
+      Yaku.Chiitoitsu, // 22
+      Yaku.ClosedChanta, // 23
+      Yaku.ClosedIttsuu, // 24
+      Yaku.ClosedSanshokuDoujun, // 25
+      Yaku.SanshokuDoukou, // 26
+      Yaku.Sankantsu, // 27
+      Yaku.Toitoihou, // 28
+      Yaku.Sanankou, // 29
+      Yaku.Shousangen, // 30
+      Yaku.Honroutou, // 31
+      Yaku.Ryanpeikou, // 32
+      Yaku.ClosedJunchan, // 33
+      Yaku.ClosedHonitsu, // 34
+      Yaku.ClosedChinitsu, // 35
+      Yaku.Renhou, // 36
+      Yaku.Tenhou, // 37,
+      Yaku.Chiihou, // 38,
+      Yaku.Daisangen, // 39,
+      Yaku.Suuankou, // 40,
+      Yaku.SuuankouTanki, // 41
+      Yaku.Tsuuiisou, // 42
+      Yaku.Ryuuiisou, // 43
+      Yaku.Chinroutou, // 44
+      Yaku.ChuurenPoutou, // 45
+      Yaku.JunseiChuurenPoutou, // 46
+      Yaku.KokushiMusou, // 47
+      Yaku.KokushiMusouJuusanMen, // 48
+      Yaku.Daisuushi, // 49
+      Yaku.Shousuushi, // 50
+      Yaku.Suukantsu, // 51
+      Yaku.Dora, // 52
+      Yaku.UraDora, // 53
+      Yaku.AkaDora, // 54
+    };
   }
 }

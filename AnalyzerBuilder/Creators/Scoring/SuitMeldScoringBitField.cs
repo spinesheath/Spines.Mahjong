@@ -23,6 +23,33 @@ namespace AnalyzerBuilder.Creators.Scoring
       Chuuren(32); // 1 bit
       Ryuuiisou(33); // 1 bit
       Yakuhai(34); // 11 bit
+
+      // Sum
+      IipeikouRyanpeikou(45); // 2 bit
+      Sangen(47); // 6 bit
+      Suushi(53); // 6 bit
+    }
+
+    public long AndValue { get; private set; }
+
+    public long OrValue { get; private set; }
+
+    public long SumValue { get; } = 0L;
+
+    private readonly bool _hasMelds;
+
+    private readonly IReadOnlyList<Block> _melds;
+
+    private void Suushi(int offset)
+    {
+    }
+
+    private void Sangen(int offset)
+    {
+    }
+
+    private void IipeikouRyanpeikou(int offset)
+    {
     }
 
     private void Yakuhai(int offset)
@@ -32,7 +59,7 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Ryuuiisou(int offset)
     {
-      if (_melds.All(m => !new [] {0, 4, 6, 8}.Contains(m.Index) && (!m.IsShuntsu || m.Index == 1)))
+      if (_melds.All(m => !new[] {0, 4, 6, 8}.Contains(m.Index) && (!m.IsShuntsu || m.Index == 1)))
       {
         AndValue |= 0b1L << offset;
       }
@@ -63,7 +90,7 @@ namespace AnalyzerBuilder.Creators.Scoring
 
       if (_melds.All(m => m.IsJunchanBlock))
       {
-        AndValue |= 0b1L << offset + 1;
+        AndValue |= 0b1L << (offset + 1);
       }
     }
 
@@ -108,16 +135,9 @@ namespace AnalyzerBuilder.Creators.Scoring
 
       if (_melds.All(m => m.IsJunchanBlock))
       {
-        AndValue |= 0b1L << offset + 1;
+        AndValue |= 0b1L << (offset + 1);
       }
     }
-
-    public long AndValue { get; private set; }
-
-    public long OrValue { get; private set; }
-
-    private readonly IReadOnlyList<Block> _melds;
-    private readonly bool _hasMelds;
 
     private void SanshokuDoukou(int offset)
     {
@@ -149,7 +169,7 @@ namespace AnalyzerBuilder.Creators.Scoring
         AndValue |= 0b1111111L << offset;
       }
 
-      AndValue |= 0b1111111L << offset + 7;
+      AndValue |= 0b1111111L << (offset + 7);
     }
   }
 }

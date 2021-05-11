@@ -15,7 +15,7 @@ namespace AnalyzerBuilder.Creators.Scoring
     public void CreateLookup()
     {
       const int maxLookupIndex = 456976;
-      var lookup = new long[maxLookupIndex * 2];
+      var lookup = new long[maxLookupIndex * 3];
 
       var language = CreateAnalyzedWords();
       foreach (var word in language)
@@ -28,6 +28,7 @@ namespace AnalyzerBuilder.Creators.Scoring
 
           lookup[index] = field.AndValue;
           lookup[index + maxLookupIndex] = field.OrValue;
+          lookup[index + 2 * maxLookupIndex] = field.SumValue;
         }
       }
 

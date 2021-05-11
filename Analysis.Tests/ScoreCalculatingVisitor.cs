@@ -118,6 +118,13 @@ namespace Spines.Mahjong.Analysis.Tests
     {
       CalculationCount += 1;
 
+      if ((payment.Yaku & (Yaku.Shousangen | Yaku.Daisangen | Yaku.Shousuushi | Yaku.Daisuushi)) == 0)
+      {
+        return;
+      }
+
+      
+
       // TODO rinshan
       if (!AgariValidation2.CanTsumo(_board, false))
       {

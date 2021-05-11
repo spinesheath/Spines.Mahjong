@@ -11,7 +11,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       TileCounts = tileCounts.ToList();
 
       var h = 0;
-      foreach (var c in TileCounts)
+      foreach (var c in TileCounts.Reverse())
       {
         h *= 5;
         h += c;

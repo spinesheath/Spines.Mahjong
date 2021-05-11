@@ -55,14 +55,9 @@ namespace Spines.Mahjong.Analysis.Score
         tileCountsBySuit[tile.TileType.SuitId] += 1;
       }
 
-      var manzuField = ScoreLookup.Suit(new ArraySegment<int>(tileTypeCounts, 0, 9), seat.Hand.MeldIds(0).ToList());
-      var souzuField = ScoreLookup.Suit(new ArraySegment<int>(tileTypeCounts, 9, 9), seat.Hand.MeldIds(1).ToList());
-      var pinzuField = ScoreLookup.Suit(new ArraySegment<int>(tileTypeCounts, 18, 9), seat.Hand.MeldIds(2).ToList());
-      var honorField = ScoreLookup.Honor(new ArraySegment<int>(tileTypeCounts, 27, 7), seat.Hand.MeldIds(3).ToList());
-
-      var andField = manzuField & souzuField & pinzuField & honorField;
-      var bits = Convert.ToString(andField, 2);
-      var flags = (ScoringAndFieldYaku) andField;
+      var field = ScoreLookup.Flags(seat.Hand);
+      var bits = Convert.ToString(field, 2);
+      var flags = (ScoringAndFieldYaku) field;
 
       // presence of tile types as bit flag. 1m is least significant bit.
       var tileTypePresences = 0L;

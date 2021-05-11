@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using AnalyzerBuilder.Classification;
 
 namespace AnalyzerBuilder.Creators.Scoring
 {
@@ -15,30 +12,10 @@ namespace AnalyzerBuilder.Creators.Scoring
       _workingDirectory = workingDirectory;
     }
 
-    public IEnumerable<int> Create()
-    {
-      var transitionsPath = Path.Combine(_workingDirectory, "SuitScoringInformationTransitions.txt");
-      var valuesPath = Path.Combine(_workingDirectory, "SuitScoringInformationValues.txt");
-      if (File.Exists(transitionsPath))
-      {
-        return File.ReadAllLines(transitionsPath).Select(line => Convert.ToInt32(line, CultureInfo.InvariantCulture));
-      }
-
-      var language = CreateLanguage().ToList();
-
-      var builder = new ClassifierBuilder();
-      builder.SetLanguage(language, 5, 9);
-
-      File.WriteAllLines(transitionsPath, builder.Transitions.Select(t => t.ToString(CultureInfo.InvariantCulture)));
-      File.WriteAllLines(valuesPath, _valueToValueIndex.OrderBy(p => p.Value).Select(p => p.Key.ToString(CultureInfo.InvariantCulture)));
-
-      return builder.Transitions;
-    }
-
     public void CreateLookup()
     {
       const int maxLookupIndex = 1953125;
-      var lookup = new long[maxLookupIndex];
+      var lookup = new long[maxLookupIndex * 2];
 
       var language = CreateAnalyzedWords();
       var groupedByHash = language.GroupBy(w => w.Base5Hash);
@@ -49,6 +26,7 @@ namespace AnalyzerBuilder.Creators.Scoring
         Debug.Assert(lookup[index] == 0 || lookup[index] == field.AndValue);
 
         lookup[index] = field.AndValue;
+        lookup[index + maxLookupIndex] = field.SumValue;
       }
 
       var path = Path.Combine(_workingDirectory, "SuitScoringLookup.dat");
@@ -61,28 +39,6 @@ namespace AnalyzerBuilder.Creators.Scoring
     }
 
     private readonly string _workingDirectory;
-    private readonly Dictionary<long, int> _valueToValueIndex = new Dictionary<long, int>();
-
-    private IEnumerable<WordWithValue> CreateLanguage()
-    {
-      var singleValueWords = CreateAnalyzedWords();
-      // TODO chiitoi words for tanyao/honroutou?
-
-      var groupedByHash = singleValueWords.GroupBy(w => w.Base5Hash);
-      foreach (var group in groupedByHash)
-      {
-        var interpretations = group.ToList();
-        var suitValue = new SuitScoringBitField(interpretations);
-        
-        if (!_valueToValueIndex.TryGetValue(suitValue.AndValue, out var valueIndex))
-        {
-          valueIndex = _valueToValueIndex.Count;
-          _valueToValueIndex[suitValue.AndValue] = valueIndex;
-        }
-
-        yield return new WordWithValue(group.First().TileCounts, valueIndex);
-      }
-    }
 
     private static IEnumerable<ConcealedArrangement> CreateAnalyzedWords()
     {

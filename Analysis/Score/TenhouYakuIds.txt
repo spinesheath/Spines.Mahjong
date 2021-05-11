@@ -10,12 +10,12 @@
 8,  ClosedTanyao
 9,  Iipeikou
 10, JikazeTon
-11, JikazeShaa
-12, JikazeNan
+11, JikazeNan
+12, JikazeShaa
 13, JikazePei
 14, BakazeTon
-15, BakazeShaa
-16, BakazeNan
+15, BakazeNan
+16, BakazeShaa
 17, BakazePei
 18, Haku
 19, Hatsu
@@ -61,3 +61,4 @@
 
 52, Dora
 53, UraDora
+54, AkaDora

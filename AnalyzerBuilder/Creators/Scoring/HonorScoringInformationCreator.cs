@@ -15,7 +15,7 @@ namespace AnalyzerBuilder.Creators.Scoring
     public void CreateLookup()
     {
       const int maxLookupIndex = 78125;
-      var lookup = new long[maxLookupIndex];
+      var lookup = new long[maxLookupIndex * 2];
 
       var language = CreateAnalyzedWords();
       foreach (var word in language)
@@ -25,6 +25,7 @@ namespace AnalyzerBuilder.Creators.Scoring
         Debug.Assert(lookup[index] == 0 || lookup[index] == field.AndValue);
 
         lookup[index] = field.AndValue;
+        lookup[index + maxLookupIndex] = field.SumValue;
       }
 
       var path = Path.Combine(_workingDirectory, "HonorScoringLookup.dat");

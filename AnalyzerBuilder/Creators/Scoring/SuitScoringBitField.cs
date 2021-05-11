@@ -24,7 +24,25 @@ namespace AnalyzerBuilder.Creators.Scoring
       Yakuhai(34); // 11 bit
 
       // Sum
-      //IipeikouRyanpeikou(35); // 2 bit
+      IipeikouRyanpeikou(45); // 2 bit
+      Sangen(47); // 6 bit
+      Suushi(53); // 6 bit
+    }
+
+    public long AndValue { get; private set; }
+
+    public long SumValue { get; private set; }
+
+    private readonly IReadOnlyList<ConcealedArrangement> _interpretations;
+
+    private void Suushi(int offset)
+    {
+      SumValue |= 0b100L << offset;
+    }
+
+    private void Sangen(int offset)
+    {
+      SumValue |= 0b100L << offset;
     }
 
     private void IipeikouRyanpeikou(int offset)
@@ -33,15 +51,9 @@ namespace AnalyzerBuilder.Creators.Scoring
       {
         var identicalShuntsuGroupings = arrangement.Blocks.Where(b => b.IsShuntsu).GroupBy(b => b.Index).Where(g => g.Count() > 1);
         var iipeikouCount = identicalShuntsuGroupings.Sum(g => g.Count()) / 2;
-        SumValue |= (long)iipeikouCount << offset;
+        SumValue |= (long) iipeikouCount << offset;
       }
     }
-
-    public long AndValue { get; private set; }
-    
-    public long SumValue { get; private set; }
-
-    private readonly IReadOnlyList<ConcealedArrangement> _interpretations;
 
     private void Yakuhai(int offset)
     {

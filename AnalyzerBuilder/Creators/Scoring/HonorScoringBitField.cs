@@ -1,4 +1,6 @@
-﻿namespace AnalyzerBuilder.Creators.Scoring
+﻿using System.Linq;
+
+namespace AnalyzerBuilder.Creators.Scoring
 {
   internal class HonorScoringBitField
   {
@@ -6,6 +8,11 @@
     {
       _arrangement = arrangement;
       _isEmpty = arrangement.TileCount == 0;
+
+      if (arrangement.Base5Hash == 1250)
+      {
+
+      }
 
       SanshokuDoujun(0); // 7 + 7 bit
       SanshokuDoukou(14); // 9 bit
@@ -19,12 +26,41 @@
       Chuuren(32); // 1 bit
       Ryuuiisou(33); // 1 bit
       Yakuhai(34); // 11 bit
+
+      // Sum
+      IipeikouRyanpeikou(45); // 2 bit
+      Sangen(47); // 6 bit
+      Suushi(53); // 6 bit
     }
 
     public long AndValue { get; private set; }
 
+    public long SumValue { get; private set; }
+
     private readonly ConcealedArrangement _arrangement;
     private readonly bool _isEmpty;
+
+    private void Suushi(int offset)
+    {
+      var koutsuCount = _arrangement.Blocks.Count(b => b.Index < 4 && b.IsKoutsu);
+      var pairCount = _arrangement.Blocks.Count(b => b.Index < 4 && b.IsPair);
+      SumValue |= (long) (koutsuCount + pairCount) << offset;
+      SumValue |= (long) koutsuCount << (offset + 3);
+    }
+
+    private void Sangen(int offset)
+    {
+      var koutsuCount = _arrangement.Blocks.Count(b => b.Index > 3 && b.IsKoutsu);
+      var pairCount = _arrangement.Blocks.Count(b => b.Index > 3 && b.IsPair);
+      var shousangenCount = koutsuCount + pairCount > 1 ? koutsuCount + pairCount + 1 : koutsuCount + pairCount;
+      var daisangenCount = koutsuCount > 1 ? koutsuCount + 1 : koutsuCount;
+      SumValue |= (long)shousangenCount << offset;
+      SumValue |= (long)daisangenCount << (offset + 3);
+    }
+
+    private void IipeikouRyanpeikou(int offset)
+    {
+    }
 
     private void Yakuhai(int offset)
     {

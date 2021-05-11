@@ -5,9 +5,6 @@ namespace AnalyzerBuilder.Creators.Scoring
 {
   internal class HonorMeldScoringBitField
   {
-    private readonly IReadOnlyList<Block> _melds;
-    private readonly bool _hasMelds;
-
     public HonorMeldScoringBitField(IReadOnlyList<Block> melds)
     {
       _melds = melds;
@@ -25,11 +22,40 @@ namespace AnalyzerBuilder.Creators.Scoring
       Chuuren(32); // 1 bit
       Ryuuiisou(33); // 1 bit
       Yakuhai(34); // 11 bit
+
+      // Sum
+      IipeikouRyanpeikou(45); // 2 bit
+      Sangen(47); // 6 bit
+      Suushi(43); // 6 bit
     }
 
     public long AndValue { get; private set; }
 
     public long OrValue { get; private set; }
+
+    public long SumValue { get; private set; }
+
+    private readonly bool _hasMelds;
+    private readonly IReadOnlyList<Block> _melds;
+
+    private void Suushi(int offset)
+    {
+      var koutsuCount = _melds.Count(b => b.Index < 4);
+      SumValue |= (long) koutsuCount << offset;
+      SumValue |= (long) koutsuCount << (offset + 3);
+    }
+
+    private void Sangen(int offset)
+    {
+      var koutsuCount = _melds.Count(b => b.Index > 3);
+      var sangenCount = koutsuCount > 1 ? koutsuCount + 1 : koutsuCount;
+      SumValue |= (long) sangenCount << offset;
+      SumValue |= (long) sangenCount << (offset + 3);
+    }
+
+    private void IipeikouRyanpeikou(int offset)
+    {
+    }
 
     private void Yakuhai(int offset)
     {

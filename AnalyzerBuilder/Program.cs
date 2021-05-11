@@ -8,17 +8,17 @@ namespace AnalyzerBuilder
     {
       var workingDirectory = @"C:\temp\mahjong\scoring";
 
-      //var a = new SuitScoringInformationCreator(workingDirectory);
-      //a.CreateLookup();
+      var a = new SuitScoringInformationCreator(workingDirectory);
+      a.CreateLookup();
 
-      //var b = new SuitMeldScoringInformationCreator(workingDirectory);
-      //b.CreateLookup();
+      var b = new SuitMeldScoringInformationCreator(workingDirectory);
+      b.CreateLookup();
 
       var c = new HonorScoringInformationCreator(workingDirectory);
       c.CreateLookup();
 
-      //var d = new HonorMeldScoringInformationCreator(workingDirectory);
-      //d.CreateLookup();
+      var d = new HonorMeldScoringInformationCreator(workingDirectory);
+      d.CreateLookup();
     }
   }
 }

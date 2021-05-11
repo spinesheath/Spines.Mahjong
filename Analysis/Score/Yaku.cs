@@ -55,13 +55,20 @@ namespace Spines.Mahjong.Analysis.Score
     Chiihou = 1L << 45,
     Daisangen = 1L << 46,
     Suuankou = 1L << 47,
-    Tsuuiisou = 1L << 48,
-    Ryuuiisou = 1L << 49,
-    Chinroutou = 1L << 50,
-    ChuurenPoutou = 1L << 51,
-    KokushiMusou = 1L << 52,
-    Daisuushi = 1L << 53,
-    Shousuushi = 1L << 54,
-    Suukantsu = 1L << 55
+    SuuankouTanki = 1L << 48,
+    Tsuuiisou = 1L << 49,
+    Ryuuiisou = 1L << 50,
+    Chinroutou = 1L << 51,
+    ChuurenPoutou = 1L << 52,
+    JunseiChuurenPoutou = 1L << 53,
+    KokushiMusou = 1L << 54,
+    KokushiMusouJuusanMen = 1L << 55,
+    Daisuushi = 1L << 56,
+    Shousuushi = 1L << 57,
+    Suukantsu = 1L << 58,
+
+    Dora = 1L << 59,
+    UraDora = 1L << 60,
+    AkaDora = 1L << 61
   }
 }
