@@ -26,7 +26,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       // Sum
       IipeikouRyanpeikou(45); // 2 bit
       Sangen(47); // 6 bit
-      Suushi(43); // 6 bit
+      Suushi(53); // 6 bit
     }
 
     public long AndValue { get; private set; }

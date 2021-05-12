@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Spines.Mahjong.Analysis.Replay;
+using Spines.Mahjong.Analysis.Shanten;
 using Spines.Mahjong.Analysis.State;
 
 namespace Spines.Mahjong.Analysis.Score
@@ -242,6 +243,10 @@ namespace Spines.Mahjong.Analysis.Score
       {
         return false;
       }
+
+      var field = ScoreLookup.Flags((HandCalculator)hand);
+      var bits = Convert.ToString(field, 2);
+      var flags = (ScoringAndFieldYaku)field;
 
       var furitenTileTypes = seat.Hand.GetFuritenTileTypes().ToList();
       if (furitenTileTypes.Intersect(seat.Discards.Select(t => t.TileType)).Any())

@@ -44,7 +44,9 @@ namespace AnalyzerBuilder.Creators.Scoring
     {
       var koutsuCount = _arrangement.Blocks.Count(b => b.Index < 4 && b.IsKoutsu);
       var pairCount = _arrangement.Blocks.Count(b => b.Index < 4 && b.IsPair);
-      SumValue |= (long) (koutsuCount + pairCount) << offset;
+
+      var shousuushiCount = pairCount == 1 ? koutsuCount + 1 : 0;
+      SumValue |= (long) shousuushiCount << offset;
       SumValue |= (long) koutsuCount << (offset + 3);
     }
 
@@ -52,9 +54,12 @@ namespace AnalyzerBuilder.Creators.Scoring
     {
       var koutsuCount = _arrangement.Blocks.Count(b => b.Index > 3 && b.IsKoutsu);
       var pairCount = _arrangement.Blocks.Count(b => b.Index > 3 && b.IsPair);
-      var shousangenCount = koutsuCount + pairCount > 1 ? koutsuCount + pairCount + 1 : koutsuCount + pairCount;
-      var daisangenCount = koutsuCount > 1 ? koutsuCount + 1 : koutsuCount;
+
+      var blockCount = pairCount == 1 ? koutsuCount + 1 : 0;
+      var shousangenCount = blockCount > 1 ? blockCount + 1 : blockCount;
       SumValue |= (long)shousangenCount << offset;
+      
+      var daisangenCount = koutsuCount > 1 ? koutsuCount + 1 : koutsuCount;
       SumValue |= (long)daisangenCount << (offset + 3);
     }
 
