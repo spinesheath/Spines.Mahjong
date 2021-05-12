@@ -33,7 +33,7 @@ namespace Spines.Mahjong.Analysis.Score
     OpenChanta = 1L << 24,
     Toitoi = 1L << 25,
     Honroutou = 1L << 26,
-    Rsuuiisou = 1L << 27,
+    Tsuuiisou = 1L << 27,
     Tanyao = 1L << 28,
     ClosedJunchan = 1L << 29,
     OpenJunchan = 1L << 30,

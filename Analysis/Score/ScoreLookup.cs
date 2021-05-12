@@ -31,14 +31,16 @@ namespace Spines.Mahjong.Analysis.Score
 
       var andField = manzuAnd & souzuAnd & pinzuAnd & honorAnd;
 
-      //var manzuSum = SuitSum(manzuConcealedIndex, manzuMeldIndex);
-      //var pinzuSum = SuitSum(pinzuConcealedIndex, pinzuMeldIndex);
-      //var souzuSum = SuitSum(souzuConcealedIndex, souzuMeldInex);
+      var manzuSum = SuitSum(manzuConcealedIndex, manzuMeldIndex);
+      var pinzuSum = SuitSum(pinzuConcealedIndex, pinzuMeldIndex);
+      var souzuSum = SuitSum(souzuConcealedIndex, souzuMeldInex);
+      var suitSum = manzuSum + pinzuSum + souzuSum;
+
       var honorSum = HonorSum(honorConcealedIndex, honorMeldIndex);
       
       var sangenSuushi = honorSum & (0b100100100100L << 47);
 
-      return andField | sangenSuushi;
+      return andField | sangenSuushi | suitSum;
     }
 
     private static long HonorSum(int concealedIndex, int meldIndex)

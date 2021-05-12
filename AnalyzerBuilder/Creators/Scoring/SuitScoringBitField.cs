@@ -37,12 +37,10 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Suushi(int offset)
     {
-      SumValue |= 0b100L << offset;
     }
 
     private void Sangen(int offset)
     {
-      SumValue |= 0b100L << offset;
     }
 
     private void IipeikouRyanpeikou(int offset)

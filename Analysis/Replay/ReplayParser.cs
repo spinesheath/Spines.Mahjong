@@ -183,7 +183,7 @@ namespace Spines.Mahjong.Analysis.Replay
             var yakumanBuffer = new byte[yakumanLength];
             file.Read(yakumanBuffer);
 
-            var yaku = ToYakuEnum(yakuBuffer, yakumanBuffer, meldBuffer);
+            var yaku = ToYakuEnum(yakuBuffer, yakumanBuffer, ronMeldBuffer);
 
             var doraHaiLength = file.ReadByte();
             var doraBuffer = new byte[doraHaiLength];
@@ -248,7 +248,7 @@ namespace Spines.Mahjong.Analysis.Replay
             var yakumanBuffer = new byte[yakumanLength];
             file.Read(yakumanBuffer);
 
-            var yaku = ToYakuEnum(yakuBuffer, yakumanBuffer, meldBuffer);
+            var yaku = ToYakuEnum(yakuBuffer, yakumanBuffer, tsumoMeldBuffer);
 
             var doraHaiLength = file.ReadByte();
             var doraBuffer = new byte[doraHaiLength];
@@ -343,7 +343,7 @@ namespace Spines.Mahjong.Analysis.Replay
 
     private static Yaku ToYakuEnum(byte[] yakuBuffer, byte[] yakumanBuffer, byte[] meldBuffer)
     {
-      var isOpen = meldBuffer.Length == 0 || HasOpenMeld(meldBuffer);
+      var isOpen = HasOpenMeld(meldBuffer);
       var lookup = isOpen ? TenhouYakuIdToOpenYaku : TenhouYakuIdToClosedYaku;
       var result = Yaku.None;
       for (var i = 0; i < yakuBuffer.Length; i += 2)

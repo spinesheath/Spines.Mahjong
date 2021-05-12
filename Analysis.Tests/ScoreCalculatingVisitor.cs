@@ -7,6 +7,8 @@ namespace Spines.Mahjong.Analysis.Tests
 {
   internal class ScoreCalculatingVisitor : IReplayVisitor
   {
+    private const Yaku YakuFilter = Yaku.Ryanpeikou;
+
     public ScoreCalculatingVisitor()
     {
       _wall = new FakeWall();
@@ -98,6 +100,11 @@ namespace Spines.Mahjong.Analysis.Tests
     {
       CalculationCount += 1;
 
+      if ((payment.Yaku & YakuFilter) == 0)
+      {
+        return;
+      }
+
       if (_currentShouminkanTile == null)
       {
         if (!AgariValidation2.CanRon(_board, who))
@@ -118,12 +125,10 @@ namespace Spines.Mahjong.Analysis.Tests
     {
       CalculationCount += 1;
 
-      if ((payment.Yaku & (Yaku.Shousangen | Yaku.Daisangen | Yaku.Shousuushi | Yaku.Daisuushi)) == 0)
+      if ((payment.Yaku & YakuFilter) == 0)
       {
         return;
       }
-
-      
 
       // TODO rinshan
       if (!AgariValidation2.CanTsumo(_board, false))
@@ -132,7 +137,6 @@ namespace Spines.Mahjong.Analysis.Tests
       }
 
       var score = ScoreCalculator.Tsumo(_board, false);
-
     }
 
     private Board _board;
