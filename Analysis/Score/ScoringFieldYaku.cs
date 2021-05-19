@@ -56,6 +56,7 @@ namespace Spines.Mahjong.Analysis.Score
     Shousangen = 1L << 49,
     Daisangen = 1L << 52,
     Shousuushi = 1L << 55,
-    Daisuushi = 1L << 58
+    Daisuushi = 1L << 58,
+    Ittsuu = 1L << 62
   }
 }

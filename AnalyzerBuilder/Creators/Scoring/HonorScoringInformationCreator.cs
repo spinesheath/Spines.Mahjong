@@ -15,17 +15,21 @@ namespace AnalyzerBuilder.Creators.Scoring
     public void CreateLookup()
     {
       const int maxLookupIndex = 78125;
-      var lookup = new long[maxLookupIndex * 2];
+      var lookup = new long[maxLookupIndex * 3];
 
       var language = CreateAnalyzedWords();
       foreach (var word in language)
       {
         var index = word.Base5Hash;
         var field = new HonorScoringBitField(word);
+
         Debug.Assert(lookup[index] == 0 || lookup[index] == field.AndValue);
+        Debug.Assert(lookup[index + maxLookupIndex] == 0 || lookup[index + maxLookupIndex] == field.SumValue);
+        Debug.Assert(lookup[index + 2 * maxLookupIndex] == 0 || lookup[index + 2 * maxLookupIndex] == field.WaitShiftValue);
 
         lookup[index] = field.AndValue;
         lookup[index + maxLookupIndex] = field.SumValue;
+        lookup[index + 2 * maxLookupIndex] = field.WaitShiftValue;
       }
 
       var path = Path.Combine(_workingDirectory, "HonorScoringLookup.dat");

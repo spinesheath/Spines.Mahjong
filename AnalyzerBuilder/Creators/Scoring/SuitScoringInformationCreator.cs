@@ -15,7 +15,7 @@ namespace AnalyzerBuilder.Creators.Scoring
     public void CreateLookup()
     {
       const int maxLookupIndex = 1953125;
-      var lookup = new long[maxLookupIndex * 2];
+      var lookup = new long[maxLookupIndex * 3];
 
       var language = CreateAnalyzedWords();
       var groupedByHash = language.GroupBy(w => w.Base5Hash);
@@ -23,10 +23,14 @@ namespace AnalyzerBuilder.Creators.Scoring
       {
         var index = group.Key;
         var field = new SuitScoringBitField(group);
+
         Debug.Assert(lookup[index] == 0 || lookup[index] == field.AndValue);
+        Debug.Assert(lookup[index + maxLookupIndex] == 0 || lookup[index + maxLookupIndex] == field.SumValue);
+        Debug.Assert(lookup[index + 2 * maxLookupIndex] == 0 || lookup[index + 2 * maxLookupIndex] == field.WaitShiftValue);
 
         lookup[index] = field.AndValue;
         lookup[index + maxLookupIndex] = field.SumValue;
+        lookup[index + 2 * maxLookupIndex] = field.WaitShiftValue;
       }
 
       var path = Path.Combine(_workingDirectory, "SuitScoringLookup.dat");

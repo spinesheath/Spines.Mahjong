@@ -9,11 +9,6 @@ namespace AnalyzerBuilder.Creators.Scoring
       _arrangement = arrangement;
       _isEmpty = arrangement.TileCount == 0;
 
-      if (arrangement.Base5Hash == 1250)
-      {
-
-      }
-
       SanshokuDoujun(0); // 7 + 7 bit
       SanshokuDoukou(14); // 9 bit
       Chanta(23); // 2 bit
@@ -26,19 +21,38 @@ namespace AnalyzerBuilder.Creators.Scoring
       Chuuren(32); // 1 bit
       Ryuuiisou(33); // 1 bit
       Yakuhai(34); // 11 bit
-
-      // Sum
       IipeikouRyanpeikou(45); // 2 bit
       Sangen(47); // 6 bit
       Suushi(53); // 6 bit
+      Pinfu(0); // 10 bit, 9 bit cleared
+      Ankou(10); // 13 bit, 12 cleared?
     }
 
     public long AndValue { get; private set; }
 
     public long SumValue { get; private set; }
 
+    public long WaitShiftValue { get; private set; }
+
     private readonly ConcealedArrangement _arrangement;
     private readonly bool _isEmpty;
+
+    private void Ankou(int offset)
+    {
+      var countsWithWait = Enumerable.Range(0, 9).Select(i => _arrangement.Blocks.Count(b => b.IsKoutsu && b.Index != i)).ToList();
+      var minCountWithWait = countsWithWait.Min();
+
+      SumValue |= (long)minCountWithWait << offset;
+      for (var i = 0; i < 9; i++)
+      {
+        WaitShiftValue |= (long)(countsWithWait[i] - minCountWithWait) << (i + offset);
+      }
+    }
+
+    private void Pinfu(int offset)
+    {
+      // TODO pinfu
+    }
 
     private void Suushi(int offset)
     {

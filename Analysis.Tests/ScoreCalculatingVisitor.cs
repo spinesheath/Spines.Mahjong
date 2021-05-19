@@ -7,7 +7,7 @@ namespace Spines.Mahjong.Analysis.Tests
 {
   internal class ScoreCalculatingVisitor : IReplayVisitor
   {
-    private const Yaku YakuFilter = Yaku.Ryanpeikou;
+    private const Yaku YakuFilter = Yaku.Pinfu;
 
     public ScoreCalculatingVisitor()
     {

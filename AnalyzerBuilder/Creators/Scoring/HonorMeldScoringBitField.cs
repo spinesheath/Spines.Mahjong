@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace AnalyzerBuilder.Creators.Scoring
 {
+  // TODO construct this progressively in HandCalculator?
   internal class HonorMeldScoringBitField
   {
     public HonorMeldScoringBitField(IReadOnlyList<Block> melds)
@@ -22,11 +23,11 @@ namespace AnalyzerBuilder.Creators.Scoring
       Chuuren(32); // 1 bit
       Ryuuiisou(33); // 1 bit
       Yakuhai(34); // 11 bit
-
-      // Sum
       IipeikouRyanpeikou(45); // 2 bit
       Sangen(47); // 6 bit
       Suushi(53); // 6 bit
+      Pinfu(0); // 10 bit, 9 bit cleared
+      Ankou(10); // 13 bit, 12 cleared?
     }
 
     public long AndValue { get; private set; }
@@ -35,8 +36,21 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     public long SumValue { get; private set; }
 
+    public long WaitShiftValue { get; private set; }
+
     private readonly bool _hasMelds;
     private readonly IReadOnlyList<Block> _melds;
+
+    private void Ankou(int offset)
+    {
+      var ankanCount = _melds.Count(m => m.IsAnkan);
+      WaitShiftValue |= (long)ankanCount << offset;
+    }
+
+    private void Pinfu(int offset)
+    {
+
+    }
 
     private void Suushi(int offset)
     {

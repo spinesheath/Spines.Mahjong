@@ -13,7 +13,7 @@ namespace AnalyzerBuilder.Creators.Scoring
         var h = 0;
         foreach (var b in permutation)
         {
-          h *= 26;
+          h *= 35;
           h += b.Id + 1;
         }
         

@@ -13,7 +13,7 @@ namespace Spines.Mahjong.Analysis.Score
       HonorMelded = Resource.LongLookup("Scoring", "HonorMeldScoringLookup.dat");
     }
 
-    public static long Flags(HandCalculator hand)
+    public static long Flags(HandCalculator hand, Tile winningTile, bool isRon, int valueWindFlags)
     {
       var manzuConcealedIndex = hand.Base5Hash(0);
       var manzuMeldIndex = MeldIndex(hand, 0);
@@ -40,7 +40,25 @@ namespace Spines.Mahjong.Analysis.Score
       
       var sangenSuushi = honorSum & (0b100100100100L << 47);
 
-      return andField | sangenSuushi | suitSum;
+      var ittsuu = ((manzuAnd | pinzuAnd | souzuAnd) + (0b1L << 59)) & (0b1L << 62);
+
+      var shiftValues = new int[4];
+      shiftValues[winningTile.TileType.SuitId] = winningTile.TileType.Index + (isRon ? 10 : 1);
+
+      var manzuShift = SuitShift(manzuConcealedIndex) >> shiftValues[0];
+      var pinzuShift = SuitShift(pinzuConcealedIndex) >> shiftValues[1];
+      var souzuShift = SuitShift(souzuConcealedIndex) >> shiftValues[2];
+
+      // TODO pinfu 1 bit from honors too, add instead of AND, bitmask 100
+      // TODO ankou SUM + (SUM & 101)
+      var pinfu = manzuShift & pinzuShift & souzuShift & 0b1L;
+
+      return andField | sangenSuushi | suitSum | ittsuu;
+    }
+
+    private static long SuitShift(int concealedIndex)
+    {
+      return SuitConcealed[concealedIndex + 2 * SuitConcealedBlockSize];
     }
 
     private static long HonorSum(int concealedIndex, int meldIndex)
@@ -53,7 +71,7 @@ namespace Spines.Mahjong.Analysis.Score
     }
 
     private const int SuitConcealedBlockSize = 1953125;
-    private const int MeldBlockSize = 456976;
+    private const int MeldBlockSize = 1500625;
     private const int HonorConcealedBlockSize = 78125;
 
     private static readonly long[] HonorConcealed;

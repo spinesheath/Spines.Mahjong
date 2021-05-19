@@ -56,7 +56,7 @@ namespace Spines.Mahjong.Analysis.Score
         tileCountsBySuit[tile.TileType.SuitId] += 1;
       }
 
-      var field = ScoreLookup.Flags(seat.Hand);
+      var field = ScoreLookup.Flags(seat.Hand, seat.CurrentDraw!, false);
       var bits = Convert.ToString(field, 2);
       var flags = (ScoringAndFieldYaku) field;
 
@@ -244,7 +244,7 @@ namespace Spines.Mahjong.Analysis.Score
         return false;
       }
 
-      var field = ScoreLookup.Flags((HandCalculator)hand);
+      var field = ScoreLookup.Flags((HandCalculator)hand, winningTile, true);
       var bits = Convert.ToString(field, 2);
       var flags = (ScoringAndFieldYaku)field;
 

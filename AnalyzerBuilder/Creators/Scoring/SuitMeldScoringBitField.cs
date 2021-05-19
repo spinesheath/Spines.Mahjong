@@ -23,11 +23,12 @@ namespace AnalyzerBuilder.Creators.Scoring
       Chuuren(32); // 1 bit
       Ryuuiisou(33); // 1 bit
       Yakuhai(34); // 11 bit
-
-      // Sum
       IipeikouRyanpeikou(45); // 2 bit
-      Sangen(47); // 6 bit
-      Suushi(53); // 6 bit
+      Sangen(47); // 6 bit, 4 bit cleared
+      Suushi(53); // 6 bit, 4 bit cleared
+      Ittsuu(59); // 4 bit, 3 bit cleared
+      Pinfu(0); // 10 bit, 9 bit cleared
+      Ankou(10); // 13 bit, 12 cleared?
     }
 
     public long AndValue { get; private set; }
@@ -36,9 +37,32 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     public long SumValue { get; } = 0L;
 
+    public long WaitShiftValue { get; private set; }
+
     private readonly bool _hasMelds;
 
     private readonly IReadOnlyList<Block> _melds;
+
+    private void Ankou(int offset)
+    {
+      var ankanCount = _melds.Count(m => m.IsAnkan);
+      WaitShiftValue |= (long)ankanCount << offset;
+    }
+
+    private void Pinfu(int offset)
+    {
+      
+    }
+
+    private void Ittsuu(int offset)
+    {
+      foreach (var meld in _melds.Where(b => b.IsShuntsu && b.Index % 3 == 0))
+      {
+        OrValue |= 0b1L << offset + meld.Index / 3;
+      }
+
+      AndValue |= 0b111L << offset;
+    }
 
     private void Suushi(int offset)
     {

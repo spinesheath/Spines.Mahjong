@@ -14,8 +14,8 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     public void CreateLookup()
     {
-      const int maxLookupIndex = 456976;
-      var lookup = new long[maxLookupIndex * 3];
+      const int maxLookupIndex = 1500625;
+      var lookup = new long[maxLookupIndex * 4];
 
       var language = CreateAnalyzedWords();
       foreach (var word in language)
@@ -25,10 +25,13 @@ namespace AnalyzerBuilder.Creators.Scoring
         {
           Debug.Assert(lookup[index] == 0 || lookup[index] == field.AndValue);
           Debug.Assert(lookup[index + maxLookupIndex] == 0 || lookup[index + maxLookupIndex] == field.OrValue);
+          Debug.Assert(lookup[index + 2 * maxLookupIndex] == 0 || lookup[index + 2 * maxLookupIndex] == field.SumValue);
+          Debug.Assert(lookup[index + 3 * maxLookupIndex] == 0 || lookup[index + 3 * maxLookupIndex] == field.WaitShiftValue);
 
           lookup[index] = field.AndValue;
           lookup[index + maxLookupIndex] = field.OrValue;
           lookup[index + 2 * maxLookupIndex] = field.SumValue;
+          lookup[index + 3 * maxLookupIndex] = field.WaitShiftValue;
         }
       }
       
@@ -66,7 +69,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       {
         // TODO probably want redundancies here, so order of melds doesn't matter
         // avoid redundancies by looking at the blocks already in the stack
-        if (tileCounts[i] < 4 && tileCounts[i + 1] < 4 && tileCounts[i + 2] < 4 && blocks.All(b => b.IsPair || b.IsShuntsu && b.Index <= i))
+        if (tileCounts[i] < 4 && tileCounts[i + 1] < 4 && tileCounts[i + 2] < 4 && blocks.All(b => b.IsShuntsu && b.Index <= i))
         {
           tileCounts[i] += 1;
           tileCounts[i + 1] += 1;
@@ -88,7 +91,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       for (var i = 0; i < 9; i++)
       {
         // avoid redundancies by looking at the blocks already in the stack
-        if (tileCounts[i] < 2 && blocks.All(b => b.IsPair || b.IsShuntsu || b.IsKoutsu && b.Index <= i))
+        if (tileCounts[i] < 2 && blocks.All(b => b.IsShuntsu || b.IsKoutsu && b.Index <= i))
         {
           tileCounts[i] += 3;
           blocks.Push(Block.Koutsu(i));
@@ -106,10 +109,28 @@ namespace AnalyzerBuilder.Creators.Scoring
       for (var i = 0; i < 9; i++)
       {
         // avoid redundancies by looking at the blocks already in the stack
-        if (tileCounts[i] == 0 && blocks.All(b => b.IsPair || b.IsShuntsu || b.IsKoutsu || b.IsKantsu && b.Index <= i))
+        if (tileCounts[i] == 0 && blocks.All(b => b.IsShuntsu || b.IsKoutsu || b.IsAnkan && b.Index <= i))
         {
           tileCounts[i] += 4;
-          blocks.Push(Block.Kantsu(i));
+          blocks.Push(Block.Ankan(i));
+
+          foreach (var word in EnumerateArrangements(tileCounts, blocks, remainingBlocks - 1))
+          {
+            yield return word;
+          }
+
+          blocks.Pop();
+          tileCounts[i] -= 4;
+        }
+      }
+
+      for (var i = 0; i < 9; i++)
+      {
+        // avoid redundancies by looking at the blocks already in the stack
+        if (tileCounts[i] == 0 && blocks.All(b => b.IsShuntsu || b.IsKoutsu || b.IsAnkan || b.IsMinkan && b.Index <= i))
+        {
+          tileCounts[i] += 4;
+          blocks.Push(Block.Minkan(i));
 
           foreach (var word in EnumerateArrangements(tileCounts, blocks, remainingBlocks - 1))
           {
