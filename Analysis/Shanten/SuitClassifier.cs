@@ -14,7 +14,7 @@
     {
       var current = 0;
       _meldCount = 0;
-      for (var i = 0; i < 5; ++i)
+      for (var i = 0; i < 4; ++i)
       {
         var m = melds & 0b111111;
         if (m != 0)
