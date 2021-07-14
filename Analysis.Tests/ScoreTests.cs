@@ -12,7 +12,7 @@ namespace Spines.Mahjong.Analysis.Tests
     {
       var files = BundlesFolders.SelectMany(Directory.EnumerateFiles);
       var visitor = new ScoreCalculatingVisitor();
-      foreach (var file in files)
+      foreach (var file in files.Take(100))
       {
         using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
         ReplayParser.Parse(fileStream, visitor);

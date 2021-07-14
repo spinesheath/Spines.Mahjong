@@ -12,7 +12,9 @@
     <None Remove="Resources\ArrangementTransitions.txt" />
     <None Remove="Resources\ProgressiveHonorStateMachine.txt" />
     <None Remove="Resources\Scoring\HonorMeldScoringLookup.dat" />
+    <None Remove="Resources\Scoring\HonorMeldSumLookup.dat" />
     <None Remove="Resources\Scoring\HonorScoringLookup.dat" />
+    <None Remove="Resources\Scoring\HonorSumLookup.dat" />
     <None Remove="Resources\Scoring\SuitMeldScoringLookup.dat" />
     <None Remove="Resources\Scoring\SuitScoringLookup.dat" />
     <None Remove="Resources\suitArrangementsBase5NoMelds.dat" />
@@ -30,7 +32,9 @@
     <EmbeddedResource Include="Resources\ArrangementTransitions.txt" />
     <EmbeddedResource Include="Resources\ProgressiveHonorStateMachine.txt" />
     <EmbeddedResource Include="Resources\Scoring\HonorMeldScoringLookup.dat" />
+    <EmbeddedResource Include="Resources\Scoring\HonorMeldSumLookup.dat" />
     <EmbeddedResource Include="Resources\Scoring\HonorScoringLookup.dat" />
+    <EmbeddedResource Include="Resources\Scoring\HonorSumLookup.dat" />
     <EmbeddedResource Include="Resources\Scoring\SuitMeldScoringLookup.dat" />
     <EmbeddedResource Include="Resources\Scoring\SuitScoringLookup.dat" />
     <EmbeddedResource Include="Resources\suitArrangementsBase5NoMelds.dat" />

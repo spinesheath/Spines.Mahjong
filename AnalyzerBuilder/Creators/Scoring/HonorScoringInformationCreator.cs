@@ -14,8 +14,8 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     public void CreateLookup()
     {
-      const int maxLookupIndex = 78125;
-      var lookup = new long[maxLookupIndex * 3];
+      const int maxLookupIndex = 78125; // 5^7
+      var sumLookup = new long[maxLookupIndex];
 
       var language = CreateAnalyzedWords();
       foreach (var word in language)
@@ -23,21 +23,17 @@ namespace AnalyzerBuilder.Creators.Scoring
         var index = word.Base5Hash;
         var field = new HonorScoringBitField(word);
 
-        Debug.Assert(lookup[index] == 0 || lookup[index] == field.AndValue);
-        Debug.Assert(lookup[index + maxLookupIndex] == 0 || lookup[index + maxLookupIndex] == field.SumValue);
-        Debug.Assert(lookup[index + 2 * maxLookupIndex] == 0 || lookup[index + 2 * maxLookupIndex] == field.WaitShiftValue);
+        Debug.Assert(sumLookup[index] == 0 || sumLookup[index] == field.SumValue);
 
-        lookup[index] = field.AndValue;
-        lookup[index + maxLookupIndex] = field.SumValue;
-        lookup[index + 2 * maxLookupIndex] = field.WaitShiftValue;
+        sumLookup[index] = field.SumValue;
       }
 
-      var path = Path.Combine(_workingDirectory, "HonorScoringLookup.dat");
+      var path = Path.Combine(_workingDirectory, "HonorSumLookup.dat");
       using var fileStream = File.Create(path);
       using var writer = new BinaryWriter(fileStream);
-      for (var i = 0; i < lookup.Length; i++)
+      for (var i = 0; i < sumLookup.Length; i++)
       {
-        writer.Write(lookup[i]);
+        writer.Write(sumLookup[i]);
       }
     }
 
@@ -63,6 +59,58 @@ namespace AnalyzerBuilder.Creators.Scoring
             yield return word;
           }
         }
+      }
+
+      foreach (var word in EnumerateChiitoiArrangements())
+      {
+        yield return word;
+      }
+
+      foreach (var word in EnumerateKokushiArrangements())
+      {
+        yield return word;
+      }
+    }
+
+    private static IEnumerable<ConcealedArrangement> EnumerateChiitoiArrangements()
+    {
+      for (var i = 0; i < (1 << 7); i++)
+      {
+        var tiles = new int[7];
+        var blocks = new List<Block>();
+
+        var j = 1;
+        for (var k = 0; k < 7; k++)
+        {
+          var hasBit = (i & j) != 0;
+          if (hasBit)
+          {
+            tiles[k] = 2;
+            blocks.Add(Block.Pair(k));
+          }
+          j <<= 1;
+        }
+
+        if (blocks.Count == 1)
+        {
+          yield return new ConcealedArrangement(tiles, blocks);
+        }
+        else
+        {
+          yield return new ConcealedArrangement(tiles, Enumerable.Empty<Block>());
+        }
+      }
+    }
+
+    private static IEnumerable<ConcealedArrangement> EnumerateKokushiArrangements()
+    {
+      var tiles = Enumerable.Repeat(1, 7).ToArray();
+      yield return new ConcealedArrangement(tiles, Enumerable.Empty<Block>());
+      for (var i = 0; i < 7; i++)
+      {
+        tiles[i] = 2;
+        yield return new ConcealedArrangement(tiles, Enumerable.Empty<Block>());
+        tiles[i] = 1;
       }
     }
 

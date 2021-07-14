@@ -15,7 +15,7 @@ namespace AnalyzerBuilder.Creators.Scoring
     public void CreateLookup()
     {
       const int maxLookupIndex = 1500625;
-      var lookup = new long[maxLookupIndex * 4];
+      var sumLookup = new long[maxLookupIndex];
 
       var language = CreateAnalyzedWords();
       foreach (var word in language)
@@ -23,24 +23,18 @@ namespace AnalyzerBuilder.Creators.Scoring
         var field = new HonorMeldScoringBitField(word.Blocks);
         foreach (var index in word.LookupIndexes)
         {
-          Debug.Assert(lookup[index] == 0 || lookup[index] == field.AndValue);
-          Debug.Assert(lookup[index + maxLookupIndex] == 0 || lookup[index + maxLookupIndex] == field.OrValue);
-          Debug.Assert(lookup[index + 2 * maxLookupIndex] == 0 || lookup[index + 2 * maxLookupIndex] == field.SumValue);
-          Debug.Assert(lookup[index + 3 * maxLookupIndex] == 0 || lookup[index + 3 * maxLookupIndex] == field.WaitShiftValue);
+          Debug.Assert(sumLookup[index] == 0 || sumLookup[index] == field.SumValue);
 
-          lookup[index] = field.AndValue;
-          lookup[index + maxLookupIndex] = field.OrValue;
-          lookup[index + 2 * maxLookupIndex] = field.SumValue;
-          lookup[index + 3 * maxLookupIndex] = field.WaitShiftValue;
+          sumLookup[index] = field.SumValue;
         }
       }
 
-      var path = Path.Combine(_workingDirectory, "HonorMeldScoringLookup.dat");
+      var path = Path.Combine(_workingDirectory, "HonorMeldSumLookup.dat");
       using var fileStream = File.Create(path);
       using var writer = new BinaryWriter(fileStream);
-      for (var i = 0; i < lookup.Length; i++)
+      for (var i = 0; i < sumLookup.Length; i++)
       {
-        writer.Write(lookup[i]);
+        writer.Write(sumLookup[i]);
       }
     }
 

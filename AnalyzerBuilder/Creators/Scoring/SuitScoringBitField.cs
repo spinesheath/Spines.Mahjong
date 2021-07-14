@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace AnalyzerBuilder.Creators.Scoring
@@ -11,7 +10,6 @@ namespace AnalyzerBuilder.Creators.Scoring
       _interpretations = interpretations.ToList();
 
       // And
-      // TODO find a way to compress to single bits, like right shift by X, and if x == 0 the result is 0? But that's too many bits
       SanshokuDoujun(0); // 7 + 7 bit
       SanshokuDoukou(14); // 9 bit
       Chanta(23); // 2 bit

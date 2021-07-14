@@ -1,13 +1,29 @@
 ﻿using System.Collections.Generic;
 using Spines.Mahjong.Analysis.Replay;
 using Spines.Mahjong.Analysis.Score;
+using Spines.Mahjong.Analysis.Shanten;
 using Spines.Mahjong.Analysis.State;
 
 namespace Spines.Mahjong.Analysis.Tests
 {
   internal class ScoreCalculatingVisitor : IReplayVisitor
   {
-    private const Yaku YakuFilter = Yaku.Pinfu;
+    private const Yaku YakuFilter = 
+      Yaku.Haku | 
+      Yaku.Hatsu | 
+      Yaku.Chun | 
+      Yaku.BakazeTon | 
+      Yaku.JikazeNan | 
+      Yaku.JikazeShaa | 
+      Yaku.JikazePei | 
+      Yaku.JikazeTon | 
+      Yaku.JikazeNan | 
+      Yaku.JikazeShaa | 
+      Yaku.JikazePei |
+      Yaku.Shousangen |
+      Yaku.Daisangen |
+      Yaku.Shousuushi|
+      Yaku.Daisuushi;
 
     public ScoreCalculatingVisitor()
     {
@@ -107,14 +123,34 @@ namespace Spines.Mahjong.Analysis.Tests
 
       if (_currentShouminkanTile == null)
       {
-        if (!AgariValidation2.CanRon(_board, who))
+        //if (!AgariValidation2.CanRon(_board, who))
+        //{
+        //  FailureCount += 1;
+        //}
+
+        var discard = _board.CurrentDiscard!;
+        var hand = (HandCalculator)_board.Seats[who].Hand.WithTile(discard.TileType);
+        var roundWind = _board.RoundWind.Index;
+        var seatWind = _board.Seats[who].SeatWind.Index;
+        var yaku = YakuCalculator.Ron(hand, discard, roundWind, seatWind);
+        if ((yaku & YakuFilter) != (payment.Yaku & YakuFilter))
         {
           FailureCount += 1;
         }
       }
       else
       {
-        if (!AgariValidation2.CanChankan(_board, who, _currentShouminkanTile))
+        //if (!AgariValidation2.CanChankan(_board, who, _currentShouminkanTile))
+        //{
+        //  FailureCount += 1;
+        //}
+
+        var discard = _currentShouminkanTile;
+        var hand = (HandCalculator)_board.Seats[who].Hand.WithTile(discard.TileType);
+        var roundWind = _board.RoundWind.Index;
+        var seatWind = _board.Seats[who].SeatWind.Index;
+        var yaku = YakuCalculator.Chankan(hand, discard, roundWind, seatWind);
+        if ((yaku & YakuFilter) != (payment.Yaku & YakuFilter))
         {
           FailureCount += 1;
         }
@@ -131,12 +167,22 @@ namespace Spines.Mahjong.Analysis.Tests
       }
 
       // TODO rinshan
-      if (!AgariValidation2.CanTsumo(_board, false))
+      //if (!AgariValidation2.CanTsumo(_board, false))
+      //{
+      //  FailureCount += 1;
+      //}
+
+      var hand = _board.Seats[who].Hand;
+      var draw = _board.Seats[who].CurrentDraw!;
+      var roundWind = _board.RoundWind.Index;
+      var seatWind = _board.Seats[who].SeatWind.Index;
+      var yaku = YakuCalculator.Tsumo(hand, draw, roundWind, seatWind);
+      if ((yaku & YakuFilter) != (payment.Yaku & YakuFilter))
       {
         FailureCount += 1;
       }
 
-      var score = ScoreCalculator.Tsumo(_board, false);
+      //var score = ScoreCalculator.Tsumo(_board, false);
     }
 
     private Board _board;

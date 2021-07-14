@@ -65,6 +65,60 @@ namespace AnalyzerBuilder.Creators.Scoring
           }
         }
       }
+
+      foreach (var word in EnumerateChiitoiArrangements())
+      {
+        yield return word;
+      }
+
+      foreach (var word in EnumerateKokushiArrangements())
+      {
+        yield return word;
+      }
+    }
+
+    private static IEnumerable<ConcealedArrangement> EnumerateChiitoiArrangements()
+    {
+      for (var i = 0; i < (1 << 9); i++)
+      {
+        var tiles = new int[9];
+        var blocks = new List<Block>();
+
+        var j = 1;
+        for (var k = 0; k < 9; k++)
+        {
+          var hasBit = (i & j) != 0;
+          if (hasBit)
+          {
+            tiles[k] = 2;
+            blocks.Add(Block.Pair(k));
+          }
+
+          j <<= 1;
+        }
+
+        if (blocks.Count == 1)
+        {
+          yield return new ConcealedArrangement(tiles, blocks);
+        }
+        else if (blocks.Count <= 7)
+        {
+          yield return new ConcealedArrangement(tiles, Enumerable.Empty<Block>());
+        }
+      }
+    }
+
+    private static IEnumerable<ConcealedArrangement> EnumerateKokushiArrangements()
+    {
+      var tiles = new int[9];
+      tiles[0] = 1;
+      tiles[8] = 1;
+      yield return new ConcealedArrangement(tiles, Enumerable.Empty<Block>());
+      tiles[0] = 2;
+      yield return new ConcealedArrangement(tiles, Enumerable.Empty<Block>());
+      tiles[0] = 1;
+      tiles[8] = 2;
+      yield return new ConcealedArrangement(tiles, Enumerable.Empty<Block>());
     }
 
     private static IEnumerable<ConcealedArrangement> EnumerateArrangements(int[] tileCounts, Stack<Block> blocks, int remainingBlocks)

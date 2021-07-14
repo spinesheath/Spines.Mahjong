@@ -9,23 +9,24 @@ namespace AnalyzerBuilder.Creators.Scoring
       _arrangement = arrangement;
       _isEmpty = arrangement.TileCount == 0;
 
-      SanshokuDoujun(0); // 7 + 7 bit
-      SanshokuDoukou(14); // 9 bit
-      Chanta(23); // 2 bit
-      Toitoi(25); // 1 bit
-      Honroutou(26); // 1 bit
-      Tsuuiisou(27); // 1 bit
-      Tanyao(28); // 1 bit
-      Junchan(29); // 2 bit
-      Chinroutou(31); // 1 bit
-      Chuuren(32); // 1 bit
-      Ryuuiisou(33); // 1 bit
-      Yakuhai(34); // 11 bit
-      IipeikouRyanpeikou(45); // 2 bit
-      Sangen(47); // 6 bit
-      Suushi(53); // 6 bit
-      Pinfu(0); // 10 bit, 9 bit cleared
-      Ankou(10); // 13 bit, 12 cleared?
+      //SanshokuDoujun(0); // 7 + 7 bit
+      //SanshokuDoukou(14); // 9 bit
+      //Chanta(23); // 2 bit
+      //Toitoi(25); // 1 bit
+      //Honroutou(26); // 1 bit
+      //Tsuuiisou(27); // 1 bit
+      //Tanyao(28); // 1 bit
+      //Junchan(29); // 2 bit
+      //Chinroutou(31); // 1 bit
+      //Chuuren(32); // 1 bit
+      //Ryuuiisou(33); // 1 bit
+      KazeYakuhai(24);
+      SangenYakuhai(42);
+      //IipeikouRyanpeikou(45); // 2 bit
+      Sangen();
+      Suushi();
+      //Pinfu(0); // 10 bit, 9 bit cleared
+      //Ankou(10); // 13 bit, 12 cleared?
     }
 
     public long AndValue { get; private set; }
@@ -54,48 +55,51 @@ namespace AnalyzerBuilder.Creators.Scoring
       // TODO pinfu
     }
 
-    private void Suushi(int offset)
+    private void Suushi()
     {
       var koutsuCount = _arrangement.Blocks.Count(b => b.Index < 4 && b.IsKoutsu);
       var pairCount = _arrangement.Blocks.Count(b => b.Index < 4 && b.IsPair);
 
       var shousuushiCount = pairCount == 1 ? koutsuCount + 1 : 0;
-      SumValue |= (long) shousuushiCount << offset;
-      SumValue |= (long) koutsuCount << (offset + 3);
+      SumValue |= (long) shousuushiCount << 9;
+      SumValue |= (long) koutsuCount << 12;
     }
 
-    private void Sangen(int offset)
+    private void Sangen()
     {
       var koutsuCount = _arrangement.Blocks.Count(b => b.Index > 3 && b.IsKoutsu);
       var pairCount = _arrangement.Blocks.Count(b => b.Index > 3 && b.IsPair);
 
       var blockCount = pairCount == 1 ? koutsuCount + 1 : 0;
       var shousangenCount = blockCount > 1 ? blockCount + 1 : blockCount;
-      SumValue |= (long)shousangenCount << offset;
+      SumValue |= (long)shousangenCount << 3;
       
       var daisangenCount = koutsuCount > 1 ? koutsuCount + 1 : koutsuCount;
-      SumValue |= (long)daisangenCount << (offset + 3);
+      SumValue |= (long)daisangenCount << 6;
     }
 
     private void IipeikouRyanpeikou(int offset)
     {
     }
 
-    private void Yakuhai(int offset)
+    private void SangenYakuhai(int offset)
+    {
+      for (var i = 0; i < 3; i++)
+      {
+        if (_arrangement.ContainsKoutsu(i + 4))
+        {
+          SumValue |= 0b1L << (offset + i);
+        }
+      }
+    }
+
+    private void KazeYakuhai(int offset)
     {
       for (var i = 0; i < 4; i++)
       {
         if (_arrangement.ContainsKoutsu(i))
         {
-          AndValue |= 0b10001L << (offset + i); // jikaze abd bakaze
-        }
-      }
-
-      for (var i = 4; i < 7; i++)
-      {
-        if (_arrangement.ContainsKoutsu(i))
-        {
-          AndValue |= 0b1L << (offset + i + 4); // sangen
+          SumValue |= 0b10001L << (offset + i);
         }
       }
     }

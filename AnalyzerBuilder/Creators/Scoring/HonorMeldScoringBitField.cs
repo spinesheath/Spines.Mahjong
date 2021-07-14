@@ -11,23 +11,24 @@ namespace AnalyzerBuilder.Creators.Scoring
       _melds = melds;
       _hasMelds = melds.Count > 0;
 
-      SanshokuDoujun(0); // 7 + 7 bit
-      SanshokuDoukou(14); // 9 bit
-      Chanta(23); // 2 bit
-      Toitoi(25); // 1 bit
-      Honroutou(26); // 1 bit
-      Tsuuiisou(27); // 1 bit
-      Tanyao(28); // 1 bit
-      Junchan(29); // 2 bit
-      Chinroutou(31); // 1 bit
-      Chuuren(32); // 1 bit
-      Ryuuiisou(33); // 1 bit
-      Yakuhai(34); // 11 bit
-      IipeikouRyanpeikou(45); // 2 bit
-      Sangen(47); // 6 bit
-      Suushi(53); // 6 bit
-      Pinfu(0); // 10 bit, 9 bit cleared
-      Ankou(10); // 13 bit, 12 cleared?
+      //SanshokuDoujun(0); // 7 + 7 bit
+      //SanshokuDoukou(14); // 9 bit
+      //Chanta(23); // 2 bit
+      //Toitoi(25); // 1 bit
+      //Honroutou(26); // 1 bit
+      //Tsuuiisou(27); // 1 bit
+      //Tanyao(28); // 1 bit
+      //Junchan(29); // 2 bit
+      //Chinroutou(31); // 1 bit
+      //Chuuren(32); // 1 bit
+      //Ryuuiisou(33); // 1 bit
+      KazeYakuhai(24);
+      SangenYakuhai(42);
+      //IipeikouRyanpeikou(45); // 2 bit
+      Sangen();
+      Suushi();
+      //Pinfu(0); // 10 bit, 9 bit cleared
+      //Ankou(10); // 13 bit, 12 cleared?
     }
 
     public long AndValue { get; private set; }
@@ -52,37 +53,43 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     }
 
-    private void Suushi(int offset)
+    private void Suushi()
     {
       var koutsuCount = _melds.Count(b => b.Index < 4);
-      SumValue |= (long) koutsuCount << offset;
-      SumValue |= (long) koutsuCount << (offset + 3);
+      SumValue |= (long) koutsuCount << 9;
+      SumValue |= (long) koutsuCount << 12;
     }
 
-    private void Sangen(int offset)
+    private void Sangen()
     {
       var koutsuCount = _melds.Count(b => b.Index > 3);
       var sangenCount = koutsuCount > 1 ? koutsuCount + 1 : koutsuCount;
-      SumValue |= (long) sangenCount << offset;
-      SumValue |= (long) sangenCount << (offset + 3);
+      SumValue |= (long) sangenCount << 3;
+      SumValue |= (long) sangenCount << 6;
     }
 
     private void IipeikouRyanpeikou(int offset)
     {
     }
 
-    private void Yakuhai(int offset)
+    private void SangenYakuhai(int offset)
     {
-      AndValue |= 0b111_1111_1111L << offset;
+      foreach (var meld in _melds)
+      {
+        if (meld.Index >= 4)
+        {
+          SumValue |= 0b1L << (meld.Index + offset - 4);
+        }
+      }
+    }
+
+    private void KazeYakuhai(int offset)
+    {
       foreach (var meld in _melds)
       {
         if (meld.Index < 4)
         {
-          OrValue |= 0b10001L << (meld.Index + offset);
-        }
-        else
-        {
-          OrValue |= 0b1L << (meld.Index + offset + 4);
+          SumValue |= 0b10001L << (meld.Index + offset);
         }
       }
     }

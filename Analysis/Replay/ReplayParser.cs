@@ -53,8 +53,9 @@ namespace Spines.Mahjong.Analysis.Replay
             {
               scores[i] = BitConverter.ToInt32(buffer, i * 4 + 6) * 100;
             }
-            
-            visitor.Seed(TileType.FromTileId(27 + buffer[0] / 4), buffer[1], buffer[2], buffer[3], buffer[4], Tile.FromTileId(buffer[5]));
+
+            var roundWind = TileType.FromTileTypeId(27 + buffer[0] / 4);
+            visitor.Seed(roundWind, buffer[1], buffer[2], buffer[3], buffer[4], Tile.FromTileId(buffer[5]));
             visitor.Scores(scores);
             visitor.Oya(buffer[^1]);
             break;

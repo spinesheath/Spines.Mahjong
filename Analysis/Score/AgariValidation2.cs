@@ -56,9 +56,9 @@ namespace Spines.Mahjong.Analysis.Score
         tileCountsBySuit[tile.TileType.SuitId] += 1;
       }
 
-      var field = ScoreLookup.Flags(seat.Hand, seat.CurrentDraw!, false);
+      var field = ScoreLookup.Flags(seat.Hand, seat.CurrentDraw!, false, 0);
       var bits = Convert.ToString(field, 2);
-      var flags = (ScoringAndFieldYaku) field;
+      var flags = (ScoringFieldYaku) field;
 
       // presence of tile types as bit flag. 1m is least significant bit.
       var tileTypePresences = 0L;
@@ -244,9 +244,9 @@ namespace Spines.Mahjong.Analysis.Score
         return false;
       }
 
-      var field = ScoreLookup.Flags((HandCalculator)hand, winningTile, true);
+      var field = ScoreLookup.Flags((HandCalculator)hand, winningTile, true, 0);
       var bits = Convert.ToString(field, 2);
-      var flags = (ScoringAndFieldYaku)field;
+      var flags = (ScoringFieldYaku)field;
 
       var furitenTileTypes = seat.Hand.GetFuritenTileTypes().ToList();
       if (furitenTileTypes.Intersect(seat.Discards.Select(t => t.TileType)).Any())
