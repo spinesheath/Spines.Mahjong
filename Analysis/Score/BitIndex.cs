@@ -2,6 +2,10 @@
 {
   internal static class BitIndex
   {
+    public const int ClosedSanshokuDoujun = 2;
+    public const int OpenSanshokuDoujun = 3;
+    public const int SanshokuDoukou = 4;
+
     public const int Shousangen = 5;
     public const int Daisangen = 8;
     

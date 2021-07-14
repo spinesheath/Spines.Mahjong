@@ -6,24 +6,24 @@ namespace Spines.Mahjong.Analysis.Score
 {
   public static class YakuCalculator
   {
-    private static ScoringFieldYaku CalculateInternal(HandCalculator hand, Tile winningTile, bool isRon, int roundWind, int seatWind)
+    private static ScoringFieldYaku CalculateInternal(HandCalculator hand, Tile winningTile, bool isRon, int roundWind, int seatWind, bool isOpen)
     {
-      return (ScoringFieldYaku) ScoreLookup.Flags2(hand, winningTile, isRon, roundWind, seatWind);
+      return (ScoringFieldYaku) ScoreLookup.Flags2(hand, winningTile, isRon, roundWind, seatWind, isOpen);
     }
 
-    public static Yaku Ron(HandCalculator hand, Tile winningTile, int roundWind, int seatWind)
+    public static Yaku Ron(HandCalculator hand, Tile winningTile, int roundWind, int seatWind, bool isOpen)
     {
-      return MapFlags(CalculateInternal(hand, winningTile, true, roundWind, seatWind));
+      return MapFlags(CalculateInternal(hand, winningTile, true, roundWind, seatWind, isOpen));
     }
 
-    public static Yaku Tsumo(HandCalculator hand, Tile winningTile, int roundWind, int seatWind)
+    public static Yaku Tsumo(HandCalculator hand, Tile winningTile, int roundWind, int seatWind, bool isOpen)
     {
-      return MapFlags(CalculateInternal(hand, winningTile, false, roundWind, seatWind));
+      return MapFlags(CalculateInternal(hand, winningTile, false, roundWind, seatWind, isOpen));
     }
 
-    public static Yaku Chankan(HandCalculator hand, Tile winningTile, int roundWind, int seatWind)
+    public static Yaku Chankan(HandCalculator hand, Tile winningTile, int roundWind, int seatWind, bool isOpen)
     {
-      return MapFlags(CalculateInternal(hand, winningTile, true, roundWind, seatWind));
+      return MapFlags(CalculateInternal(hand, winningTile, true, roundWind, seatWind, isOpen));
     }
 
     private static Yaku MapFlags(ScoringFieldYaku flags)
@@ -62,9 +62,9 @@ namespace Spines.Mahjong.Analysis.Score
       //{ ScoringFieldYaku.None, Yaku.ClosedChanta },
       //{ ScoringFieldYaku.None, Yaku.OpenIttsuu },
       //{ ScoringFieldYaku.None, Yaku.ClosedIttsuu },
-      //{ ScoringFieldYaku.None, Yaku.OpenSanshokuDoujun },
-      //{ ScoringFieldYaku.None, Yaku.ClosedSanshokuDoujun },
-      //{ ScoringFieldYaku.None, Yaku.SanshokuDoukou },
+      { ScoringFieldYaku.OpenDoujun, Yaku.OpenSanshokuDoujun },
+      { ScoringFieldYaku.ClosedDoujun, Yaku.ClosedSanshokuDoujun },
+      { ScoringFieldYaku.Doukou, Yaku.SanshokuDoukou },
       //{ ScoringFieldYaku.None, Yaku.Sankantsu },
       //{ ScoringFieldYaku.None, Yaku.Toitoihou },
       //{ ScoringFieldYaku.None, Yaku.Sanankou },

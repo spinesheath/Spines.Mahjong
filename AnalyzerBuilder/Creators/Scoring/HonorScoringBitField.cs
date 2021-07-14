@@ -9,24 +9,24 @@ namespace AnalyzerBuilder.Creators.Scoring
       _arrangement = arrangement;
       _isEmpty = arrangement.TileCount == 0;
 
-      //SanshokuDoujun(0); // 7 + 7 bit
-      //SanshokuDoukou(14); // 9 bit
-      //Chanta(23); // 2 bit
-      //Toitoi(25); // 1 bit
-      //Honroutou(26); // 1 bit
-      //Tsuuiisou(27); // 1 bit
-      //Tanyao(28); // 1 bit
-      //Junchan(29); // 2 bit
-      //Chinroutou(31); // 1 bit
-      //Chuuren(32); // 1 bit
-      //Ryuuiisou(33); // 1 bit
+      //SanshokuDoujun(0);
+      //SanshokuDoukou(14);
+      //Chanta(23);
+      //Toitoi(25);
+      //Honroutou(26);
+      //Tsuuiisou(27);
+      //Tanyao(28);
+      //Junchan(29);
+      //Chinroutou(31);
+      //Chuuren(32);
+      //Ryuuiisou(33);
       KazeYakuhai(24);
       SangenYakuhai(42);
-      //IipeikouRyanpeikou(45); // 2 bit
+      //IipeikouRyanpeikou(45);
       Sangen();
       Suushi();
-      //Pinfu(0); // 10 bit, 9 bit cleared
-      //Ankou(10); // 13 bit, 12 cleared?
+      //Pinfu(0);
+      //Ankou(10);
     }
 
     public long AndValue { get; private set; }

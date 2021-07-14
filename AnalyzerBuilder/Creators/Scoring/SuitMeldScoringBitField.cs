@@ -11,24 +11,24 @@ namespace AnalyzerBuilder.Creators.Scoring
       _hasMelds = _melds.Count > 0;
 
       // And
-      SanshokuDoujun(0); // 7 + 7 bit
-      SanshokuDoukou(14); // 9 bit
-      Chanta(23); // 2 bit
-      Toitoi(25); // 1 bit
-      Honroutou(26); // 1 bit
-      Tsuuiisou(27); // 1 bit
-      Tanyao(28); // 1 bit
-      Junchan(29); // 2 bit
-      Chinroutou(31); // 1 bit
-      Chuuren(32); // 1 bit
-      Ryuuiisou(33); // 1 bit
-      Yakuhai(34); // 11 bit
-      IipeikouRyanpeikou(45); // 2 bit
-      Sangen(47); // 6 bit, 4 bit cleared
-      Suushi(53); // 6 bit, 4 bit cleared
-      Ittsuu(59); // 4 bit, 3 bit cleared
-      Pinfu(0); // 10 bit, 9 bit cleared
-      Ankou(10); // 13 bit, 12 cleared?
+      SanshokuDoujun();
+      SanshokuDoukou();
+      //Chanta(23); // 2 bit
+      //Toitoi(25); // 1 bit
+      //Honroutou(26); // 1 bit
+      //Tsuuiisou(27); // 1 bit
+      //Tanyao(28); // 1 bit
+      //Junchan(29); // 2 bit
+      //Chinroutou(31); // 1 bit
+      //Chuuren(32); // 1 bit
+      //Ryuuiisou(33); // 1 bit
+      //Yakuhai(34); // 11 bit
+      //IipeikouRyanpeikou(45); // 2 bit
+      //Sangen(47); // 6 bit, 4 bit cleared
+      //Suushi(53); // 6 bit, 4 bit cleared
+      //Ittsuu(59); // 4 bit, 3 bit cleared
+      //Pinfu(0); // 10 bit, 9 bit cleared
+      //Ankou(10); // 13 bit, 12 cleared?
     }
 
     public long AndValue { get; private set; }
@@ -163,37 +163,30 @@ namespace AnalyzerBuilder.Creators.Scoring
       }
     }
 
-    private void SanshokuDoukou(int offset)
+    private void SanshokuDoukou()
     {
-      foreach (var meld in _melds)
+      for (var i = 0; i < 9; i++)
       {
-        if (meld.IsKoutsu || meld.IsKantsu)
+        if (_melds.Any(m => (m.IsKoutsu || m.IsKantsu) && m.Index == i))
         {
-          OrValue |= 0b1L << (offset + meld.Index);
+          var shift = i + 14;
+          OrValue |= shift + 2L;
+          OrValue |= 0b1L << (shift + 6);
         }
       }
-
-      AndValue |= 0b111111111L << offset;
     }
 
-    private void SanshokuDoujun(int offset)
+    private void SanshokuDoujun()
     {
-      if (_hasMelds)
+      for (var i = 0; i < 7; i++)
       {
-        foreach (var meld in _melds)
+        if (_melds.Any(m => m.IsShuntsu && m.Index == i))
         {
-          if (meld.IsShuntsu)
-          {
-            OrValue |= 0b1L << (offset + 7 + meld.Index);
-          }
+          var shift = 2 * i;
+          OrValue |= shift + 4L;
+          OrValue |= 0b10L << (shift + 6);
         }
       }
-      else
-      {
-        AndValue |= 0b1111111L << offset;
-      }
-
-      AndValue |= 0b1111111L << (offset + 7);
     }
   }
 }

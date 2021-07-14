@@ -15,7 +15,7 @@ namespace AnalyzerBuilder.Creators.Scoring
     public void CreateLookup()
     {
       const int maxLookupIndex = 1500625;
-      var lookup = new long[maxLookupIndex * 4];
+      var orLookup = new long[maxLookupIndex];
 
       var language = CreateAnalyzedWords();
       foreach (var word in language)
@@ -23,24 +23,18 @@ namespace AnalyzerBuilder.Creators.Scoring
         var field = new SuitMeldScoringBitField(word.Blocks);
         foreach (var index in word.LookupIndexes)
         {
-          Debug.Assert(lookup[index] == 0 || lookup[index] == field.AndValue);
-          Debug.Assert(lookup[index + maxLookupIndex] == 0 || lookup[index + maxLookupIndex] == field.OrValue);
-          Debug.Assert(lookup[index + 2 * maxLookupIndex] == 0 || lookup[index + 2 * maxLookupIndex] == field.SumValue);
-          Debug.Assert(lookup[index + 3 * maxLookupIndex] == 0 || lookup[index + 3 * maxLookupIndex] == field.WaitShiftValue);
+          Debug.Assert(orLookup[index] == 0 || orLookup[index] == field.OrValue);
 
-          lookup[index] = field.AndValue;
-          lookup[index + maxLookupIndex] = field.OrValue;
-          lookup[index + 2 * maxLookupIndex] = field.SumValue;
-          lookup[index + 3 * maxLookupIndex] = field.WaitShiftValue;
+          orLookup[index] = field.OrValue;
         }
       }
       
-      var path = Path.Combine(_workingDirectory, "SuitMeldScoringLookup.dat");
+      var path = Path.Combine(_workingDirectory, "SuitMeldOrLookup.dat");
       using var fileStream = File.Create(path);
       using var writer = new BinaryWriter(fileStream);
-      for (var i = 0; i < lookup.Length; i++)
+      for (var i = 0; i < orLookup.Length; i++)
       {
-        writer.Write(lookup[i]);
+        writer.Write(orLookup[i]);
       }
     }
 

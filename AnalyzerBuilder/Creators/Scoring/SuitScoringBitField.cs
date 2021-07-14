@@ -10,27 +10,29 @@ namespace AnalyzerBuilder.Creators.Scoring
       _interpretations = interpretations.ToList();
 
       // And
-      SanshokuDoujun(0); // 7 + 7 bit
-      SanshokuDoukou(14); // 9 bit
-      Chanta(23); // 2 bit
-      Toitoi(25); // 1 bit
-      Honroutou(26); // 1 bit
-      Tsuuiisou(27); // 1 bit
-      Tanyao(28); // 1 bit
-      Junchan(29); // 2 bit
-      Chinroutou(31); // 1 bit
-      Chuuren(32); // 1 bit
-      Ryuuiisou(33); // 1 bit
-      Yakuhai(34); // 11 bit
-      IipeikouRyanpeikou(45); // 2 bit
-      Sangen(47); // 6 bit, 4 cleared
-      Suushi(53); // 6 bit, 4 cleared
-      Ittsuu(59); // 4 bit, 3 cleared
-      Pinfu(0); // 19 bit, 18 cleared, result on 3rd bit
-      Ankou(19); // 19 bit, 17 cleared, result on 3rd and 4th bit?
+      SanshokuDoujun();
+      SanshokuDoukou();
+      //Chanta(23); // 2 bit
+      //Toitoi(25); // 1 bit
+      //Honroutou(26); // 1 bit
+      //Tsuuiisou(27); // 1 bit
+      //Tanyao(28); // 1 bit
+      //Junchan(29); // 2 bit
+      //Chinroutou(31); // 1 bit
+      //Chuuren(32); // 1 bit
+      //Ryuuiisou(33); // 1 bit
+      //Yakuhai(34); // 11 bit
+      //IipeikouRyanpeikou(45); // 2 bit
+      //Sangen(47); // 6 bit, 4 cleared
+      //Suushi(53); // 6 bit, 4 cleared
+      //Ittsuu(59); // 4 bit, 3 cleared
+      //Pinfu(0); // 19 bit, 18 cleared, result on 3rd bit
+      //Ankou(19); // 19 bit, 17 cleared, result on 3rd and 4th bit?
     }
 
     public long AndValue { get; private set; }
+
+    public long OrValue { get; private set; }
 
     public long SumValue { get; private set; }
 
@@ -202,25 +204,28 @@ namespace AnalyzerBuilder.Creators.Scoring
       }
     }
 
-    private void SanshokuDoukou(int offset)
+    private void SanshokuDoukou()
     {
       for (var i = 0; i < 9; i++)
       {
         if (_interpretations.Any(a => a.ContainsKoutsu(i)))
         {
-          AndValue |= 0b1L << (offset + i);
+          var shift = i + 14;
+          OrValue |= shift + 2L;
+          OrValue |= 0b1L << (shift + 6);
         }
       }
     }
 
-    private void SanshokuDoujun(int offset)
+    private void SanshokuDoujun()
     {
       for (var i = 0; i < 7; i++)
       {
         if (_interpretations.Any(a => a.ContainsShuntsu(i)))
         {
-          // TODO probably need a separate step for open hands anyways, so only use one bit here?
-          AndValue |= 0b10000001L << (offset + i); // closed and open
+          var shift = 2 * i;
+          OrValue |= shift + 4L;
+          OrValue |= 0b11L << (shift + 6);
         }
       }
     }
