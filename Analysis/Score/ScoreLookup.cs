@@ -81,7 +81,7 @@ namespace Spines.Mahjong.Analysis.Score
     }
 
     // TODO bitshift of long is arithmetic: sign bit always stays - either make use of that or use ulong
-    public static long Flags2(HandCalculator hand, Tile winningTile, bool isRon, int roundWind, int seatWind, bool isOpen, bool hasChii)
+    public static long Flags2(HandCalculator hand, Tile winningTile, bool isRon, int roundWind, int seatWind, bool isOpen, bool hasChii, bool hasChantaCalls)
     {
       var honorConcealedIndex = hand.Base5Hash(3);
       var honorMeldIndex = MeldIndex(hand, 3);
@@ -111,10 +111,6 @@ namespace Spines.Mahjong.Analysis.Score
       var suitsAnd = concealedOrMeldedValues[0] & concealedOrMeldedValues[1] & concealedOrMeldedValues[2];
 
       var honorSum = HonorSum(honorConcealedIndex, honorMeldIndex);
-
-      // TODO multiple pairs in honors not handled yet
-      var toitoi = suitsAnd & honorSum & ToitoiYakuFilter;
-
       var result = 0L;
       
       result |= waitAndWindShift & WaitShiftYakuFilter;
@@ -124,9 +120,8 @@ namespace Spines.Mahjong.Analysis.Score
       
       result |= (suitsAnd >> (int)suitsAnd) & SanshokuYakuFilter;
 
-      result |= toitoi;
-
-
+      result |= suitsAnd & honorSum & AllAndYakuFilter;
+      
       var iipeikouSuitSum = concealedOrMeldedValues[0] + concealedOrMeldedValues[1] + concealedOrMeldedValues[2];
       var iipeikouHonorSum = (honorSum);
       var iipeikouPreElimination = iipeikouSuitSum + iipeikouHonorSum;
@@ -156,7 +151,10 @@ namespace Spines.Mahjong.Analysis.Score
         result &= NoChiiYakuFilter;
       }
 
-      // TODO Sanankou/Toitoi prevent iipeikou
+      if (hasChantaCalls)
+      {
+        result &= NoChantaCallsFilter;
+      }
 
       return result;
     }
@@ -167,7 +165,7 @@ namespace Spines.Mahjong.Analysis.Score
     }
 
     private const long SanshokuYakuFilter = (0b1L << BitIndex.ClosedSanshokuDoujun) | (0b1L << BitIndex.OpenSanshokuDoujun) | (0b1L << BitIndex.SanshokuDoukou);
-    private const long ToitoiYakuFilter = (0b1L << BitIndex.Toitoi);
+    private const long AllAndYakuFilter = (0b1L << BitIndex.Toitoi) | (0b1L << BitIndex.ClosedTanyao) | (0b1L << BitIndex.OpenTanyao);
     private const long IipeikouYakuFilter = (0b1L << IipeikouBitIndex) | (0b1L << ChiitoitsuBitIndex) | (0b1L << RyanpeikouBitIndex) |
                                             0b1L << BitIndex.ClosedChinitsu| 0b1L << BitIndex.OpenChinitsu |
                                             0b1L << BitIndex.ClosedHonitsu | 0b1L << BitIndex.OpenHonitsu;
@@ -183,11 +181,15 @@ namespace Spines.Mahjong.Analysis.Score
     private const long YakumanFilter = (0b1L << BitIndex.Daisangen) | (0b1L << BitIndex.Shousuushi) | (0b1L << BitIndex.Daisuushi);
     private const long ClosedYakuFilter = ~((0b1L << BitIndex.ClosedSanshokuDoujun) | (0b1L << BitIndex.Iipeikou) | 
                                             (0b1L << BitIndex.Chiitoitsu) | (0b1L << BitIndex.Ryanpeikou) |
-                                            (0b1L << BitIndex.ClosedHonitsu) | (0b1L << BitIndex.ClosedChinitsu));
-    private const long OpenYakuFilter = ~((0b1L << BitIndex.OpenSanshokuDoujun) | (0b1L << BitIndex.OpenHonitsu) | (0b1L << BitIndex.OpenChinitsu));
+                                            (0b1L << BitIndex.ClosedHonitsu) | (0b1L << BitIndex.ClosedChinitsu) | 
+                                            (0b1L << BitIndex.ClosedTanyao));
+    private const long OpenYakuFilter = ~((0b1L << BitIndex.OpenSanshokuDoujun) | (0b1L << BitIndex.OpenHonitsu) | (0b1L << BitIndex.OpenChinitsu) |
+                                          (0b1L << BitIndex.OpenTanyao));
     private const long NoChiiYakuFilter = ~((0b1L << BitIndex.Toitoi));
 
     private const long WaitAndRonShiftYakuFilter = (0b1L << SanankouBitIndex) | (0b1L << SuuankouBitIndex) | (0b1L << MenzenTsumoBitIndex);
     private const long WaitShiftYakuFilter = (0b1L << PinfuBitIndex) | (0b1L << JunseiChuurenPoutouBitIndex) | (0b1L << KokushiMusouJuusanMenBitIndex);
+
+    private const long NoChantaCallsFilter = ~((0b1L << BitIndex.ClosedTanyao) | (0b1L << BitIndex.OpenTanyao));
   }
 }

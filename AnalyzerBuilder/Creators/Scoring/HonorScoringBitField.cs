@@ -11,9 +11,9 @@ namespace AnalyzerBuilder.Creators.Scoring
 
       //Chanta(23);
       Toitoi(29);
+      Tanyao(30);
       //Honroutou(26);
       //Tsuuiisou(27);
-      //Tanyao(28);
       //Junchan(29);
       //Chinroutou(31);
       //Chuuren(32);
@@ -166,7 +166,7 @@ namespace AnalyzerBuilder.Creators.Scoring
     {
       if (_isEmpty)
       {
-        AndValue |= 0b1L << offset;
+        SumValue |= 0b11L << offset;
       }
     }
 

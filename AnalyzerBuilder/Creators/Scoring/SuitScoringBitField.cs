@@ -14,9 +14,9 @@ namespace AnalyzerBuilder.Creators.Scoring
       SanshokuDoukou();
       //Chanta(23);
       Toitoi(29);
+      Tanyao(30);
       //Honroutou(26);
       //Tsuuiisou(27);
-      //Tanyao(28);
       //Junchan(29);
       //Chinroutou(31);
       //Chuuren(32);
@@ -179,9 +179,9 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Tanyao(int offset)
     {
-      if (_interpretations.Any(g => g.Blocks.All(b => !b.IsJunchanBlock)))
+      if (_interpretations.Any(g => g.TileCounts[0] + g.TileCounts[8] == 0))
       {
-        AndValue |= 0b1L << offset;
+        OrValue |= 0b11L << offset;
       }
     }
 

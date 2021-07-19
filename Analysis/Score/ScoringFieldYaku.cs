@@ -6,21 +6,14 @@ namespace Spines.Mahjong.Analysis.Score
   internal enum ScoringFieldYaku : long
   {
     None = 0,
+    
     ClosedDoujun = 1L << BitIndex.ClosedSanshokuDoujun,
     OpenDoujun = 1L << BitIndex.OpenSanshokuDoujun,
     Doukou = 1L << BitIndex.SanshokuDoukou,
 
-    //ClosedChanta = 1L << 23,
-    //OpenChanta = 1L << 24,
     Toitoi = 1L << BitIndex.Toitoi,
-    //Honroutou = 1L << 26,
-    //Tsuuiisou = 1L << 27,
-    //Tanyao = 1L << 28,
-    //ClosedJunchan = 1L << 29,
-    //OpenJunchan = 1L << 30,
-    //Chinroutou = 1L << 31,
-    //Chuuren = 1L << 32,
-    //Ryuuiisou = 1L << 33,
+    ClosedTanyao = 1L << BitIndex.ClosedTanyao,
+    OpenTanyao = 1L << BitIndex.OpenTanyao,
 
     Shousangen = 1L << BitIndex.Shousangen,
     Daisangen = 1L << BitIndex.Daisangen,
@@ -51,11 +44,5 @@ namespace Spines.Mahjong.Analysis.Score
     ClosedChinitsu = 1L << BitIndex.ClosedChinitsu,
     OpenHonitsu = 1L << BitIndex.OpenHonitsu,
     OpenChinitsu = 1L << BitIndex.OpenChinitsu,
-
-  //Shousangen = 1L << 49,
-  //Daisangen = 1L << 52,
-  //Shousuushi = 1L << 55,
-  //Daisuushi = 1L << 58,
-  //Ittsuu = 1L << 62
   }
 }

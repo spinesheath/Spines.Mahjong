@@ -24,6 +24,8 @@
     public const int BakazePei = 22;
 
     public const int Toitoi = 29;
+    public const int ClosedTanyao = 30;
+    public const int OpenTanyao = 31;
 
     public const int Iipeikou = 37;
     public const int Chiitoitsu = 41;
