@@ -9,10 +9,8 @@ namespace AnalyzerBuilder.Creators.Scoring
       _arrangement = arrangement;
       _isEmpty = arrangement.TileCount == 0;
 
-      //SanshokuDoujun(0);
-      //SanshokuDoukou(14);
       //Chanta(23);
-      //Toitoi(25);
+      Toitoi(29);
       //Honroutou(26);
       //Tsuuiisou(27);
       //Tanyao(28);
@@ -20,13 +18,15 @@ namespace AnalyzerBuilder.Creators.Scoring
       //Chinroutou(31);
       //Chuuren(32);
       //Ryuuiisou(33);
-      KazeYakuhai(24);
+      KazeYakuhai(15);
       SangenYakuhai(42);
       //IipeikouRyanpeikou(45);
       Sangen();
       Suushi();
       //Pinfu(0);
       //Ankou(10);
+      Chiitoitsu();
+      HonitsuChinitsu();
     }
 
     public long AndValue { get; private set; }
@@ -38,6 +38,20 @@ namespace AnalyzerBuilder.Creators.Scoring
     private readonly ConcealedArrangement _arrangement;
     private readonly bool _isEmpty;
 
+    private void HonitsuChinitsu()
+    {
+      if (_isEmpty)
+      {
+        SumValue |= 0b1L << 48;
+        SumValue |= 0b1L << 57;
+      }
+      else
+      {
+        SumValue |= 0b11L << 46;
+        SumValue |= 0b11L << 55;
+      }
+    }
+
     private void Ankou(int offset)
     {
       var countsWithWait = Enumerable.Range(0, 9).Select(i => _arrangement.Blocks.Count(b => b.IsKoutsu && b.Index != i)).ToList();
@@ -47,6 +61,18 @@ namespace AnalyzerBuilder.Creators.Scoring
       for (var i = 0; i < 9; i++)
       {
         WaitShiftValue |= (long)(countsWithWait[i] - minCountWithWait) << (i + offset);
+      }
+    }
+
+    private void Chiitoitsu()
+    {
+      const int baseIndex = 37;
+
+      var canBeChiitoitsu = _arrangement.TileCounts.All(c => c == 0 || c == 2);
+
+      if (canBeChiitoitsu)
+      {
+        SumValue |= 1L << (baseIndex + 2);
       }
     }
 
@@ -159,7 +185,10 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Toitoi(int offset)
     {
-      AndValue |= 0b1L << offset;
+      if (_arrangement.IsStandard)
+      {
+        SumValue |= 0b1L << offset;
+      }
     }
 
     private void Chanta(int offset)

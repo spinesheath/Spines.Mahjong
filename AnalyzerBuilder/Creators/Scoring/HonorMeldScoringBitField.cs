@@ -22,13 +22,14 @@ namespace AnalyzerBuilder.Creators.Scoring
       //Chinroutou(31); // 1 bit
       //Chuuren(32); // 1 bit
       //Ryuuiisou(33); // 1 bit
-      KazeYakuhai(24);
+      KazeYakuhai(15);
       SangenYakuhai(42);
       //IipeikouRyanpeikou(45); // 2 bit
       Sangen();
       Suushi();
       //Pinfu(0); // 10 bit, 9 bit cleared
       //Ankou(10); // 13 bit, 12 cleared?
+      HonitsuChinitsu();
     }
 
     public long AndValue { get; private set; }
@@ -41,6 +42,20 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private readonly bool _hasMelds;
     private readonly IReadOnlyList<Block> _melds;
+
+    private void HonitsuChinitsu()
+    {
+      if (!_hasMelds)
+      {
+        SumValue |= 0b1L << 48;
+        SumValue |= 0b1L << 57;
+      }
+      else
+      {
+        SumValue |= 0b11L << 46;
+        SumValue |= 0b11L << 55;
+      }
+    }
 
     private void Ankou(int offset)
     {

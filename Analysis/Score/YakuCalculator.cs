@@ -6,24 +6,24 @@ namespace Spines.Mahjong.Analysis.Score
 {
   public static class YakuCalculator
   {
-    private static ScoringFieldYaku CalculateInternal(HandCalculator hand, Tile winningTile, bool isRon, int roundWind, int seatWind, bool isOpen)
+    private static ScoringFieldYaku CalculateInternal(HandCalculator hand, Tile winningTile, bool isRon, int roundWind, int seatWind, bool isOpen, bool hasChii)
     {
-      return (ScoringFieldYaku) ScoreLookup.Flags2(hand, winningTile, isRon, roundWind, seatWind, isOpen);
+      return (ScoringFieldYaku) ScoreLookup.Flags2(hand, winningTile, isRon, roundWind, seatWind, isOpen, hasChii);
     }
 
-    public static Yaku Ron(HandCalculator hand, Tile winningTile, int roundWind, int seatWind, bool isOpen)
+    public static Yaku Ron(HandCalculator hand, Tile winningTile, int roundWind, int seatWind, bool isOpen, bool hasChii)
     {
-      return MapFlags(CalculateInternal(hand, winningTile, true, roundWind, seatWind, isOpen));
+      return MapFlags(CalculateInternal(hand, winningTile, true, roundWind, seatWind, isOpen, hasChii));
     }
 
-    public static Yaku Tsumo(HandCalculator hand, Tile winningTile, int roundWind, int seatWind, bool isOpen)
+    public static Yaku Tsumo(HandCalculator hand, Tile winningTile, int roundWind, int seatWind, bool isOpen, bool hasChii)
     {
-      return MapFlags(CalculateInternal(hand, winningTile, false, roundWind, seatWind, isOpen));
+      return MapFlags(CalculateInternal(hand, winningTile, false, roundWind, seatWind, isOpen, hasChii));
     }
 
-    public static Yaku Chankan(HandCalculator hand, Tile winningTile, int roundWind, int seatWind, bool isOpen)
+    public static Yaku Chankan(HandCalculator hand, Tile winningTile, int roundWind, int seatWind, bool isOpen, bool hasChii)
     {
-      return MapFlags(CalculateInternal(hand, winningTile, true, roundWind, seatWind, isOpen));
+      return MapFlags(CalculateInternal(hand, winningTile, true, roundWind, seatWind, isOpen, hasChii));
     }
 
     private static Yaku MapFlags(ScoringFieldYaku flags)
@@ -44,7 +44,7 @@ namespace Spines.Mahjong.Analysis.Score
       //{ ScoringFieldYaku.None, Yaku.Pinfu },
       //{ ScoringFieldYaku.None, Yaku.OpenTanyao },
       //{ ScoringFieldYaku.None, Yaku.ClosedTanyao },
-      //{ ScoringFieldYaku.None, Yaku.Iipeikou },
+      { ScoringFieldYaku.Iipeikou, Yaku.Iipeikou },
       { ScoringFieldYaku.JikazeTon, Yaku.JikazeTon },
       { ScoringFieldYaku.JikazeShaa, Yaku.JikazeShaa },
       { ScoringFieldYaku.JikazeNan, Yaku.JikazeNan },
@@ -57,7 +57,7 @@ namespace Spines.Mahjong.Analysis.Score
       { ScoringFieldYaku.Hatsu, Yaku.Hatsu },
       { ScoringFieldYaku.Chun, Yaku.Chun },
       //{ ScoringFieldYaku.None, Yaku.DoubleRiichi },
-      //{ ScoringFieldYaku.None, Yaku.Chiitoitsu },
+      { ScoringFieldYaku.Chiitoitsu, Yaku.Chiitoitsu },
       //{ ScoringFieldYaku.None, Yaku.OpenChanta },
       //{ ScoringFieldYaku.None, Yaku.ClosedChanta },
       //{ ScoringFieldYaku.None, Yaku.OpenIttsuu },
@@ -66,17 +66,17 @@ namespace Spines.Mahjong.Analysis.Score
       { ScoringFieldYaku.ClosedDoujun, Yaku.ClosedSanshokuDoujun },
       { ScoringFieldYaku.Doukou, Yaku.SanshokuDoukou },
       //{ ScoringFieldYaku.None, Yaku.Sankantsu },
-      //{ ScoringFieldYaku.None, Yaku.Toitoihou },
+      { ScoringFieldYaku.Toitoi, Yaku.Toitoihou },
       //{ ScoringFieldYaku.None, Yaku.Sanankou },
       { ScoringFieldYaku.Shousangen, Yaku.Shousangen },
       //{ ScoringFieldYaku.None, Yaku.Honroutou },
-      //{ ScoringFieldYaku.None, Yaku.Ryanpeikou },
+      { ScoringFieldYaku.Ryanpeikou, Yaku.Ryanpeikou },
       //{ ScoringFieldYaku.None, Yaku.OpenJunchan },
       //{ ScoringFieldYaku.None, Yaku.ClosedJunchan },
-      //{ ScoringFieldYaku.None, Yaku.OpenHonitsu },
-      //{ ScoringFieldYaku.None, Yaku.ClosedHonitsu },
-      //{ ScoringFieldYaku.None, Yaku.OpenChinitsu },
-      //{ ScoringFieldYaku.None, Yaku.ClosedChinitsu },
+      { ScoringFieldYaku.OpenHonitsu, Yaku.OpenHonitsu },
+      { ScoringFieldYaku.ClosedHonitsu, Yaku.ClosedHonitsu },
+      { ScoringFieldYaku.OpenChinitsu, Yaku.OpenChinitsu },
+      { ScoringFieldYaku.ClosedChinitsu, Yaku.ClosedChinitsu },
 
       //{ ScoringFieldYaku.None, Yaku.Renhou },
       //{ ScoringFieldYaku.None, Yaku.Tenhou },

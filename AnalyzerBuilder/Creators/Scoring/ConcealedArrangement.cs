@@ -21,6 +21,8 @@ namespace AnalyzerBuilder.Creators.Scoring
       Base5Hash = h;
     }
 
+    public bool IsStandard => TileCount == 0 || Blocks.Count > 0;
+
     public int Base5Hash { get; }
 
     public int TileCount { get; }

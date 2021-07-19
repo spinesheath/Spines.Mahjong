@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Text;
 
 namespace AnalyzerBuilder.Creators.Scoring
 {
@@ -66,5 +67,40 @@ namespace AnalyzerBuilder.Creators.Scoring
     }
 
     private static readonly Block[] ById;
+
+    public override string ToString()
+    {
+      var sb = new StringBuilder();
+      if (IsShuntsu)
+      {
+        sb.Append(Index + 1);
+        sb.Append(Index + 2);
+        sb.Append(Index + 3);
+      }
+      else if (IsPair)
+      {
+        sb.Append(Index + 1);
+        sb.Append(Index + 1);
+      }
+      else if (IsKoutsu)
+      {
+        sb.Append(Index + 1);
+        sb.Append(Index + 1);
+        sb.Append(Index + 1);
+      }
+      else if (IsKantsu)
+      {
+        sb.Append(Index + 1);
+        sb.Append(Index + 1);
+        sb.Append(Index + 1);
+        sb.Append(Index + 1);
+      }
+      else
+      {
+        return "?";
+      }
+
+      return sb.ToString();
+    }
   }
 }

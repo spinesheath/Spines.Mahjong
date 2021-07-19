@@ -1,4 +1,5 @@
-﻿using Spines.Mahjong.Analysis.Resources;
+﻿using System;
+using Spines.Mahjong.Analysis.Resources;
 using Spines.Mahjong.Analysis.Shanten;
 
 namespace Spines.Mahjong.Analysis.Score
@@ -80,7 +81,7 @@ namespace Spines.Mahjong.Analysis.Score
     }
 
     // TODO bitshift of long is arithmetic: sign bit always stays - either make use of that or use ulong
-    public static long Flags2(HandCalculator hand, Tile winningTile, bool isRon, int roundWind, int seatWind, bool isOpen)
+    public static long Flags2(HandCalculator hand, Tile winningTile, bool isRon, int roundWind, int seatWind, bool isOpen, bool hasChii)
     {
       var honorConcealedIndex = hand.Base5Hash(3);
       var honorMeldIndex = MeldIndex(hand, 3);
@@ -88,7 +89,6 @@ namespace Spines.Mahjong.Analysis.Score
       var shiftedAnkanCount = 0b0L;
       var waitShiftValues = new [] {1L, 1L, 1L, 1L};
       var concealedOrMeldedValues = new[] { SuitOr(hand, 0), SuitOr(hand, 1), SuitOr(hand, 2) };
-      var iipeikouValues = new[] { 1L, 1L, 1L, 1L };
 
       var valueWindFilter = ValueWindFilter(roundWind, seatWind);
 
@@ -108,13 +108,13 @@ namespace Spines.Mahjong.Analysis.Score
       waitAndRonShift += waitAndRonShift & 0b101L << AnkouRonShiftSumFilterIndex;
       var suuankouBit = waitAndRonShift & (0b1L << SuuankouBitIndex);
 
-      var sanshoku = concealedOrMeldedValues[0] & concealedOrMeldedValues[1] & concealedOrMeldedValues[2];
-      sanshoku >>= (int)sanshoku;
-
-      var iipeikou = iipeikouValues[0] + iipeikouValues[1] + iipeikouValues[2] + iipeikouValues[3];
+      var suitsAnd = concealedOrMeldedValues[0] & concealedOrMeldedValues[1] & concealedOrMeldedValues[2];
 
       var honorSum = HonorSum(honorConcealedIndex, honorMeldIndex);
-      
+
+      // TODO multiple pairs in honors not handled yet
+      var toitoi = suitsAnd & honorSum & ToitoiYakuFilter;
+
       var result = 0L;
       
       result |= waitAndWindShift & WaitShiftYakuFilter;
@@ -122,10 +122,17 @@ namespace Spines.Mahjong.Analysis.Score
       result |= waitAndRonShift & WaitAndRonShiftYakuFilter;
       result += tankiBit * suuankouBit;
       
-      result |= sanshoku & SanshokuYakuFilter;
-      
-      var x = iipeikou & ~((iipeikou & IipeikouYakuFilter) >> IipeikouDelta);
-      result |= x & IipeikouYakuFilter;
+      result |= (suitsAnd >> (int)suitsAnd) & SanshokuYakuFilter;
+
+      result |= toitoi;
+
+
+      var iipeikouSuitSum = concealedOrMeldedValues[0] + concealedOrMeldedValues[1] + concealedOrMeldedValues[2];
+      var iipeikouHonorSum = (honorSum);
+      var iipeikouPreElimination = iipeikouSuitSum + iipeikouHonorSum;
+      var iipeikouPostElimination = iipeikouPreElimination & ~((iipeikouPreElimination & IipeikouEliminationFilter) >> IipeikouDelta);
+      result |= iipeikouPostElimination & IipeikouYakuFilter;
+
       
       result |= honorSum & YakuhaiYakuFilter & valueWindFilter;
 
@@ -144,10 +151,29 @@ namespace Spines.Mahjong.Analysis.Score
         result &= OpenYakuFilter;
       }
 
+      if (hasChii)
+      {
+        result &= NoChiiYakuFilter;
+      }
+
+      // TODO Sanankou/Toitoi prevent iipeikou
+
       return result;
     }
 
+    private static string PrintBinarySegment(long bits, int from, int length)
+    {
+      return Convert.ToString((bits >> from) & ((1L << length) - 1), 2);
+    }
+
     private const long SanshokuYakuFilter = (0b1L << BitIndex.ClosedSanshokuDoujun) | (0b1L << BitIndex.OpenSanshokuDoujun) | (0b1L << BitIndex.SanshokuDoukou);
+    private const long ToitoiYakuFilter = (0b1L << BitIndex.Toitoi);
+    private const long IipeikouYakuFilter = (0b1L << IipeikouBitIndex) | (0b1L << ChiitoitsuBitIndex) | (0b1L << RyanpeikouBitIndex) |
+                                            0b1L << BitIndex.ClosedChinitsu| 0b1L << BitIndex.OpenChinitsu |
+                                            0b1L << BitIndex.ClosedHonitsu | 0b1L << BitIndex.OpenHonitsu;
+    private const long IipeikouEliminationFilter = (0b1L << ChiitoitsuBitIndex) | (0b1L << RyanpeikouBitIndex) |
+                                                   0b1L << (BitIndex.ClosedChinitsu + 4) | 0b1L << (BitIndex.OpenChinitsu + 4) |
+                                                   0b1L << (BitIndex.ClosedHonitsu + 4) | 0b1L << (BitIndex.OpenHonitsu + 4);
 
     private const long YakuhaiYakuFilter = (0b1L << BitIndex.Haku) | (0b1L << BitIndex.Hatsu) | (0b1L << BitIndex.Chun) |
                                            (0b1L << BitIndex.JikazeTon) | (0b1L << BitIndex.JikazeNan) | (0b1L << BitIndex.JikazeShaa) | (0b1L << BitIndex.JikazePei) |
@@ -155,10 +181,12 @@ namespace Spines.Mahjong.Analysis.Score
                                            (0b1L << BitIndex.Shousangen) | (0b1L << BitIndex.Daisangen) | (0b1L << BitIndex.Shousuushi) | (0b1L << BitIndex.Daisuushi);
 
     private const long YakumanFilter = (0b1L << BitIndex.Daisangen) | (0b1L << BitIndex.Shousuushi) | (0b1L << BitIndex.Daisuushi);
-    private const long ClosedYakuFilter = ~((0b1L << BitIndex.ClosedSanshokuDoujun));
-    private const long OpenYakuFilter = ~((0b1L << BitIndex.OpenSanshokuDoujun));
+    private const long ClosedYakuFilter = ~((0b1L << BitIndex.ClosedSanshokuDoujun) | (0b1L << BitIndex.Iipeikou) | 
+                                            (0b1L << BitIndex.Chiitoitsu) | (0b1L << BitIndex.Ryanpeikou) |
+                                            (0b1L << BitIndex.ClosedHonitsu) | (0b1L << BitIndex.ClosedChinitsu));
+    private const long OpenYakuFilter = ~((0b1L << BitIndex.OpenSanshokuDoujun) | (0b1L << BitIndex.OpenHonitsu) | (0b1L << BitIndex.OpenChinitsu));
+    private const long NoChiiYakuFilter = ~((0b1L << BitIndex.Toitoi));
 
-    private const long IipeikouYakuFilter = (0b1L << IipeikouBitIndex) | (0b1L << ChiitoitsuBitIndex) | (0b1L << RyanpeikouBitIndex);
     private const long WaitAndRonShiftYakuFilter = (0b1L << SanankouBitIndex) | (0b1L << SuuankouBitIndex) | (0b1L << MenzenTsumoBitIndex);
     private const long WaitShiftYakuFilter = (0b1L << PinfuBitIndex) | (0b1L << JunseiChuurenPoutouBitIndex) | (0b1L << KokushiMusouJuusanMenBitIndex);
   }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace AnalyzerBuilder.Creators.Scoring
@@ -8,26 +9,23 @@ namespace AnalyzerBuilder.Creators.Scoring
     public SuitScoringBitField(IEnumerable<ConcealedArrangement> interpretations)
     {
       _interpretations = interpretations.ToList();
-
-      // And
+      
       SanshokuDoujun();
       SanshokuDoukou();
-      //Chanta(23); // 2 bit
-      //Toitoi(25); // 1 bit
-      //Honroutou(26); // 1 bit
-      //Tsuuiisou(27); // 1 bit
-      //Tanyao(28); // 1 bit
-      //Junchan(29); // 2 bit
-      //Chinroutou(31); // 1 bit
-      //Chuuren(32); // 1 bit
-      //Ryuuiisou(33); // 1 bit
-      //Yakuhai(34); // 11 bit
-      //IipeikouRyanpeikou(45); // 2 bit
-      //Sangen(47); // 6 bit, 4 cleared
-      //Suushi(53); // 6 bit, 4 cleared
-      //Ittsuu(59); // 4 bit, 3 cleared
-      //Pinfu(0); // 19 bit, 18 cleared, result on 3rd bit
-      //Ankou(19); // 19 bit, 17 cleared, result on 3rd and 4th bit?
+      //Chanta(23);
+      Toitoi(29);
+      //Honroutou(26);
+      //Tsuuiisou(27);
+      //Tanyao(28);
+      //Junchan(29);
+      //Chinroutou(31);
+      //Chuuren(32);
+      //Ryuuiisou(33);
+      IipeikouRyanpeikouChiitoitsu();
+      //Ittsuu(59);
+      //Pinfu(0);
+      //Ankou(19);
+      HonitsuChinitsu();
     }
 
     public long AndValue { get; private set; }
@@ -39,6 +37,17 @@ namespace AnalyzerBuilder.Creators.Scoring
     public long WaitShiftValue { get; private set; }
 
     private readonly IReadOnlyList<ConcealedArrangement> _interpretations;
+
+    private void HonitsuChinitsu()
+    {
+      if (_interpretations.First().TileCount > 0)
+      {
+        OrValue |= 0b1L << 50;
+        OrValue |= 0b1L << 52;
+        OrValue |= 0b1L << 59;
+        OrValue |= 0b1L << 61;
+      }
+    }
 
     private void Ankou(int offset)
     {
@@ -87,28 +96,33 @@ namespace AnalyzerBuilder.Creators.Scoring
       }
     }
 
-    private void Suushi(int offset)
+    private void IipeikouRyanpeikouChiitoitsu()
     {
-    }
+      const int baseIndex = 37;
 
-    private void Sangen(int offset)
-    {
-    }
+      var canBeChiitoitsu = _interpretations.First().TileCounts.All(c => c == 0 || c == 2);
 
-    private void IipeikouRyanpeikou(int offset)
-    {
+      var iipeikouCount = 0;
       foreach (var arrangement in _interpretations)
       {
         var identicalShuntsuGroupings = arrangement.Blocks.Where(b => b.IsShuntsu).GroupBy(b => b.Index).Where(g => g.Count() > 1);
-        var iipeikouCount = identicalShuntsuGroupings.Sum(g => g.Count()) / 2;
-        SumValue |= (long) iipeikouCount << offset;
+        iipeikouCount = Math.Max(iipeikouCount, identicalShuntsuGroupings.Count());
       }
-    }
+      
+      if (iipeikouCount == 1)
+      {
+        OrValue |= 1L << (baseIndex + 0);
+        OrValue |= 1L << (baseIndex + 7);
+      }
+      else if (iipeikouCount == 2)
+      {
+        OrValue |= 1L << (baseIndex + 8);
+      }
 
-    private void Yakuhai(int offset)
-    {
-      // jikaze, bakaze and sangenpai
-      AndValue |= 0b111_1111_1111L << offset;
+      if (canBeChiitoitsu)
+      {
+        OrValue |= 1L << (baseIndex + 2);
+      }
     }
 
     private void Ryuuiisou(int offset)
@@ -189,9 +203,9 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Toitoi(int offset)
     {
-      if (_interpretations.Any(g => g.Blocks.All(b => !b.IsShuntsu)))
+      if (_interpretations.Any(a => a.IsStandard && a.Blocks.All(b => b.IsKoutsu || b.IsPair)))
       {
-        AndValue |= 0b1L << offset;
+        OrValue |= 0b1L << offset;
       }
     }
 

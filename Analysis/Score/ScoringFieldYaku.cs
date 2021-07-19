@@ -12,7 +12,7 @@ namespace Spines.Mahjong.Analysis.Score
 
     //ClosedChanta = 1L << 23,
     //OpenChanta = 1L << 24,
-    //Toitoi = 1L << 25,
+    Toitoi = 1L << BitIndex.Toitoi,
     //Honroutou = 1L << 26,
     //Tsuuiisou = 1L << 27,
     //Tanyao = 1L << 28,
@@ -43,12 +43,19 @@ namespace Spines.Mahjong.Analysis.Score
     Hatsu = 1L << BitIndex.Hatsu,
     Chun = 1L << BitIndex.Chun,
 
-    //Iipeikou = 1L << 45,
-    //Ryanpeikou = 1L << 46,
-    //Shousangen = 1L << 49,
-    //Daisangen = 1L << 52,
-    //Shousuushi = 1L << 55,
-    //Daisuushi = 1L << 58,
-    //Ittsuu = 1L << 62
+    Iipeikou = 1L << BitIndex.Iipeikou,
+    Chiitoitsu = 1L << BitIndex.Chiitoitsu,
+    Ryanpeikou = 1L << BitIndex.Ryanpeikou,
+
+    ClosedHonitsu = 1L << BitIndex.ClosedHonitsu,
+    ClosedChinitsu = 1L << BitIndex.ClosedChinitsu,
+    OpenHonitsu = 1L << BitIndex.OpenHonitsu,
+    OpenChinitsu = 1L << BitIndex.OpenChinitsu,
+
+  //Shousangen = 1L << 49,
+  //Daisangen = 1L << 52,
+  //Shousuushi = 1L << 55,
+  //Daisuushi = 1L << 58,
+  //Ittsuu = 1L << 62
   }
 }

@@ -27,7 +27,16 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.Daisuushi | 
       Yaku.ClosedSanshokuDoujun | 
       Yaku.OpenSanshokuDoujun | 
-      Yaku.SanshokuDoukou;
+      Yaku.SanshokuDoukou | 
+      Yaku.Toitoihou | 
+      Yaku.ClosedHonitsu | 
+      Yaku.ClosedChinitsu | 
+      Yaku.OpenHonitsu |
+      Yaku.OpenChinitsu
+      //Yaku.Iipeikou | 
+      //Yaku.Chiitoitsu | 
+      //Yaku.Ryanpeikou
+      ;
 
     public ScoreCalculatingVisitor()
     {
@@ -137,7 +146,8 @@ namespace Spines.Mahjong.Analysis.Tests
         var roundWind = _board.RoundWind.Index;
         var seatWind = _board.Seats[who].SeatWind.Index;
         var isOpen = _board.Seats[who].Melds.Any(m => !m.IsKan || m.CalledTile != null);
-        var yaku = YakuCalculator.Ron(hand, discard, roundWind, seatWind, isOpen);
+        var hasChii = _board.Seats[who].Melds.Any(m => m.MeldType == MeldType.Shuntsu);
+        var yaku = YakuCalculator.Ron(hand, discard, roundWind, seatWind, isOpen, hasChii);
         if ((yaku & YakuFilter) != (payment.Yaku & YakuFilter))
         {
           FailureCount += 1;
@@ -155,7 +165,8 @@ namespace Spines.Mahjong.Analysis.Tests
         var roundWind = _board.RoundWind.Index;
         var seatWind = _board.Seats[who].SeatWind.Index;
         var isOpen = _board.Seats[who].Melds.Any(m => !m.IsKan || m.CalledTile != null);
-        var yaku = YakuCalculator.Chankan(hand, discard, roundWind, seatWind, isOpen);
+        var hasChii = _board.Seats[who].Melds.Any(m => m.MeldType == MeldType.Shuntsu);
+        var yaku = YakuCalculator.Chankan(hand, discard, roundWind, seatWind, isOpen, hasChii);
         if ((yaku & YakuFilter) != (payment.Yaku & YakuFilter))
         {
           FailureCount += 1;
@@ -183,7 +194,8 @@ namespace Spines.Mahjong.Analysis.Tests
       var roundWind = _board.RoundWind.Index;
       var seatWind = _board.Seats[who].SeatWind.Index;
       var isOpen = _board.Seats[who].Melds.Any(m => !m.IsKan || m.CalledTile != null);
-      var yaku = YakuCalculator.Tsumo(hand, draw, roundWind, seatWind, isOpen);
+      var hasChii = _board.Seats[who].Melds.Any(m => m.MeldType == MeldType.Shuntsu);
+      var yaku = YakuCalculator.Tsumo(hand, draw, roundWind, seatWind, isOpen, hasChii);
       if ((yaku & YakuFilter) != (payment.Yaku & YakuFilter))
       {
         FailureCount += 1;

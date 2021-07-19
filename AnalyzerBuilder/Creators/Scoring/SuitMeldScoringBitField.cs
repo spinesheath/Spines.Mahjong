@@ -9,26 +9,20 @@ namespace AnalyzerBuilder.Creators.Scoring
     {
       _melds = melds;
       _hasMelds = _melds.Count > 0;
-
-      // And
+      
       SanshokuDoujun();
       SanshokuDoukou();
-      //Chanta(23); // 2 bit
-      //Toitoi(25); // 1 bit
-      //Honroutou(26); // 1 bit
-      //Tsuuiisou(27); // 1 bit
-      //Tanyao(28); // 1 bit
-      //Junchan(29); // 2 bit
-      //Chinroutou(31); // 1 bit
-      //Chuuren(32); // 1 bit
-      //Ryuuiisou(33); // 1 bit
-      //Yakuhai(34); // 11 bit
-      //IipeikouRyanpeikou(45); // 2 bit
-      //Sangen(47); // 6 bit, 4 bit cleared
-      //Suushi(53); // 6 bit, 4 bit cleared
-      //Ittsuu(59); // 4 bit, 3 bit cleared
-      //Pinfu(0); // 10 bit, 9 bit cleared
-      //Ankou(10); // 13 bit, 12 cleared?
+      //Chanta(23);
+      //Honroutou(26);
+      //Tsuuiisou(27);
+      //Tanyao(28);
+      //Junchan(29);
+      //Chinroutou(31);
+      //Chuuren(32);
+      //Ryuuiisou(33);
+      //Ittsuu(59);
+      //Ankou(10);
+      HonitsuChinitsu();
     }
 
     public long AndValue { get; private set; }
@@ -43,15 +37,21 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private readonly IReadOnlyList<Block> _melds;
 
+    private void HonitsuChinitsu()
+    {
+      if (_hasMelds)
+      {
+        OrValue |= 0b1L << 50;
+        OrValue |= 0b1L << 52;
+        OrValue |= 0b1L << 59;
+        OrValue |= 0b1L << 61;
+      }
+    }
+
     private void Ankou(int offset)
     {
       var ankanCount = _melds.Count(m => m.IsAnkan);
       WaitShiftValue |= (long)ankanCount << offset;
-    }
-
-    private void Pinfu(int offset)
-    {
-      
     }
 
     private void Ittsuu(int offset)
@@ -62,23 +62,6 @@ namespace AnalyzerBuilder.Creators.Scoring
       }
 
       AndValue |= 0b111L << offset;
-    }
-
-    private void Suushi(int offset)
-    {
-    }
-
-    private void Sangen(int offset)
-    {
-    }
-
-    private void IipeikouRyanpeikou(int offset)
-    {
-    }
-
-    private void Yakuhai(int offset)
-    {
-      AndValue |= 0b111_1111_1111L << offset;
     }
 
     private void Ryuuiisou(int offset)
@@ -137,14 +120,6 @@ namespace AnalyzerBuilder.Creators.Scoring
     private void Honroutou(int offset)
     {
       if (_melds.All(m => m.IsJunchanBlock && !m.IsShuntsu))
-      {
-        AndValue |= 0b1L << offset;
-      }
-    }
-
-    private void Toitoi(int offset)
-    {
-      if (_melds.All(m => !m.IsShuntsu))
       {
         AndValue |= 0b1L << offset;
       }
