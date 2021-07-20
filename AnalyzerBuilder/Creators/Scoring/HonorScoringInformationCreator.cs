@@ -16,6 +16,7 @@ namespace AnalyzerBuilder.Creators.Scoring
     {
       const int maxLookupIndex = 78125; // 5^7
       var sumLookup = new long[maxLookupIndex];
+      var waitShiftLookup = new long[maxLookupIndex];
 
       var language = CreateAnalyzedWords();
       foreach (var word in language)
@@ -24,16 +25,24 @@ namespace AnalyzerBuilder.Creators.Scoring
         var field = new HonorScoringBitField(word);
 
         Debug.Assert(sumLookup[index] == 0 || sumLookup[index] == field.SumValue);
-
         sumLookup[index] = field.SumValue;
+
+        Debug.Assert(waitShiftLookup[index] == 0 || waitShiftLookup[index] == field.WaitShiftValue);
+        waitShiftLookup[index] = field.WaitShiftValue;
       }
 
-      var path = Path.Combine(_workingDirectory, "HonorSumLookup.dat");
+      Write("HonorSumLookup.dat", sumLookup);
+      Write("HonorWaitShiftLookup.dat", waitShiftLookup);
+    }
+
+    private void Write(string filename, long[] data)
+    {
+      var path = Path.Combine(_workingDirectory, filename);
       using var fileStream = File.Create(path);
       using var writer = new BinaryWriter(fileStream);
-      for (var i = 0; i < sumLookup.Length; i++)
+      for (var i = 0; i < data.Length; i++)
       {
-        writer.Write(sumLookup[i]);
+        writer.Write(data[i]);
       }
     }
 

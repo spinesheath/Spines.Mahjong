@@ -14,8 +14,9 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     public void CreateLookup()
     {
-      const int maxLookupIndex = 1953125;
+      const int maxLookupIndex = 1953125; // 5^9
       var orLookup = new long[maxLookupIndex];
+      var waitShiftLookup = new long[maxLookupIndex];
 
       var language = CreateAnalyzedWords();
       var groupedByHash = language.GroupBy(w => w.Base5Hash);
@@ -25,16 +26,24 @@ namespace AnalyzerBuilder.Creators.Scoring
         var field = new SuitScoringBitField(group);
 
         Debug.Assert(orLookup[index] == 0 || orLookup[index] == field.OrValue);
-
         orLookup[index] = field.OrValue;
+
+        Debug.Assert(waitShiftLookup[index] == 0 || waitShiftLookup[index] == field.WaitShiftValue);
+        waitShiftLookup[index] = field.WaitShiftValue;
       }
 
-      var path = Path.Combine(_workingDirectory, "SuitOrLookup.dat");
+      Write("SuitOrLookup.dat", orLookup);
+      Write("SuitWaitShiftLookup.dat", waitShiftLookup);
+    }
+
+    private void Write(string filename, long[] data)
+    {
+      var path = Path.Combine(_workingDirectory, filename);
       using var fileStream = File.Create(path);
       using var writer = new BinaryWriter(fileStream);
-      for (var i = 0; i < orLookup.Length; i++)
+      for (var i = 0; i < data.Length; i++)
       {
-        writer.Write(orLookup[i]);
+        writer.Write(data[i]);
       }
     }
 

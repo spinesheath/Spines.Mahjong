@@ -6,7 +6,8 @@ namespace Spines.Mahjong.Analysis.Score
   internal enum ScoringFieldYaku : long
   {
     None = 0,
-    
+    MenzenTsumo = 1L << BitIndex.MenzenTsumo,
+
     ClosedDoujun = 1L << BitIndex.ClosedSanshokuDoujun,
     OpenDoujun = 1L << BitIndex.OpenSanshokuDoujun,
     Doukou = 1L << BitIndex.SanshokuDoukou,

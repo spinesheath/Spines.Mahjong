@@ -40,5 +40,7 @@
     public const int ClosedChinitsu = 49;
     public const int OpenHonitsu = 56;
     public const int OpenChinitsu = 58;
+
+    public const int MenzenTsumo = 54;
   }
 }

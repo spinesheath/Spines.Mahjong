@@ -27,6 +27,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       //Ankou(10);
       Chiitoitsu();
       HonitsuChinitsu();
+      MenzenTsumo();
     }
 
     public long AndValue { get; private set; }
@@ -37,6 +38,11 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private readonly ConcealedArrangement _arrangement;
     private readonly bool _isEmpty;
+
+    private void MenzenTsumo()
+    {
+      WaitShiftValue |= 0b111111111_1L << 52;
+    }
 
     private void HonitsuChinitsu()
     {

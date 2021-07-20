@@ -34,7 +34,7 @@ namespace Spines.Mahjong.Analysis.Score
     private static readonly Dictionary<ScoringFieldYaku, Yaku> Map = new()
     {
       { ScoringFieldYaku.None, Yaku.None },
-      //{ ScoringFieldYaku.None, Yaku.MenzenTsumo },
+      { ScoringFieldYaku.MenzenTsumo, Yaku.MenzenTsumo },
       //{ ScoringFieldYaku.None, Yaku.Riichi },
       //{ ScoringFieldYaku.None, Yaku.Ippatsu },
       //{ ScoringFieldYaku.None, Yaku.Chankan },

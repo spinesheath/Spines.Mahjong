@@ -34,7 +34,8 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.OpenHonitsu |
       Yaku.OpenChinitsu | 
       Yaku.ClosedTanyao | 
-      Yaku.OpenTanyao
+      Yaku.OpenTanyao | 
+      Yaku.MenzenTsumo
       //Yaku.Iipeikou | 
       //Yaku.Chiitoitsu | 
       //Yaku.Ryanpeikou

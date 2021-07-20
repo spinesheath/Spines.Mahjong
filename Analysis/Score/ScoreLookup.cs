@@ -10,9 +10,11 @@ namespace Spines.Mahjong.Analysis.Score
     {
       HonorSumLookup = Resource.LongLookup("Scoring", "HonorSumLookup.dat");
       HonorMeldSumLookup = Resource.LongLookup("Scoring", "HonorMeldSumLookup.dat");
+      HonorWaitShiftLookup = Resource.LongLookup("Scoring", "HonorWaitShiftLookup.dat");
 
       SuitOrLookup = Resource.LongLookup("Scoring", "SuitOrLookup.dat");
       SuitMeldOrLookup = Resource.LongLookup("Scoring", "SuitMeldOrLookup.dat");
+      SuitWaitShiftLookup = Resource.LongLookup("Scoring", "SuitWaitShiftLookup.dat");
     }
 
     private static long HonorSum(int concealedIndex, int meldIndex)
@@ -36,10 +38,22 @@ namespace Spines.Mahjong.Analysis.Score
       return concealed | melded;
     }
 
+    private static long SuitWaitShift(HandCalculator hand, int suitId)
+    {
+      return SuitWaitShiftLookup[hand.Base5Hash(suitId)];
+    }
+
+    private static long HonorWaitShift(HandCalculator hand)
+    {
+      return HonorWaitShiftLookup[hand.Base5Hash(3)];
+    }
+
     private static readonly long[] HonorSumLookup;
     private static readonly long[] HonorMeldSumLookup;
+    private static readonly long[] HonorWaitShiftLookup;
     private static readonly long[] SuitOrLookup;
     private static readonly long[] SuitMeldOrLookup;
+    private static readonly long[] SuitWaitShiftLookup;
 
     private const int PinfuBitIndex = 10;
     private const int KokushiMusouJuusanMenBitIndex = 0;
@@ -87,7 +101,7 @@ namespace Spines.Mahjong.Analysis.Score
       var honorMeldIndex = MeldIndex(hand, 3);
       
       var shiftedAnkanCount = 0b0L;
-      var waitShiftValues = new [] {1L, 1L, 1L, 1L};
+      var waitShiftValues = new [] {SuitWaitShift(hand, 0), SuitWaitShift(hand, 1), SuitWaitShift(hand, 2), HonorWaitShift(hand)};
       var concealedOrMeldedValues = new[] { SuitOr(hand, 0), SuitOr(hand, 1), SuitOr(hand, 2) };
 
       var valueWindFilter = ValueWindFilter(roundWind, seatWind);
@@ -102,7 +116,8 @@ namespace Spines.Mahjong.Analysis.Score
 
       var ronShiftSumFilter = 0L;
       ronShiftSumFilter |= 0b1L << AnkouRonShiftSumFilterIndex;
-      ronShiftSumFilter |= 0b1L << MenzenTsumoRonShiftSumFilterIndex;
+      ronShiftSumFilter |= 0b1L << BitIndex.MenzenTsumo - 2;
+
       var waitAndRonShift = (waitShiftValues[0] & ronShiftSumFilter) + (waitShiftValues[1] & ronShiftSumFilter) + (waitShiftValues[2] & ronShiftSumFilter) + (waitShiftValues[3] & ronShiftSumFilter);
       waitAndRonShift += shiftedAnkanCount;
       waitAndRonShift += waitAndRonShift & 0b101L << AnkouRonShiftSumFilterIndex;
@@ -161,7 +176,7 @@ namespace Spines.Mahjong.Analysis.Score
 
     private static string PrintBinarySegment(long bits, int from, int length)
     {
-      return Convert.ToString((bits >> from) & ((1L << length) - 1), 2);
+      return Convert.ToString((bits >> from) & ((1L << length) - 1), 2).PadLeft(length, '0');
     }
 
     private const long SanshokuYakuFilter = (0b1L << BitIndex.ClosedSanshokuDoujun) | (0b1L << BitIndex.OpenSanshokuDoujun) | (0b1L << BitIndex.SanshokuDoukou);
@@ -182,12 +197,12 @@ namespace Spines.Mahjong.Analysis.Score
     private const long ClosedYakuFilter = ~((0b1L << BitIndex.ClosedSanshokuDoujun) | (0b1L << BitIndex.Iipeikou) | 
                                             (0b1L << BitIndex.Chiitoitsu) | (0b1L << BitIndex.Ryanpeikou) |
                                             (0b1L << BitIndex.ClosedHonitsu) | (0b1L << BitIndex.ClosedChinitsu) | 
-                                            (0b1L << BitIndex.ClosedTanyao));
+                                            (0b1L << BitIndex.ClosedTanyao) | (0b1L << BitIndex.MenzenTsumo));
     private const long OpenYakuFilter = ~((0b1L << BitIndex.OpenSanshokuDoujun) | (0b1L << BitIndex.OpenHonitsu) | (0b1L << BitIndex.OpenChinitsu) |
                                           (0b1L << BitIndex.OpenTanyao));
     private const long NoChiiYakuFilter = ~((0b1L << BitIndex.Toitoi));
 
-    private const long WaitAndRonShiftYakuFilter = (0b1L << SanankouBitIndex) | (0b1L << SuuankouBitIndex) | (0b1L << MenzenTsumoBitIndex);
+    private const long WaitAndRonShiftYakuFilter = (0b1L << SanankouBitIndex) | (0b1L << SuuankouBitIndex) | (0b1L << BitIndex.MenzenTsumo);
     private const long WaitShiftYakuFilter = (0b1L << PinfuBitIndex) | (0b1L << JunseiChuurenPoutouBitIndex) | (0b1L << KokushiMusouJuusanMenBitIndex);
 
     private const long NoChantaCallsFilter = ~((0b1L << BitIndex.ClosedTanyao) | (0b1L << BitIndex.OpenTanyao));

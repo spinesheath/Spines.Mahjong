@@ -26,6 +26,12 @@ namespace AnalyzerBuilder.Creators.Scoring
       //Pinfu(0);
       //Ankou(19);
       HonitsuChinitsu();
+      MenzenTsumo();
+    }
+
+    private void MenzenTsumo()
+    {
+      WaitShiftValue |= 0b111111111_1L << 52;
     }
 
     public long AndValue { get; private set; }
