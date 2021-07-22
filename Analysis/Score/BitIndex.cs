@@ -26,6 +26,10 @@
     public const int Toitoi = 29;
     public const int ClosedTanyao = 30;
     public const int OpenTanyao = 31;
+    
+    public const int Sanankou = 34;
+    public const int Suuankou = 35;
+    public const int SuuankouTanki = 36;
 
     public const int Iipeikou = 37;
     public const int Chiitoitsu = 41;

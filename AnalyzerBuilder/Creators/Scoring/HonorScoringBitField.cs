@@ -24,7 +24,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       Sangen();
       Suushi();
       //Pinfu(0);
-      //Ankou(10);
+      Ankou(34 - 2);
       Chiitoitsu();
       HonitsuChinitsu();
       MenzenTsumo();
@@ -62,11 +62,20 @@ namespace AnalyzerBuilder.Creators.Scoring
     {
       var countsWithWait = Enumerable.Range(0, 9).Select(i => _arrangement.Blocks.Count(b => b.IsKoutsu && b.Index != i)).ToList();
       var minCountWithWait = countsWithWait.Min();
+      var maxCountWithWait = countsWithWait.Max();
 
       SumValue |= (long)minCountWithWait << offset;
+      WaitShiftValue |= (long)(maxCountWithWait - minCountWithWait) << offset;
       for (var i = 0; i < 9; i++)
       {
-        WaitShiftValue |= (long)(countsWithWait[i] - minCountWithWait) << (i + offset);
+        WaitShiftValue |= (long)(maxCountWithWait - minCountWithWait) << (1 + i + offset);
+        WaitShiftValue |= (long)(countsWithWait[i] - minCountWithWait) << (10 + i + offset);
+      }
+
+      var pair = _arrangement.Blocks.FirstOrDefault(b => b.IsPair);
+      if (pair != null)
+      {
+        WaitShiftValue |= 0b1L << (1 + pair.Index);
       }
     }
 

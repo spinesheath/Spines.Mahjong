@@ -24,7 +24,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       IipeikouRyanpeikouChiitoitsu();
       //Ittsuu(59);
       //Pinfu(0);
-      //Ankou(19);
+      Ankou(34 - 2);
       HonitsuChinitsu();
       MenzenTsumo();
     }
@@ -61,11 +61,19 @@ namespace AnalyzerBuilder.Creators.Scoring
       var minCountWithWait = countsWithWait.Min();
       var maxCountWithWait = countsWithWait.Max();
 
-      SumValue |= (long)minCountWithWait << offset;
+      OrValue |= (long)minCountWithWait << offset;
+      WaitShiftValue |= (long)(maxCountWithWait - minCountWithWait) << offset;
       for (var i = 0; i < 9; i++)
       {
         WaitShiftValue |= (long)(maxCountWithWait - minCountWithWait) << (1 + i + offset);
         WaitShiftValue |= (long)(countsWithWait[i] - minCountWithWait) << (10 + i + offset);
+      }
+
+      var tankiArrangement = _interpretations.FirstOrDefault(i => i.IsStandard && i.Blocks.All(b => b.IsKoutsu || b.IsPair) && i.Blocks.Any(b => b.IsPair));
+      if (tankiArrangement != null)
+      {
+        var pairIndex = tankiArrangement.Blocks.First(b => b.IsPair).Index;
+        WaitShiftValue |= 0b1L << (1 + pairIndex);
       }
     }
 
@@ -73,7 +81,7 @@ namespace AnalyzerBuilder.Creators.Scoring
     {
       var offWaitAnkou = a.Blocks.Count(b => b.IsKoutsu && b.Index != waitIndex);
       var onWaitAnkou = a.Blocks.Count(b => b.IsKoutsu && b.Index == waitIndex);
-      var onWaitShuntsu = a.Blocks.Count(b => b.IsShuntsu && b.Index >= waitIndex && b.Index <= waitIndex + 2);
+      var onWaitShuntsu = a.Blocks.Count(b => b.IsShuntsu && waitIndex >= b.Index && waitIndex <= b.Index + 2);
       // on wait ankou can only count if there also is an on wait shuntsu to consume the wait.
       return offWaitAnkou + onWaitAnkou * onWaitShuntsu;
     }

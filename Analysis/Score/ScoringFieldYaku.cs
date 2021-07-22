@@ -45,5 +45,9 @@ namespace Spines.Mahjong.Analysis.Score
     ClosedChinitsu = 1L << BitIndex.ClosedChinitsu,
     OpenHonitsu = 1L << BitIndex.OpenHonitsu,
     OpenChinitsu = 1L << BitIndex.OpenChinitsu,
+
+    Sanankou = 1L << BitIndex.Sanankou,
+    Suuankou = 1L << BitIndex.Suuankou,
+    SuuankouTanki = 1L << BitIndex.SuuankouTanki,
   }
 }

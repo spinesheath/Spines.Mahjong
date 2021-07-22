@@ -6,24 +6,24 @@ namespace Spines.Mahjong.Analysis.Score
 {
   public static class YakuCalculator
   {
-    private static ScoringFieldYaku CalculateInternal(HandCalculator hand, Tile winningTile, bool isRon, int roundWind, int seatWind, bool isOpen, bool hasChii, bool hasChantaCalls)
+    private static ScoringFieldYaku CalculateInternal(HandCalculator hand, Tile winningTile, bool isRon, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds)
     {
-      return (ScoringFieldYaku) ScoreLookup.Flags2(hand, winningTile, isRon, roundWind, seatWind, isOpen, hasChii, hasChantaCalls);
+      return (ScoringFieldYaku) ScoreLookup.Flags2(hand, winningTile, isRon, roundWind, seatWind, melds);
     }
 
-    public static Yaku Ron(HandCalculator hand, Tile winningTile, int roundWind, int seatWind, bool isOpen, bool hasChii, bool hasChantaCalls)
+    public static Yaku Ron(HandCalculator hand, Tile winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds)
     {
-      return MapFlags(CalculateInternal(hand, winningTile, true, roundWind, seatWind, isOpen, hasChii, hasChantaCalls));
+      return MapFlags(CalculateInternal(hand, winningTile, true, roundWind, seatWind, melds));
     }
 
-    public static Yaku Tsumo(HandCalculator hand, Tile winningTile, int roundWind, int seatWind, bool isOpen, bool hasChii, bool hasChantaCalls)
+    public static Yaku Tsumo(HandCalculator hand, Tile winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds)
     {
-      return MapFlags(CalculateInternal(hand, winningTile, false, roundWind, seatWind, isOpen, hasChii, hasChantaCalls));
+      return MapFlags(CalculateInternal(hand, winningTile, false, roundWind, seatWind, melds));
     }
 
-    public static Yaku Chankan(HandCalculator hand, Tile winningTile, int roundWind, int seatWind, bool isOpen, bool hasChii, bool hasChantaCalls)
+    public static Yaku Chankan(HandCalculator hand, Tile winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds)
     {
-      return MapFlags(CalculateInternal(hand, winningTile, true, roundWind, seatWind, isOpen, hasChii, hasChantaCalls));
+      return MapFlags(CalculateInternal(hand, winningTile, true, roundWind, seatWind, melds));
     }
 
     private static Yaku MapFlags(ScoringFieldYaku flags)
@@ -67,7 +67,7 @@ namespace Spines.Mahjong.Analysis.Score
       { ScoringFieldYaku.Doukou, Yaku.SanshokuDoukou },
       //{ ScoringFieldYaku.None, Yaku.Sankantsu },
       { ScoringFieldYaku.Toitoi, Yaku.Toitoihou },
-      //{ ScoringFieldYaku.None, Yaku.Sanankou },
+      { ScoringFieldYaku.Sanankou, Yaku.Sanankou },
       { ScoringFieldYaku.Shousangen, Yaku.Shousangen },
       //{ ScoringFieldYaku.None, Yaku.Honroutou },
       { ScoringFieldYaku.Ryanpeikou, Yaku.Ryanpeikou },
@@ -82,8 +82,8 @@ namespace Spines.Mahjong.Analysis.Score
       //{ ScoringFieldYaku.None, Yaku.Tenhou },
       //{ ScoringFieldYaku.None, Yaku.Chiihou },
       { ScoringFieldYaku.Daisangen, Yaku.Daisangen },
-      //{ ScoringFieldYaku.None, Yaku.Suuankou },
-      //{ ScoringFieldYaku.None, Yaku.SuuankouTanki },
+      { ScoringFieldYaku.Suuankou, Yaku.Suuankou },
+      { ScoringFieldYaku.SuuankouTanki, Yaku.SuuankouTanki },
       //{ ScoringFieldYaku.None, Yaku.Tsuuiisou },
       //{ ScoringFieldYaku.None, Yaku.Ryuuiisou },
       //{ ScoringFieldYaku.None, Yaku.Chinroutou },

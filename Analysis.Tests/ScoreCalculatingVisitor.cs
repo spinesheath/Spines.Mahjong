@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Spines.Mahjong.Analysis.Replay;
 using Spines.Mahjong.Analysis.Score;
 using Spines.Mahjong.Analysis.Shanten;
@@ -35,7 +34,10 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.OpenChinitsu | 
       Yaku.ClosedTanyao | 
       Yaku.OpenTanyao | 
-      Yaku.MenzenTsumo
+      Yaku.MenzenTsumo |
+      Yaku.Sanankou |
+      Yaku.Suuankou |
+      Yaku.SuuankouTanki
       //Yaku.Iipeikou | 
       //Yaku.Chiitoitsu | 
       //Yaku.Ryanpeikou
@@ -149,10 +151,7 @@ namespace Spines.Mahjong.Analysis.Tests
         var hand = (HandCalculator)seat.Hand.WithTile(discard.TileType);
         var roundWind = _board.RoundWind.Index;
         var seatWind = seat.SeatWind.Index;
-        var isOpen = seat.Melds.Any(m => !m.IsKan || m.CalledTile != null);
-        var hasChii = seat.Melds.Any(m => m.MeldType == MeldType.Shuntsu);
-        var hasChantaCalls = seat.Melds.Any(m => m.Tiles.Any(t => t.TileType.IsKyuuhai));
-        var yaku = YakuCalculator.Ron(hand, discard, roundWind, seatWind, isOpen, hasChii, hasChantaCalls);
+        var yaku = YakuCalculator.Ron(hand, discard, roundWind, seatWind, seat.Melds);
         if ((yaku & YakuFilter) != (payment.Yaku & YakuFilter))
         {
           FailureCount += 1;
@@ -169,10 +168,7 @@ namespace Spines.Mahjong.Analysis.Tests
         var hand = (HandCalculator)seat.Hand.WithTile(discard.TileType);
         var roundWind = _board.RoundWind.Index;
         var seatWind = seat.SeatWind.Index;
-        var isOpen = seat.Melds.Any(m => !m.IsKan || m.CalledTile != null);
-        var hasChii = seat.Melds.Any(m => m.MeldType == MeldType.Shuntsu);
-        var hasChantaCalls = seat.Melds.Any(m => m.Tiles.Any(t => t.TileType.IsKyuuhai));
-        var yaku = YakuCalculator.Chankan(hand, discard, roundWind, seatWind, isOpen, hasChii, hasChantaCalls);
+        var yaku = YakuCalculator.Chankan(hand, discard, roundWind, seatWind, seat.Melds);
         if ((yaku & YakuFilter) != (payment.Yaku & YakuFilter))
         {
           FailureCount += 1;
@@ -199,10 +195,7 @@ namespace Spines.Mahjong.Analysis.Tests
       var draw = seat.CurrentDraw!;
       var roundWind = _board.RoundWind.Index;
       var seatWind = seat.SeatWind.Index;
-      var isOpen = seat.Melds.Any(m => !m.IsKan || m.CalledTile != null);
-      var hasChii = seat.Melds.Any(m => m.MeldType == MeldType.Shuntsu);
-      var hasChantaCalls = seat.Melds.Any(m => m.Tiles.Any(t => t.TileType.IsKyuuhai));
-      var yaku = YakuCalculator.Tsumo(hand, draw, roundWind, seatWind, isOpen, hasChii, hasChantaCalls);
+      var yaku = YakuCalculator.Tsumo(hand, draw, roundWind, seatWind, seat.Melds);
       if ((yaku & YakuFilter) != (payment.Yaku & YakuFilter))
       {
         FailureCount += 1;

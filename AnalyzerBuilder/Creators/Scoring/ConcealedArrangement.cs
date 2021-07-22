@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace AnalyzerBuilder.Creators.Scoring
 {
@@ -28,5 +29,19 @@ namespace AnalyzerBuilder.Creators.Scoring
     public int TileCount { get; }
 
     public IReadOnlyList<int> TileCounts { get; }
+
+    public override string ToString()
+    {
+      var sb = new StringBuilder();
+      for (var i = 0; i < TileCounts.Count; i++)
+      {
+        sb.Append((char)('1' + i), TileCounts[i]);
+      }
+
+      sb.Append(':');
+      sb.Append(string.Join(',', Blocks));
+
+      return sb.ToString();
+    }
   }
 }
