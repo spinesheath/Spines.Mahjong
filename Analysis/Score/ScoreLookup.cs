@@ -114,10 +114,10 @@ namespace Spines.Mahjong.Analysis.Score
 
       waitShiftValues[winningTile.TileType.SuitId] >>= isRon ? 9 : 0;
 
-      var bigSum = (concealedOrMeldedValues[0] & BigSumFilter) + 
-                   (concealedOrMeldedValues[1] & BigSumFilter) + 
-                   (concealedOrMeldedValues[2] & BigSumFilter) + 
-                   (honorSum & BigSumFilter);
+      var bigSum = (concealedOrMeldedValues[0] & SuitBigSumFilter) + 
+                   (concealedOrMeldedValues[1] & SuitBigSumFilter) + 
+                   (concealedOrMeldedValues[2] & SuitBigSumFilter) + 
+                   (honorSum & HonorBigSumFilter);
 
       var waitAndRonShift = (waitShiftValues[0] & RonShiftSumFilter) + 
                             (waitShiftValues[1] & RonShiftSumFilter) + 
@@ -125,14 +125,9 @@ namespace Spines.Mahjong.Analysis.Score
                             (waitShiftValues[3] & RonShiftSumFilter);
       waitAndRonShift += shiftedAnkanCount;
       
-      var waitBasedAnkou = PrintBinarySegment(waitAndRonShift, BitIndex.Sanankou - 2, 4);
-      var baseAnkouBits = PrintBinarySegment(bigSum, BitIndex.Sanankou - 2, 4);
-
       waitAndRonShift += bigSum & (0b111L << AnkouRonShiftSumFilterIndex);
       waitAndRonShift += waitAndRonShift & (0b101L << AnkouRonShiftSumFilterIndex);
       
-      var finalAnkouBits = PrintBinarySegment(waitAndRonShift, BitIndex.Sanankou - 2, 4);
-
       var suuankouBit = waitAndRonShift & (0b1L << BitIndex.Suuankou);
 
       var suitsAnd = concealedOrMeldedValues[0] & concealedOrMeldedValues[1] & concealedOrMeldedValues[2];
@@ -148,7 +143,8 @@ namespace Spines.Mahjong.Analysis.Score
 
       result |= suitsAnd & honorSum & AllAndYakuFilter;
 
-      var iipeikouPostElimination = bigSum & ~((bigSum & IipeikouEliminationFilter) >> IipeikouDelta);
+      var iipeikouPostElimination = bigSum & ~(((bigSum & IipeikouEliminationFilter) | ((waitAndRonShift & 0b1L << BitIndex.Sanankou) << (3 + IipeikouDelta))) >> IipeikouDelta);
+
       result |= iipeikouPostElimination & IipeikouYakuFilter;
 
       
@@ -218,6 +214,7 @@ namespace Spines.Mahjong.Analysis.Score
 
     private const long NoChantaCallsFilter = ~((0b1L << BitIndex.ClosedTanyao) | (0b1L << BitIndex.OpenTanyao));
 
-    private const long BigSumFilter = 0b11111111_0_11111111_11111111111111L << 32;
+    private const long SuitBigSumFilter = 0b11111111_0_11111111_11111111111111L << 32;
+    private const long HonorBigSumFilter = 0b11111111_0_11111111_00001111111111L << 32;
   }
 }

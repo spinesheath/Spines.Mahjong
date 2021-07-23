@@ -37,10 +37,10 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.MenzenTsumo |
       Yaku.Sanankou |
       Yaku.Suuankou |
-      Yaku.SuuankouTanki
-      //Yaku.Iipeikou | 
-      //Yaku.Chiitoitsu | 
-      //Yaku.Ryanpeikou
+      Yaku.SuuankouTanki |
+      Yaku.Iipeikou | 
+      Yaku.Chiitoitsu | 
+      Yaku.Ryanpeikou
       ;
 
     public ScoreCalculatingVisitor()
