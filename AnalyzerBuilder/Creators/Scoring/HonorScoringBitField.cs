@@ -28,6 +28,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       Chiitoitsu();
       HonitsuChinitsu();
       MenzenTsumo();
+      KokushiMusou();
     }
 
     public long AndValue { get; private set; }
@@ -38,6 +39,23 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private readonly ConcealedArrangement _arrangement;
     private readonly bool _isEmpty;
+
+    private void KokushiMusou()
+    {
+      if (!_arrangement.IsStandard && _arrangement.TileCounts.Any(c => c == 1))
+      {
+        WaitShiftValue |= 0b1L << 0;
+        SumValue |= 0b1L << 0;
+
+        for (var i = 0; i < _arrangement.TileCounts.Count; i++)
+        {
+          if (_arrangement.TileCounts[i] == 2)
+          {
+            WaitShiftValue |= 0b1L << (i + 1);
+          }
+        }
+      }
+    }
 
     private void MenzenTsumo()
     {

@@ -49,5 +49,9 @@ namespace Spines.Mahjong.Analysis.Score
     Sanankou = 1L << BitIndex.Sanankou,
     Suuankou = 1L << BitIndex.Suuankou,
     SuuankouTanki = 1L << BitIndex.SuuankouTanki,
+
+    Ryuuiisou = 1L << BitIndex.Ryuuiisou,
+    KokushiMusou = 1L << BitIndex.KokushiMusou,
+    KokushiMusouJuusanmen = 1L << BitIndex.KokushiMusouJuusanmen,
   }
 }

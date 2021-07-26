@@ -27,11 +27,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       Ankou(34 - 2);
       HonitsuChinitsu();
       MenzenTsumo();
-    }
-
-    private void MenzenTsumo()
-    {
-      WaitShiftValue |= 0b111111111_1L << 52;
+      KokushiMusou();
     }
 
     public long AndValue { get; private set; }
@@ -43,6 +39,31 @@ namespace AnalyzerBuilder.Creators.Scoring
     public long WaitShiftValue { get; private set; }
 
     private readonly IReadOnlyList<ConcealedArrangement> _interpretations;
+
+    private void KokushiMusou()
+    {
+      foreach (var arrangement in _interpretations)
+      {
+        if (!arrangement.IsStandard && arrangement.TileCounts.Any(c => c == 1))
+        {
+          WaitShiftValue |= 0b1L << 0;
+          SumValue |= 0b1L << 0;
+
+          for (var i = 0; i < arrangement.TileCounts.Count; i++)
+          {
+            if (arrangement.TileCounts[i] == 2)
+            {
+              WaitShiftValue |= 0b1L << (i + 1);
+            }
+          }
+        }
+      }
+    }
+
+    private void MenzenTsumo()
+    {
+      WaitShiftValue |= 0b111111111_1L << 52;
+    }
 
     private void HonitsuChinitsu()
     {

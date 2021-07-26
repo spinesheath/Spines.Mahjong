@@ -59,7 +59,6 @@ namespace Spines.Mahjong.Analysis.Score
     private static readonly long[] SuitWaitShiftLookup;
 
     private const int PinfuBitIndex = 10;
-    private const int KokushiMusouJuusanMenBitIndex = 0;
     private const int JunseiChuurenPoutouBitIndex = 22;
   
     private const int IipeikouDelta = 4;
@@ -79,13 +78,18 @@ namespace Spines.Mahjong.Analysis.Score
       return meldIndex;
     }
 
+    private static long WindShiftHonor(int roundWind, int seatWind)
+    {
+      // TODO this is always 0, was somehow intended for pinfu I think
+      var shift = 0b1 << roundWind | 0b1 << seatWind;
+      return 1L >> shift;
+    }
+
     private static long ValueWindFilter(int roundWind, int seatWind)
     {
-      var mask = ~(0b1111L << BitIndex.BakazeTon | 0b1111L << BitIndex.JikazeTon | 0b1111L);
+      var mask = ~(0b1111L << BitIndex.BakazeTon | 0b1111L << BitIndex.JikazeTon);
       mask |= 0b1L << (BitIndex.BakazeTon + roundWind);
       mask |= 0b1L << (BitIndex.JikazeTon + seatWind);
-      mask |= 0b1L << roundWind;
-      mask |= 0b1L << seatWind;
       return mask;
     }
 
@@ -105,9 +109,9 @@ namespace Spines.Mahjong.Analysis.Score
       var honorSum = HonorSum(honorConcealedIndex, honorMeldIndex);
 
       var valueWindFilter = ValueWindFilter(roundWind, seatWind);
+      var windShiftHonor = WindShiftHonor(roundWind, seatWind);
 
       waitShiftValues[winningTile.TileType.SuitId] >>= winningTile.TileType.Index + 1;
-      var windShiftHonor = 1L >> (int)(valueWindFilter & 0b1111L);
 
       var waitAndWindShift = waitShiftValues[0] & waitShiftValues[1] & waitShiftValues[2] & waitShiftValues[3] & windShiftHonor;
       var tankiBit = waitShiftValues[winningTile.TileType.SuitId] & 0b1L;
@@ -128,12 +132,14 @@ namespace Spines.Mahjong.Analysis.Score
       waitAndRonShift += bigSum & (0b111L << AnkouRonShiftSumFilterIndex);
       waitAndRonShift += waitAndRonShift & (0b101L << AnkouRonShiftSumFilterIndex);
       
-      var suuankouBit = waitAndRonShift & (0b1L << BitIndex.Suuankou);
+      var suuankouBit = (waitAndRonShift | honorSum) & TankiUpgradeableFilter;
 
       var suitsAnd = concealedOrMeldedValues[0] & concealedOrMeldedValues[1] & concealedOrMeldedValues[2];
 
       var result = 0L;
-      
+
+      result |= honorSum & HonorSumYakuFilter & valueWindFilter;
+
       result |= waitAndWindShift & WaitShiftYakuFilter;
       
       result |= waitAndRonShift & WaitAndRonShiftYakuFilter;
@@ -146,9 +152,6 @@ namespace Spines.Mahjong.Analysis.Score
       var iipeikouPostElimination = bigSum & ~(((bigSum & IipeikouEliminationFilter) | ((waitAndRonShift & 0b1L << BitIndex.Sanankou) << (3 + IipeikouDelta))) >> IipeikouDelta);
 
       result |= iipeikouPostElimination & IipeikouYakuFilter;
-
-      
-      result |= honorSum & YakuhaiYakuFilter & valueWindFilter;
 
       var yakuman = result & YakumanFilter;
       if (yakuman != 0)
@@ -192,13 +195,15 @@ namespace Spines.Mahjong.Analysis.Score
                                                    0b1L << (BitIndex.ClosedChinitsu + 4) | 0b1L << (BitIndex.OpenChinitsu + 4) |
                                                    0b1L << (BitIndex.ClosedHonitsu + 4) | 0b1L << (BitIndex.OpenHonitsu + 4);
 
-    private const long YakuhaiYakuFilter = (0b1L << BitIndex.Haku) | (0b1L << BitIndex.Hatsu) | (0b1L << BitIndex.Chun) |
+    private const long HonorSumYakuFilter = (0b1L << BitIndex.Haku) | (0b1L << BitIndex.Hatsu) | (0b1L << BitIndex.Chun) |
                                            (0b1L << BitIndex.JikazeTon) | (0b1L << BitIndex.JikazeNan) | (0b1L << BitIndex.JikazeShaa) | (0b1L << BitIndex.JikazePei) |
                                            (0b1L << BitIndex.BakazeTon) | (0b1L << BitIndex.BakazeNan) | (0b1L << BitIndex.BakazeShaa) | (0b1L << BitIndex.BakazePei) |
-                                           (0b1L << BitIndex.Shousangen) | (0b1L << BitIndex.Daisangen) | (0b1L << BitIndex.Shousuushi) | (0b1L << BitIndex.Daisuushi);
+                                           (0b1L << BitIndex.Shousangen) | (0b1L << BitIndex.Daisangen) | (0b1L << BitIndex.Shousuushi) | (0b1L << BitIndex.Daisuushi) |
+                                           (0b1L << BitIndex.KokushiMusou);
 
     private const long YakumanFilter = (0b1L << BitIndex.Daisangen) | (0b1L << BitIndex.Shousuushi) | (0b1L << BitIndex.Daisuushi) | 
-                                       (0b1L << BitIndex.Suuankou) | (0b1L << BitIndex.SuuankouTanki);
+                                       (0b1L << BitIndex.Suuankou) | (0b1L << BitIndex.SuuankouTanki) |
+                                       (0b1L << BitIndex.KokushiMusou) | (0b1L << BitIndex.KokushiMusouJuusanmen);
     private const long ClosedYakuFilter = ~((0b1L << BitIndex.ClosedSanshokuDoujun) | (0b1L << BitIndex.Iipeikou) | 
                                             (0b1L << BitIndex.Chiitoitsu) | (0b1L << BitIndex.Ryanpeikou) |
                                             (0b1L << BitIndex.ClosedHonitsu) | (0b1L << BitIndex.ClosedChinitsu) | 
@@ -208,7 +213,7 @@ namespace Spines.Mahjong.Analysis.Score
     private const long NoChiiYakuFilter = ~((0b1L << BitIndex.Toitoi));
 
     private const long WaitAndRonShiftYakuFilter = (0b1L << BitIndex.Sanankou) | (0b1L << BitIndex.Suuankou) | (0b1L << BitIndex.SuuankouTanki) | (0b1L << BitIndex.MenzenTsumo);
-    private const long WaitShiftYakuFilter = (0b1L << PinfuBitIndex) | (0b1L << JunseiChuurenPoutouBitIndex) | (0b1L << KokushiMusouJuusanMenBitIndex);
+    private const long WaitShiftYakuFilter = (0b1L << PinfuBitIndex) | (0b1L << JunseiChuurenPoutouBitIndex);
     private const long RonShiftSumFilter = (0b1L << AnkouRonShiftSumFilterIndex) | (0b1L << BitIndex.MenzenTsumo - 2);
     private const int AnkouRonShiftSumFilterIndex = BitIndex.Sanankou - 2;
 
@@ -216,5 +221,7 @@ namespace Spines.Mahjong.Analysis.Score
 
     private const long SuitBigSumFilter = 0b11111111_0_11111111_11111111111111L << 32;
     private const long HonorBigSumFilter = 0b11111111_0_11111111_00001111111111L << 32;
+    
+    private const long TankiUpgradeableFilter = (0b1L << BitIndex.Suuankou) | (0b1L << BitIndex.KokushiMusou);
   }
 }

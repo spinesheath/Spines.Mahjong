@@ -46,5 +46,9 @@
     public const int OpenChinitsu = 58;
 
     public const int MenzenTsumo = 54;
+    
+    public const int Ryuuiisou = 62;
+    public const int KokushiMusou = 0;
+    public const int KokushiMusouJuusanmen = 1;
   }
 }
