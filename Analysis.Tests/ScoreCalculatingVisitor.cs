@@ -42,7 +42,8 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.Chiitoitsu | 
       Yaku.Ryanpeikou |
       Yaku.KokushiMusou |
-      Yaku.KokushiMusouJuusanMen
+      Yaku.KokushiMusouJuusanMen |
+      Yaku.Pinfu
       ;
 
     public ScoreCalculatingVisitor()

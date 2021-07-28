@@ -41,7 +41,7 @@ namespace Spines.Mahjong.Analysis.Score
       //{ ScoringFieldYaku.None, Yaku.RinshanKaihou },
       //{ ScoringFieldYaku.None, Yaku.HaiteiRaoyue },
       //{ ScoringFieldYaku.None, Yaku.HouteiRaoyui },
-      //{ ScoringFieldYaku.None, Yaku.Pinfu },
+      { ScoringFieldYaku.Pinfu, Yaku.Pinfu },
       { ScoringFieldYaku.OpenTanyao, Yaku.OpenTanyao },
       { ScoringFieldYaku.ClosedTanyao, Yaku.ClosedTanyao },
       { ScoringFieldYaku.Iipeikou, Yaku.Iipeikou },

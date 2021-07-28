@@ -23,7 +23,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       //Ryuuiisou(33);
       IipeikouRyanpeikouChiitoitsu();
       //Ittsuu(59);
-      //Pinfu(0);
+      Pinfu(10);
       Ankou(34 - 2);
       HonitsuChinitsu();
       MenzenTsumo();
@@ -109,15 +109,16 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Pinfu(int offset)
     {
-      if (_interpretations.Any(a => a.Blocks.All(b => b.IsShuntsu || b.IsPair)))
+      var pinfuArrangements = _interpretations.Where(a => a.IsStandard && a.Blocks.All(b => b.IsShuntsu || b.IsPair)).ToList();
+      if (pinfuArrangements.Any())
       {
         WaitShiftValue |= 0b1L << offset;
 
         for (var i = 0; i < 9; i++)
         {
-          if (_interpretations.Any(a => a.Blocks.All(b => b.IsShuntsu || b.IsPair) && a.Blocks.Any(b => b.IsShuntsu && (b.Index == i || b.Index + 2 == i))))
+          if (pinfuArrangements.Any(a => a.Blocks.Any(b => b.IsShuntsu && (b.Index == i && b.Index < 6 || b.Index + 2 == i && b.Index > 0))))
           {
-            WaitShiftValue |= 0b1000000001L << (1 + i + offset);
+            WaitShiftValue |= 0b1L << (1 + i + offset);
           }
         }
       }

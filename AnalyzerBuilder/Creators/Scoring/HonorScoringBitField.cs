@@ -23,7 +23,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       //IipeikouRyanpeikou(45);
       Sangen();
       Suushi();
-      //Pinfu(0);
+      Pinfu(10);
       Ankou(34 - 2);
       Chiitoitsu();
       HonitsuChinitsu();
@@ -111,7 +111,18 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Pinfu(int offset)
     {
-      // TODO pinfu
+      if (_arrangement.IsStandard)
+      {
+        var pair = _arrangement.Blocks.FirstOrDefault(b => b.IsPair);
+        if (pair != null && pair.Index < 4 && _arrangement.Blocks.Count == 1)
+        {
+          WaitShiftValue |= PinfuWindBits[pair.Index] << offset;
+        }
+        else if (!_arrangement.Blocks.Any())
+        {
+          WaitShiftValue |= 0b111_111_111_111_1L << offset;
+        }
+      }
     }
 
     private void Suushi()
@@ -241,5 +252,30 @@ namespace AnalyzerBuilder.Creators.Scoring
     {
       AndValue |= 0b1111111_1111111L << offset;
     }
+
+    private static readonly long[] PinfuWindBits = 
+    {
+      0b101_010_101_010_1L,
+      0b100_110_011_001_1L,
+      0b001_110_000_111_1L,
+      0b000_000_111_111_1L
+    };
   }
 }
+
+//0000 > 0 > nothing
+//0001 > 1 > EE
+//0010 > 2 > SS
+//0011 > 3 > ES
+//0100 > 4 > WW
+//0101 > 5 > EW
+//0110 > 6 > SW
+//0111 > 7 > nothing
+//1000 > 8 > NN
+//1001 > 9 > EN
+//1010 > 10 > SN
+//1011 > 11 > nothing
+//1100 > 12 > WN
+//1101 > 13 > nothing
+//1110 > 14 > nothing
+//1111 > 15 > nothing

@@ -58,9 +58,6 @@ namespace Spines.Mahjong.Analysis.Score
     private static readonly long[] SuitMeldOrLookup;
     private static readonly long[] SuitWaitShiftLookup;
 
-    private const int PinfuBitIndex = 10;
-    private const int JunseiChuurenPoutouBitIndex = 22;
-  
     private const int IipeikouDelta = 4;
     private const int IipeikouBitIndex = 37;
     private const int ChiitoitsuBitIndex = IipeikouBitIndex + IipeikouDelta;
@@ -78,11 +75,9 @@ namespace Spines.Mahjong.Analysis.Score
       return meldIndex;
     }
 
-    private static long WindShiftHonor(int roundWind, int seatWind)
+    private static int WindShiftHonor(int roundWind, int seatWind)
     {
-      // TODO this is always 0, was somehow intended for pinfu I think
-      var shift = 0b1 << roundWind | 0b1 << seatWind;
-      return 1L >> shift;
+      return 1 << roundWind | 1 << seatWind;
     }
 
     private static long ValueWindFilter(int roundWind, int seatWind)
@@ -109,11 +104,17 @@ namespace Spines.Mahjong.Analysis.Score
       var honorSum = HonorSum(honorConcealedIndex, honorMeldIndex);
 
       var valueWindFilter = ValueWindFilter(roundWind, seatWind);
-      var windShiftHonor = WindShiftHonor(roundWind, seatWind);
+      var honorWindShiftAmount = WindShiftHonor(roundWind, seatWind);
+
+      var honorWaitAndWindShift = waitShiftValues[3] >> honorWindShiftAmount;
 
       waitShiftValues[winningTile.TileType.SuitId] >>= winningTile.TileType.Index + 1;
 
-      var waitAndWindShift = waitShiftValues[0] & waitShiftValues[1] & waitShiftValues[2] & waitShiftValues[3] & windShiftHonor;
+      // TODO open closed similar to tanki bit? -> x += x * open bit -> for sanshoku, honitsu, chinitsu (and some more)?
+
+      // TODO could rightshift noHonorTanki by the total pair count?
+      var noHonorTanki = (0b111L << BitIndex.Pinfu) >> winningTile.TileType.SuitId;
+      var waitAndWindShift = waitShiftValues[0] & waitShiftValues[1] & waitShiftValues[2] & honorWaitAndWindShift & noHonorTanki;
       var tankiBit = waitShiftValues[winningTile.TileType.SuitId] & 0b1L;
 
       waitShiftValues[winningTile.TileType.SuitId] >>= isRon ? 9 : 0;
@@ -178,6 +179,11 @@ namespace Spines.Mahjong.Analysis.Score
         result &= NoChantaCallsFilter;
       }
 
+      if (shiftedAnkanCount != 0)
+      {
+        result &= NoAnkanYakuFilter;
+      }
+
       return result;
     }
 
@@ -207,13 +213,15 @@ namespace Spines.Mahjong.Analysis.Score
     private const long ClosedYakuFilter = ~((0b1L << BitIndex.ClosedSanshokuDoujun) | (0b1L << BitIndex.Iipeikou) | 
                                             (0b1L << BitIndex.Chiitoitsu) | (0b1L << BitIndex.Ryanpeikou) |
                                             (0b1L << BitIndex.ClosedHonitsu) | (0b1L << BitIndex.ClosedChinitsu) | 
-                                            (0b1L << BitIndex.ClosedTanyao) | (0b1L << BitIndex.MenzenTsumo));
+                                            (0b1L << BitIndex.ClosedTanyao) | (0b1L << BitIndex.MenzenTsumo) |
+                                            (0b1L << BitIndex.Pinfu));
     private const long OpenYakuFilter = ~((0b1L << BitIndex.OpenSanshokuDoujun) | (0b1L << BitIndex.OpenHonitsu) | (0b1L << BitIndex.OpenChinitsu) |
                                           (0b1L << BitIndex.OpenTanyao));
     private const long NoChiiYakuFilter = ~((0b1L << BitIndex.Toitoi));
+    private const long NoAnkanYakuFilter = ~(0b1L << BitIndex.Pinfu);
 
     private const long WaitAndRonShiftYakuFilter = (0b1L << BitIndex.Sanankou) | (0b1L << BitIndex.Suuankou) | (0b1L << BitIndex.SuuankouTanki) | (0b1L << BitIndex.MenzenTsumo);
-    private const long WaitShiftYakuFilter = (0b1L << PinfuBitIndex) | (0b1L << JunseiChuurenPoutouBitIndex);
+    private const long WaitShiftYakuFilter = (0b1L << BitIndex.Pinfu);
     private const long RonShiftSumFilter = (0b1L << AnkouRonShiftSumFilterIndex) | (0b1L << BitIndex.MenzenTsumo - 2);
     private const int AnkouRonShiftSumFilterIndex = BitIndex.Sanankou - 2;
 
