@@ -18,7 +18,8 @@ namespace AnalyzerBuilder.Creators.Scoring
       //Chinroutou(31);
       //Chuuren(32);
       //Ryuuiisou(33);
-      KazeYakuhai(15);
+      Jikaze(15);
+      Bakaze(57);
       SangenYakuhai(42);
       //IipeikouRyanpeikou(45);
       Sangen();
@@ -26,7 +27,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       Pinfu(10);
       Ankou(34 - 2);
       Chiitoitsu();
-      HonitsuChinitsu();
+      HonitsuChinitsu(19);
       MenzenTsumo();
       KokushiMusou();
     }
@@ -62,17 +63,15 @@ namespace AnalyzerBuilder.Creators.Scoring
       WaitShiftValue |= 0b111111111_1L << 52;
     }
 
-    private void HonitsuChinitsu()
+    private void HonitsuChinitsu(int offset)
     {
       if (_isEmpty)
       {
-        SumValue |= 0b1L << 48;
-        SumValue |= 0b1L << 57;
+        SumValue |= 0b1L << (offset + 2);
       }
       else
       {
-        SumValue |= 0b11L << 46;
-        SumValue |= 0b11L << 55;
+        SumValue |= 0b11L << offset;
       }
     }
 
@@ -163,13 +162,24 @@ namespace AnalyzerBuilder.Creators.Scoring
       }
     }
 
-    private void KazeYakuhai(int offset)
+    private void Jikaze(int offset)
     {
       for (var i = 0; i < 4; i++)
       {
         if (_arrangement.ContainsKoutsu(i))
         {
-          SumValue |= 0b10001L << (offset + i);
+          SumValue |= 0b1L << (offset + i);
+        }
+      }
+    }
+
+    private void Bakaze(int offset)
+    {
+      for (var i = 0; i < 4; i++)
+      {
+        if (_arrangement.ContainsKoutsu(i))
+        {
+          SumValue |= 0b1L << (offset + i);
         }
       }
     }
@@ -210,7 +220,7 @@ namespace AnalyzerBuilder.Creators.Scoring
     {
       if (_isEmpty)
       {
-        SumValue |= 0b11L << offset;
+        SumValue |= 0b1L << offset;
       }
     }
 

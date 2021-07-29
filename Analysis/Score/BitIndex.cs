@@ -18,10 +18,10 @@
     public const int JikazeNan = 16;
     public const int JikazeShaa = 17;
     public const int JikazePei = 18;
-    public const int BakazeTon = 19;
-    public const int BakazeNan = 20;
-    public const int BakazeShaa = 21;
-    public const int BakazePei = 22;
+    public const int BakazeTon = 57;
+    public const int BakazeNan = 58;
+    public const int BakazeShaa = 59;
+    public const int BakazePei = 60;
 
     public const int Toitoi = 29;
     public const int ClosedTanyao = 30;
@@ -40,10 +40,10 @@
 
     public const int Ryanpeikou = 45;
 
-    public const int ClosedHonitsu = 47;
-    public const int ClosedChinitsu = 49;
-    public const int OpenHonitsu = 56;
-    public const int OpenChinitsu = 58;
+    public const int ClosedHonitsu = 20;
+    public const int OpenHonitsu = 21;
+    public const int ClosedChinitsu = 22;
+    public const int OpenChinitsu = 23;
 
     public const int MenzenTsumo = 54;
     

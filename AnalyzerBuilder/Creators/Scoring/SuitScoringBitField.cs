@@ -25,7 +25,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       //Ittsuu(59);
       Pinfu(10);
       Ankou(34 - 2);
-      HonitsuChinitsu();
+      HonitsuChinitsu(19);
       MenzenTsumo();
       KokushiMusou();
     }
@@ -65,14 +65,11 @@ namespace AnalyzerBuilder.Creators.Scoring
       WaitShiftValue |= 0b111111111_1L << 52;
     }
 
-    private void HonitsuChinitsu()
+    private void HonitsuChinitsu(int offset)
     {
       if (_interpretations.First().TileCount > 0)
       {
-        OrValue |= 0b1L << 50;
-        OrValue |= 0b1L << 52;
-        OrValue |= 0b1L << 59;
-        OrValue |= 0b1L << 61;
+        OrValue |= 0b101L << (offset + 4);
       }
     }
 
@@ -217,7 +214,7 @@ namespace AnalyzerBuilder.Creators.Scoring
     {
       if (_interpretations.Any(g => g.TileCounts[0] + g.TileCounts[8] == 0))
       {
-        OrValue |= 0b11L << offset;
+        OrValue |= 0b1L << offset;
       }
     }
 
@@ -260,7 +257,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       {
         if (_interpretations.Any(a => a.ContainsKoutsu(i)))
         {
-          var shift = i + 14;
+          var shift = i + 7;
           OrValue |= shift + 2L;
           OrValue |= 0b1L << (shift + 6);
         }
@@ -273,9 +270,9 @@ namespace AnalyzerBuilder.Creators.Scoring
       {
         if (_interpretations.Any(a => a.ContainsShuntsu(i)))
         {
-          var shift = 2 * i;
+          var shift = i;
           OrValue |= shift + 4L;
-          OrValue |= 0b11L << (shift + 6);
+          OrValue |= 0b1L << (shift + 6);
         }
       }
     }

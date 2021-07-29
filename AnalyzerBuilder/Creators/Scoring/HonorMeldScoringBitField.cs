@@ -11,25 +11,12 @@ namespace AnalyzerBuilder.Creators.Scoring
       _melds = melds;
       _hasMelds = melds.Count > 0;
 
-      //SanshokuDoujun(0); // 7 + 7 bit
-      //SanshokuDoukou(14); // 9 bit
-      //Chanta(23); // 2 bit
-      //Toitoi(25); // 1 bit
-      //Honroutou(26); // 1 bit
-      //Tsuuiisou(27); // 1 bit
-      //Tanyao(28); // 1 bit
-      //Junchan(29); // 2 bit
-      //Chinroutou(31); // 1 bit
-      //Chuuren(32); // 1 bit
-      //Ryuuiisou(33); // 1 bit
-      KazeYakuhai(15);
+      Jikaze(15);
+      Jikaze(57);
       SangenYakuhai(42);
-      //IipeikouRyanpeikou(45); // 2 bit
       Sangen();
       Suushi();
-      //Pinfu(0); // 10 bit, 9 bit cleared
-      //Ankou(10); // 13 bit, 12 cleared?
-      HonitsuChinitsu();
+      HonitsuChinitsu(19);
     }
 
     public long AndValue { get; private set; }
@@ -43,17 +30,15 @@ namespace AnalyzerBuilder.Creators.Scoring
     private readonly bool _hasMelds;
     private readonly IReadOnlyList<Block> _melds;
 
-    private void HonitsuChinitsu()
+    private void HonitsuChinitsu(int offset)
     {
       if (!_hasMelds)
       {
-        SumValue |= 0b1L << 48;
-        SumValue |= 0b1L << 57;
+        SumValue |= 0b1L << (offset + 2);
       }
       else
       {
-        SumValue |= 0b11L << 46;
-        SumValue |= 0b11L << 55;
+        SumValue |= 0b11L << offset;
       }
     }
 
@@ -98,13 +83,24 @@ namespace AnalyzerBuilder.Creators.Scoring
       }
     }
 
-    private void KazeYakuhai(int offset)
+    private void Jikaze(int offset)
     {
       foreach (var meld in _melds)
       {
         if (meld.Index < 4)
         {
-          SumValue |= 0b10001L << (meld.Index + offset);
+          SumValue |= 0b1L << (meld.Index + offset);
+        }
+      }
+    }
+
+    private void Bakaze(int offset)
+    {
+      foreach (var meld in _melds)
+      {
+        if (meld.Index < 4)
+        {
+          SumValue |= 0b1L << (meld.Index + offset);
         }
       }
     }

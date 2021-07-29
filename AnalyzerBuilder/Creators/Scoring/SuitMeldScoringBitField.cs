@@ -12,17 +12,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       
       SanshokuDoujun();
       SanshokuDoukou();
-      //Chanta(23);
-      //Honroutou(26);
-      //Tsuuiisou(27);
-      //Tanyao(28);
-      //Junchan(29);
-      //Chinroutou(31);
-      //Chuuren(32);
-      //Ryuuiisou(33);
-      //Ittsuu(59);
-      //Ankou(10);
-      HonitsuChinitsu();
+      HonitsuChinitsu(19);
     }
 
     public long AndValue { get; private set; }
@@ -37,14 +27,11 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private readonly IReadOnlyList<Block> _melds;
 
-    private void HonitsuChinitsu()
+    private void HonitsuChinitsu(int offset)
     {
       if (_hasMelds)
       {
-        OrValue |= 0b1L << 50;
-        OrValue |= 0b1L << 52;
-        OrValue |= 0b1L << 59;
-        OrValue |= 0b1L << 61;
+        OrValue |= 0b101L << (offset + 4);
       }
     }
 
@@ -144,7 +131,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       {
         if (_melds.Any(m => (m.IsKoutsu || m.IsKantsu) && m.Index == i))
         {
-          var shift = i + 14;
+          var shift = i + 7;
           OrValue |= shift + 2L;
           OrValue |= 0b1L << (shift + 6);
         }
@@ -157,9 +144,9 @@ namespace AnalyzerBuilder.Creators.Scoring
       {
         if (_melds.Any(m => m.IsShuntsu && m.Index == i))
         {
-          var shift = 2 * i;
+          var shift = i;
           OrValue |= shift + 4L;
-          OrValue |= 0b10L << (shift + 6);
+          OrValue |= 0b1L << (shift + 6);
         }
       }
     }
