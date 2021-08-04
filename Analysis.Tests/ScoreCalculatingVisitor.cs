@@ -44,7 +44,8 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.KokushiMusou |
       Yaku.KokushiMusouJuusanMen | 
       Yaku.Pinfu |
-      Yaku.Tsuuiisou
+      Yaku.Tsuuiisou |
+      Yaku.Chinroutou
       ;
 
     private const Yaku ExternalYaku =
@@ -63,7 +64,6 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.HaiteiRaoyue;
 
     private const Yaku IgnoredYaku =
-      Yaku.Chinroutou |
       Yaku.Ryuuiisou |
       Yaku.ChuurenPoutou;
 

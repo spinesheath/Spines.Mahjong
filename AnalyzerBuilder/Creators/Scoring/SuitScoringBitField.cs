@@ -20,6 +20,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       HonitsuChinitsu(19);
       MenzenTsumo(12);
       KokushiMusou();
+      Chinroutou(38);
     }
 
     public long AndValue { get; private set; }
@@ -222,9 +223,9 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Chinroutou(int offset)
     {
-      if (_interpretations.Any(a => a.Blocks.All(b => b.IsJunchanBlock && !b.IsShuntsu)))
+      if (TileCounts[0] + TileCounts[8] == TileCount)
       {
-        AndValue |= 0b1L << offset;
+        OrValue |= 0b1L << offset;
       }
     }
 

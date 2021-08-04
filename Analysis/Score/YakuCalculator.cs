@@ -86,7 +86,7 @@ namespace Spines.Mahjong.Analysis.Score
       { ScoringFieldYaku.SuuankouTanki, Yaku.SuuankouTanki },
       { ScoringFieldYaku.Tsuuiisou, Yaku.Tsuuiisou },
       { ScoringFieldYaku.Ryuuiisou, Yaku.Ryuuiisou },
-      //{ ScoringFieldYaku.None, Yaku.Chinroutou },
+      { ScoringFieldYaku.Chinroutou, Yaku.Chinroutou },
       //{ ScoringFieldYaku.None, Yaku.ChuurenPoutou },
       //{ ScoringFieldYaku.None, Yaku.JunseiChuurenPoutou },
       { ScoringFieldYaku.KokushiMusou, Yaku.KokushiMusou },

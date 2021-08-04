@@ -55,5 +55,6 @@ namespace Spines.Mahjong.Analysis.Score
     KokushiMusouJuusanmen = 1L << BitIndex.KokushiMusouJuusanmen,
 
     Tsuuiisou = 1L << BitIndex.Tsuuiisou,
+    Chinroutou = 1L << BitIndex.Chinroutou,
   }
 }

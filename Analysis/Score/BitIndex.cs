@@ -52,5 +52,6 @@
     public const int KokushiMusouJuusanmen = 1;
 
     public const int Tsuuiisou = 28;
+    public const int Chinroutou = 38;
   }
 }

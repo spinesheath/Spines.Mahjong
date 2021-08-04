@@ -23,6 +23,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       MenzenTsumo(12);
       KokushiMusou();
       Tsuuiisou(25);
+      Chinroutou(38);
     }
 
     public long AndValue { get; private set; }
@@ -199,7 +200,7 @@ namespace AnalyzerBuilder.Creators.Scoring
     {
       if (_isEmpty)
       {
-        AndValue |= 0b1L << offset;
+        SumValue |= 0b1L << offset;
       }
     }
 
