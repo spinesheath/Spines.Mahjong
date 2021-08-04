@@ -42,9 +42,30 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.Chiitoitsu | 
       Yaku.Ryanpeikou |
       Yaku.KokushiMusou |
-      Yaku.KokushiMusouJuusanMen //|
-      //Yaku.Pinfu
+      Yaku.KokushiMusouJuusanMen 
+      | Yaku.Pinfu
       ;
+
+    private const Yaku ExternalYaku =
+      Yaku.AkaDora |
+      Yaku.Dora |
+      Yaku.UraDora |
+      Yaku.Riichi |
+      Yaku.DoubleRiichi |
+      Yaku.Ippatsu |
+      Yaku.Chankan |
+      Yaku.Renhou |
+      Yaku.Chiihou |
+      Yaku.Tenhou |
+      Yaku.RinshanKaihou |
+      Yaku.HouteiRaoyui |
+      Yaku.HaiteiRaoyue;
+
+    private const Yaku IgnoredYaku =
+      Yaku.Chinroutou |
+      Yaku.Ryuuiisou |
+      Yaku.Tsuuiisou |
+      Yaku.ChuurenPoutou;
 
     public ScoreCalculatingVisitor()
     {
@@ -137,7 +158,7 @@ namespace Spines.Mahjong.Analysis.Tests
     {
       CalculationCount += 1;
 
-      if ((payment.Yaku & YakuFilter) == 0)
+      if ((payment.Yaku & IgnoredYaku) != 0)
       {
         return;
       }
@@ -155,6 +176,11 @@ namespace Spines.Mahjong.Analysis.Tests
         var roundWind = _board.RoundWind.Index;
         var seatWind = seat.SeatWind.Index;
         var yaku = YakuCalculator.Ron(hand, discard, roundWind, seatWind, seat.Melds);
+        if ((payment.Yaku & ExternalYaku) == payment.Yaku && yaku != Yaku.None)
+        {
+          return;
+        }
+
         if ((yaku & YakuFilter) != (payment.Yaku & YakuFilter))
         {
           FailureCount += 1;
@@ -172,6 +198,11 @@ namespace Spines.Mahjong.Analysis.Tests
         var roundWind = _board.RoundWind.Index;
         var seatWind = seat.SeatWind.Index;
         var yaku = YakuCalculator.Chankan(hand, discard, roundWind, seatWind, seat.Melds);
+        if ((payment.Yaku & ExternalYaku) == payment.Yaku && yaku != Yaku.None)
+        {
+          return;
+        }
+
         if ((yaku & YakuFilter) != (payment.Yaku & YakuFilter))
         {
           FailureCount += 1;
@@ -183,11 +214,11 @@ namespace Spines.Mahjong.Analysis.Tests
     {
       CalculationCount += 1;
 
-      if ((payment.Yaku & YakuFilter) == 0)
+      if ((payment.Yaku & IgnoredYaku) != 0)
       {
         return;
       }
-      
+
       //if (!AgariValidation2.CanTsumo(_board, false))
       //{
       //  FailureCount += 1;
@@ -199,6 +230,11 @@ namespace Spines.Mahjong.Analysis.Tests
       var roundWind = _board.RoundWind.Index;
       var seatWind = seat.SeatWind.Index;
       var yaku = YakuCalculator.Tsumo(hand, draw, roundWind, seatWind, seat.Melds);
+      if ((payment.Yaku & ExternalYaku) == payment.Yaku && yaku != Yaku.None)
+      {
+        return;
+      }
+
       if ((yaku & YakuFilter) != (payment.Yaku & YakuFilter))
       {
         FailureCount += 1;

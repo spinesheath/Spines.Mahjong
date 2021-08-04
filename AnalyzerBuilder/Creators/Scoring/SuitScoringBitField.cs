@@ -12,21 +12,13 @@ namespace AnalyzerBuilder.Creators.Scoring
       
       SanshokuDoujun();
       SanshokuDoukou();
-      //Chanta(23);
       Toitoi(29);
       Tanyao(30);
-      //Honroutou(26);
-      //Tsuuiisou(27);
-      //Junchan(29);
-      //Chinroutou(31);
-      //Chuuren(32);
-      //Ryuuiisou(33);
       IipeikouRyanpeikouChiitoitsu();
-      //Ittsuu(59);
-      Pinfu(10);
+      Pinfu(51);
       Ankou(34 - 2);
       HonitsuChinitsu(19);
-      MenzenTsumo();
+      MenzenTsumo(12);
       KokushiMusou();
     }
 
@@ -38,20 +30,24 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     public long WaitShiftValue { get; private set; }
 
+    private int TileCount => _interpretations.First().TileCount;
+
+    private IReadOnlyList<int> TileCounts => _interpretations.First().TileCounts;
+
     private readonly IReadOnlyList<ConcealedArrangement> _interpretations;
 
     private void KokushiMusou()
     {
       foreach (var arrangement in _interpretations)
       {
-        if (!arrangement.IsStandard && arrangement.TileCounts.Any(c => c == 1))
+        if (!arrangement.IsStandard && TileCounts.Any(c => c == 1))
         {
           WaitShiftValue |= 0b1L << 0;
           SumValue |= 0b1L << 0;
 
-          for (var i = 0; i < arrangement.TileCounts.Count; i++)
+          for (var i = 0; i < TileCounts.Count; i++)
           {
-            if (arrangement.TileCounts[i] == 2)
+            if (TileCounts[i] == 2)
             {
               WaitShiftValue |= 0b1L << (i + 1);
             }
@@ -60,14 +56,14 @@ namespace AnalyzerBuilder.Creators.Scoring
       }
     }
 
-    private void MenzenTsumo()
+    private void MenzenTsumo(int offset)
     {
-      WaitShiftValue |= 0b111111111_1L << 52;
+      WaitShiftValue |= 0b111111111_1L << (offset - 2);
     }
 
     private void HonitsuChinitsu(int offset)
     {
-      if (_interpretations.First().TileCount > 0)
+      if (TileCount > 0)
       {
         OrValue |= 0b101L << (offset + 4);
       }
@@ -106,19 +102,52 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Pinfu(int offset)
     {
+      var ittsuu = _interpretations.Any(HasIttsuu);
+
       var pinfuArrangements = _interpretations.Where(a => a.IsStandard && a.Blocks.All(b => b.IsShuntsu || b.IsPair)).ToList();
       if (pinfuArrangements.Any())
       {
+        if (TileCount % 3 == 2)
+        {
+          OrValue |= 0b1L << (offset - 1);
+        }
+
         WaitShiftValue |= 0b1L << offset;
 
-        for (var i = 0; i < 9; i++)
+        foreach (var arrangement in pinfuArrangements.Where(a => !ittsuu || HasIttsuu(a)))
         {
-          if (pinfuArrangements.Any(a => a.Blocks.Any(b => b.IsShuntsu && (b.Index == i && b.Index < 6 || b.Index + 2 == i && b.Index > 0))))
+          for (var i = 0; i < 9; i++)
           {
-            WaitShiftValue |= 0b1L << (1 + i + offset);
+            if (arrangement.Blocks.Any(b => IsRyanmen(b, i)))
+            {
+              WaitShiftValue |= 0b1L << (1 + i + offset);
+            }
           }
         }
+
+        // This part clears out pinfu if it is locked by sanshoku with a 22334455 shape.
+        OrValue |= 0b1111111111_1L << offset;
+        if (TileCount == 8 && TileCounts.SkipWhile(c => c == 0).TakeWhile(c => c == 2).Count() == 4)
+        {
+          OrValue |= 0b1L << offset;
+          var depth = TileCounts.TakeWhile(c => c == 0).Count();
+          // This block is shifted by the sanshoku shift value's first bit, then by the index of the wait.
+          // The sanshoku part moves the 10101 shape depending on whether it's 223344+55 or 22+334455.
+          // The flag has two 0's and is placed carefully to align it properly after the sanshoku shift.
+          OrValue ^= 0b10101L << (offset + depth + 1 - (depth % 2));
+        }
       }
+    }
+
+    private static bool IsRyanmen(Block block, int waitIndex)
+    {
+      return block.IsShuntsu && (block.Index == waitIndex && block.Index < 6 || block.Index + 2 == waitIndex && block.Index > 0);
+    }
+
+    private bool HasIttsuu(ConcealedArrangement arrangement)
+    {
+      var shuntsus = arrangement.Blocks.Where(b => b.IsShuntsu).ToList();
+      return shuntsus.Any(s => s.Index == 0) && shuntsus.Any(s => s.Index == 3) && shuntsus.Any(s => s.Index == 6);
     }
 
     private void Ittsuu(int offset)
@@ -133,7 +162,7 @@ namespace AnalyzerBuilder.Creators.Scoring
     {
       const int baseIndex = 37;
 
-      var canBeChiitoitsu = _interpretations.First().TileCounts.All(c => c == 0 || c == 2);
+      var canBeChiitoitsu = TileCounts.All(c => c == 0 || c == 2);
 
       var iipeikouCount = 0;
       foreach (var arrangement in _interpretations)
@@ -160,8 +189,7 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Ryuuiisou(int offset)
     {
-      var a = _interpretations.First();
-      if (a.TileCount == 0 || a.TileCounts[0] + a.TileCounts[4] + a.TileCounts[6] + a.TileCounts[8] == 0)
+      if (TileCount == 0 || TileCounts[0] + TileCounts[4] + TileCounts[6] + TileCounts[8] == 0)
       {
         AndValue |= 0b1L << offset;
       }
@@ -169,23 +197,22 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Chuuren(int offset)
     {
-      var a = _interpretations.First();
-      if (a.TileCount == 0)
+      if (TileCount == 0)
       {
         AndValue |= 0b1L << offset;
       }
       else
       {
         var isChuuren = true;
-        isChuuren &= a.TileCounts[0] >= 3;
-        isChuuren &= a.TileCounts[1] >= 1;
-        isChuuren &= a.TileCounts[2] >= 1;
-        isChuuren &= a.TileCounts[3] >= 1;
-        isChuuren &= a.TileCounts[4] >= 1;
-        isChuuren &= a.TileCounts[5] >= 1;
-        isChuuren &= a.TileCounts[6] >= 1;
-        isChuuren &= a.TileCounts[7] >= 1;
-        isChuuren &= a.TileCounts[8] >= 3;
+        isChuuren &= TileCounts[0] >= 3;
+        isChuuren &= TileCounts[1] >= 1;
+        isChuuren &= TileCounts[2] >= 1;
+        isChuuren &= TileCounts[3] >= 1;
+        isChuuren &= TileCounts[4] >= 1;
+        isChuuren &= TileCounts[5] >= 1;
+        isChuuren &= TileCounts[6] >= 1;
+        isChuuren &= TileCounts[7] >= 1;
+        isChuuren &= TileCounts[8] >= 3;
         if (isChuuren)
         {
           AndValue |= 0b1L << offset;
@@ -212,7 +239,7 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Tanyao(int offset)
     {
-      if (_interpretations.Any(g => g.TileCounts[0] + g.TileCounts[8] == 0))
+      if (TileCounts[0] + TileCounts[8] == 0)
       {
         OrValue |= 0b1L << offset;
       }
@@ -220,7 +247,7 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Tsuuiisou(int offset)
     {
-      if (_interpretations.First().TileCount == 0)
+      if (TileCount == 0)
       {
         AndValue |= 0b1L << offset;
       }

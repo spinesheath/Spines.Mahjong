@@ -8,27 +8,19 @@ namespace AnalyzerBuilder.Creators.Scoring
     {
       _arrangement = arrangement;
       _isEmpty = arrangement.TileCount == 0;
-
-      //Chanta(23);
+      
       Toitoi(29);
       Tanyao(30);
-      //Honroutou(26);
-      //Tsuuiisou(27);
-      //Junchan(29);
-      //Chinroutou(31);
-      //Chuuren(32);
-      //Ryuuiisou(33);
       Jikaze(15);
-      Bakaze(57);
+      Bakaze(46);
       SangenYakuhai(42);
-      //IipeikouRyanpeikou(45);
       Sangen();
       Suushi();
-      Pinfu(10);
+      Pinfu(51);
       Ankou(34 - 2);
       Chiitoitsu();
       HonitsuChinitsu(19);
-      MenzenTsumo();
+      MenzenTsumo(12);
       KokushiMusou();
     }
 
@@ -58,9 +50,9 @@ namespace AnalyzerBuilder.Creators.Scoring
       }
     }
 
-    private void MenzenTsumo()
+    private void MenzenTsumo(int offset)
     {
-      WaitShiftValue |= 0b111111111_1L << 52;
+      WaitShiftValue |= 0b111111111_1L << (offset - 2);
     }
 
     private void HonitsuChinitsu(int offset)
@@ -115,13 +107,15 @@ namespace AnalyzerBuilder.Creators.Scoring
         var pair = _arrangement.Blocks.FirstOrDefault(b => b.IsPair);
         if (pair != null && pair.Index < 4 && _arrangement.Blocks.Count == 1)
         {
-          WaitShiftValue |= PinfuWindBits[pair.Index] << offset;
+          SumValue|= PinfuWindBits[pair.Index] << offset;
         }
         else if (!_arrangement.Blocks.Any())
         {
-          WaitShiftValue |= 0b111_111_111_111_1L << offset;
+          SumValue |= 0b111_111_111_111_1L << offset;
         }
       }
+
+      WaitShiftValue |= 0b1L << offset;
     }
 
     private void Suushi()
@@ -272,20 +266,3 @@ namespace AnalyzerBuilder.Creators.Scoring
     };
   }
 }
-
-//0000 > 0 > nothing
-//0001 > 1 > EE
-//0010 > 2 > SS
-//0011 > 3 > ES
-//0100 > 4 > WW
-//0101 > 5 > EW
-//0110 > 6 > SW
-//0111 > 7 > nothing
-//1000 > 8 > NN
-//1001 > 9 > EN
-//1010 > 10 > SN
-//1011 > 11 > nothing
-//1100 > 12 > WN
-//1101 > 13 > nothing
-//1110 > 14 > nothing
-//1111 > 15 > nothing

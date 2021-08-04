@@ -12,7 +12,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       _hasMelds = melds.Count > 0;
 
       Jikaze(15);
-      Jikaze(57);
+      Bakaze(46);
       SangenYakuhai(42);
       Sangen();
       Suushi();

@@ -100,31 +100,39 @@ namespace Spines.Mahjong.Analysis.Score
       
       var shiftedAnkanCount = (long)melds.Count(m => m.IsKan && m.CalledTile == null) << (BitIndex.Sanankou - 2);
       var waitShiftValues = new [] {SuitWaitShift(hand, 0), SuitWaitShift(hand, 1), SuitWaitShift(hand, 2), HonorWaitShift(hand)};
-      var concealedOrMeldedValues = new[] { SuitOr(hand, 0), SuitOr(hand, 1), SuitOr(hand, 2) };
-      var honorSum = HonorSum(honorConcealedIndex, honorMeldIndex);
-
-      var valueWindFilter = ValueWindFilter(roundWind, seatWind);
-      var honorWindShiftAmount = WindShiftHonor(roundWind, seatWind);
-
-      var honorWaitAndWindShift = waitShiftValues[3] >> honorWindShiftAmount;
-
       waitShiftValues[winningTile.TileType.SuitId] >>= winningTile.TileType.Index + 1;
 
-      // TODO open closed similar to tanki bit? -> x += x * open bit -> for sanshoku, honitsu, chinitsu (and some more)?
+      var suitOr = new[] { SuitOr(hand, 0), SuitOr(hand, 1), SuitOr(hand, 2), ~0L };
+      var suitsAnd = suitOr[0] & suitOr[1] & suitOr[2];
+      var honorSum = HonorSum(honorConcealedIndex, honorMeldIndex);
 
-      // TODO could rightshift noHonorTanki by the total pair count?
-      var noHonorTanki = (0b111L << BitIndex.Pinfu) >> winningTile.TileType.SuitId;
-      var waitAndWindShift = waitShiftValues[0] & waitShiftValues[1] & waitShiftValues[2] & honorWaitAndWindShift & noHonorTanki;
-      
+      var bigSum = (suitOr[0] & SuitBigSumFilter) +
+                   (suitOr[1] & SuitBigSumFilter) +
+                   (suitOr[2] & SuitBigSumFilter) +
+                   (honorSum & HonorBigSumFilter);
+
+      var sanshoku = (suitsAnd >> (int)suitsAnd) & SanshokuYakuFilter;
+
+      /*
+       * Pinfu
+       * Honors are shifted by an amount based on value winds to make sure only guest wind pairs are possible
+       * The suit with the winning tile is shifted by the drawn tile to ensure ryanmen wait and non-honor wait (also used for other yaku)
+       * After that, some constellations where pinfu is not possible because of other yaku locking shapes are eliminated:
+       * Sanankou and sanshoku. Ittsuu is a single suit issue and has been dealt with in the lookup preparation.
+       * Some chiitoitsu hands evaluate to pinfu by the previous steps, despite being clearly not pinfu.
+       * A flag in BigSum is created by adding 1 for each suit with a pair and a 2 for honors.
+       * This will leave a 0 in the second bit in the bad case: 11223399m11p11s44z This 0 is aligned with the pinfu bit index.
+       */
+      var honorWindShift = honorSum >> WindShiftHonor(roundWind, seatWind);
+      var waitAndWindShift = waitShiftValues[0] & waitShiftValues[1] & waitShiftValues[2] & waitShiftValues[3] & honorWindShift;
+      var pinfu = waitAndWindShift & 
+                  (suitOr[winningTile.TileType.SuitId] >> (int)((winningTile.TileType.Index + (suitsAnd & 1)) * (sanshoku >> 2))) & 
+                  bigSum;
+
       var tankiBit = waitShiftValues[winningTile.TileType.SuitId] & 0b1L;
       var openBit = isOpen ? 1L : 0L;
 
       waitShiftValues[winningTile.TileType.SuitId] >>= isRon ? 9 : 0;
-
-      var bigSum = (concealedOrMeldedValues[0] & SuitBigSumFilter) + 
-                   (concealedOrMeldedValues[1] & SuitBigSumFilter) + 
-                   (concealedOrMeldedValues[2] & SuitBigSumFilter) + 
-                   (honorSum & HonorBigSumFilter);
 
       var waitAndRonShift = (waitShiftValues[0] & RonShiftSumFilter) + 
                             (waitShiftValues[1] & RonShiftSumFilter) + 
@@ -137,26 +145,29 @@ namespace Spines.Mahjong.Analysis.Score
       
       var suuankouBit = (waitAndRonShift | honorSum) & TankiUpgradeableFilter;
 
-      var suitsAnd = concealedOrMeldedValues[0] & concealedOrMeldedValues[1] & concealedOrMeldedValues[2];
-
       var result = 0L;
 
+      var valueWindFilter = ValueWindFilter(roundWind, seatWind);
       result |= honorSum & HonorSumYakuFilter & valueWindFilter;
 
-      result |= waitAndWindShift & WaitShiftYakuFilter;
+      
+      result |= pinfu & PinfuYakuFilter;
       
       result |= waitAndRonShift & WaitAndRonShiftYakuFilter;
       result += tankiBit * suuankouBit;
-      
-      result |= (suitsAnd >> (int)suitsAnd) & SanshokuYakuFilter;
+
+      result |= sanshoku;
 
       result |= suitsAnd & honorSum & AllAndYakuFilter;
 
-      var iipeikouPostElimination = bigSum & ~(((bigSum & IipeikouEliminationFilter) | ((waitAndRonShift & 0b1L << BitIndex.Sanankou) << (3 + IipeikouDelta))) >> IipeikouDelta);
+      var iipeikouPostElimination = bigSum & ~((bigSum & IipeikouEliminationFilter) >> IipeikouDelta);
 
       result |= iipeikouPostElimination & IipeikouYakuFilter;
 
       result += (result & OpenBitFilter) * openBit;
+
+      var sanankouBit = (result >> BitIndex.Sanankou) & 1L;
+      result -= (result & ((1L << BitIndex.Pinfu) | (1L << BitIndex.Iipeikou))) * sanankouBit;
 
       var yakuman = result & YakumanFilter;
       if (yakuman != 0)
@@ -224,14 +235,14 @@ namespace Spines.Mahjong.Analysis.Score
     private const long NoAnkanYakuFilter = ~(0b1L << BitIndex.Pinfu);
 
     private const long WaitAndRonShiftYakuFilter = (0b1L << BitIndex.Sanankou) | (0b1L << BitIndex.Suuankou) | (0b1L << BitIndex.SuuankouTanki) | (0b1L << BitIndex.MenzenTsumo);
-    private const long WaitShiftYakuFilter = (0b1L << BitIndex.Pinfu);
+    private const long PinfuYakuFilter = 0b1L << BitIndex.Pinfu;
     private const long RonShiftSumFilter = (0b1L << AnkouRonShiftSumFilterIndex) | (0b1L << BitIndex.MenzenTsumo - 2);
     private const int AnkouRonShiftSumFilterIndex = BitIndex.Sanankou - 2;
 
     private const long NoChantaCallsFilter = ~((0b1L << BitIndex.ClosedTanyao) | (0b1L << BitIndex.OpenTanyao));
 
-    private const long SuitBigSumFilter = 0b11111111_11111111111111_00000_1111_0000L << 19;
-    private const long HonorBigSumFilter = 0b11111111_00001111111111_00000_0000_1111L << 19;
+    private const long SuitBigSumFilter = (0b11111111111111_00000_1111_0000L << 19) | (0b1L << (BitIndex.Pinfu - 1));
+    private const long HonorBigSumFilter = (0b00001111111111_00000_0000_1111L << 19) | (0b1L << BitIndex.Pinfu);
     
     private const long TankiUpgradeableFilter = (0b1L << BitIndex.Suuankou) | (0b1L << BitIndex.KokushiMusou);
     private const long OpenBitFilter = (0b1L << BitIndex.ClosedChinitsu) | (0b1L << BitIndex.ClosedHonitsu) | (0b1L << BitIndex.ClosedSanshokuDoujun) |
