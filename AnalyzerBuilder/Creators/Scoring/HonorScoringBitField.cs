@@ -22,6 +22,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       HonitsuChinitsu(19);
       MenzenTsumo(12);
       KokushiMusou();
+      Tsuuiisou(25);
     }
 
     public long AndValue { get; private set; }
@@ -220,7 +221,10 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Tsuuiisou(int offset)
     {
-      AndValue |= 0b1L << offset;
+      if (_arrangement.TileCount % 3 == 2)
+      {
+        SumValue |= ((long) _arrangement.Blocks.Count + 3) << offset;
+      }
     }
 
     private void Honroutou(int offset)

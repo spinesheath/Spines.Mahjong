@@ -84,7 +84,7 @@ namespace Spines.Mahjong.Analysis.Score
       { ScoringFieldYaku.Daisangen, Yaku.Daisangen },
       { ScoringFieldYaku.Suuankou, Yaku.Suuankou },
       { ScoringFieldYaku.SuuankouTanki, Yaku.SuuankouTanki },
-      //{ ScoringFieldYaku.None, Yaku.Tsuuiisou },
+      { ScoringFieldYaku.Tsuuiisou, Yaku.Tsuuiisou },
       { ScoringFieldYaku.Ryuuiisou, Yaku.Ryuuiisou },
       //{ ScoringFieldYaku.None, Yaku.Chinroutou },
       //{ ScoringFieldYaku.None, Yaku.ChuurenPoutou },

@@ -219,11 +219,12 @@ namespace Spines.Mahjong.Analysis.Score
                                            (0b1L << BitIndex.JikazeTon) | (0b1L << BitIndex.JikazeNan) | (0b1L << BitIndex.JikazeShaa) | (0b1L << BitIndex.JikazePei) |
                                            (0b1L << BitIndex.BakazeTon) | (0b1L << BitIndex.BakazeNan) | (0b1L << BitIndex.BakazeShaa) | (0b1L << BitIndex.BakazePei) |
                                            (0b1L << BitIndex.Shousangen) | (0b1L << BitIndex.Daisangen) | (0b1L << BitIndex.Shousuushi) | (0b1L << BitIndex.Daisuushi) |
-                                           (0b1L << BitIndex.KokushiMusou);
+                                           (0b1L << BitIndex.KokushiMusou) | (0b1L << BitIndex.Tsuuiisou);
 
     private const long YakumanFilter = (0b1L << BitIndex.Daisangen) | (0b1L << BitIndex.Shousuushi) | (0b1L << BitIndex.Daisuushi) | 
                                        (0b1L << BitIndex.Suuankou) | (0b1L << BitIndex.SuuankouTanki) |
-                                       (0b1L << BitIndex.KokushiMusou) | (0b1L << BitIndex.KokushiMusouJuusanmen);
+                                       (0b1L << BitIndex.KokushiMusou) | (0b1L << BitIndex.KokushiMusouJuusanmen) |
+                                       (0b1L << BitIndex.Tsuuiisou);
     private const long ClosedYakuFilter = ~((0b1L << BitIndex.ClosedSanshokuDoujun) | (0b1L << BitIndex.Iipeikou) | 
                                             (0b1L << BitIndex.Chiitoitsu) | (0b1L << BitIndex.Ryanpeikou) |
                                             (0b1L << BitIndex.ClosedHonitsu) | (0b1L << BitIndex.ClosedChinitsu) | 

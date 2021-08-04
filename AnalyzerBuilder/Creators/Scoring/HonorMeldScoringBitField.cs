@@ -17,6 +17,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       Sangen();
       Suushi();
       HonitsuChinitsu(19);
+      Tsuuiisou(25);
     }
 
     public long AndValue { get; private set; }
@@ -148,7 +149,7 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Tsuuiisou(int offset)
     {
-      AndValue |= 0b1L << offset;
+      SumValue |= (long)_melds.Count << offset;
     }
 
     private void Honroutou(int offset)
