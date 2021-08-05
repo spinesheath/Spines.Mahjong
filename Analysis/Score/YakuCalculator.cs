@@ -8,7 +8,7 @@ namespace Spines.Mahjong.Analysis.Score
   {
     private static ScoringFieldYaku CalculateInternal(HandCalculator hand, Tile winningTile, bool isRon, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds)
     {
-      return (ScoringFieldYaku) ScoreLookup.Flags2(hand, winningTile, isRon, roundWind, seatWind, melds);
+      return (ScoringFieldYaku) ScoreLookup.Flags(hand, winningTile, isRon, roundWind, seatWind, melds);
     }
 
     public static Yaku Ron(HandCalculator hand, Tile winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds)
@@ -87,8 +87,8 @@ namespace Spines.Mahjong.Analysis.Score
       { ScoringFieldYaku.Tsuuiisou, Yaku.Tsuuiisou },
       { ScoringFieldYaku.Ryuuiisou, Yaku.Ryuuiisou },
       { ScoringFieldYaku.Chinroutou, Yaku.Chinroutou },
-      //{ ScoringFieldYaku.None, Yaku.ChuurenPoutou },
-      //{ ScoringFieldYaku.None, Yaku.JunseiChuurenPoutou },
+      { ScoringFieldYaku.ChuurenPoutou, Yaku.ChuurenPoutou },
+      { ScoringFieldYaku.JunseiChuurenPoutou, Yaku.JunseiChuurenPoutou },
       { ScoringFieldYaku.KokushiMusou, Yaku.KokushiMusou },
       { ScoringFieldYaku.KokushiMusouJuusanmen, Yaku.KokushiMusouJuusanMen },
       { ScoringFieldYaku.Daisuushi, Yaku.Daisuushi },

@@ -21,6 +21,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       MenzenTsumo(12);
       KokushiMusou();
       Chinroutou(38);
+      Chuuren(62);
     }
 
     public long AndValue { get; private set; }
@@ -198,26 +199,30 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Chuuren(int offset)
     {
-      if (TileCount == 0)
+      var isChuuren = true;
+      isChuuren &= TileCounts[0] >= 3;
+      isChuuren &= TileCounts[1] >= 1;
+      isChuuren &= TileCounts[2] >= 1;
+      isChuuren &= TileCounts[3] >= 1;
+      isChuuren &= TileCounts[4] >= 1;
+      isChuuren &= TileCounts[5] >= 1;
+      isChuuren &= TileCounts[6] >= 1;
+      isChuuren &= TileCounts[7] >= 1;
+      isChuuren &= TileCounts[8] >= 3;
+      if (isChuuren)
       {
-        AndValue |= 0b1L << offset;
-      }
-      else
-      {
-        var isChuuren = true;
-        isChuuren &= TileCounts[0] >= 3;
-        isChuuren &= TileCounts[1] >= 1;
-        isChuuren &= TileCounts[2] >= 1;
-        isChuuren &= TileCounts[3] >= 1;
-        isChuuren &= TileCounts[4] >= 1;
-        isChuuren &= TileCounts[5] >= 1;
-        isChuuren &= TileCounts[6] >= 1;
-        isChuuren &= TileCounts[7] >= 1;
-        isChuuren &= TileCounts[8] >= 3;
-        if (isChuuren)
+        OrValue |= 0b1L << offset;
+
+        var junseiIndex = 0;
+        for (var i = 0; i < 9; i++)
         {
-          AndValue |= 0b1L << offset;
+          if (TileCounts[i] % 2 == 0)
+          {
+            junseiIndex = i;
+          }
         }
+
+        WaitShiftValue |= 0b1L << (1 + junseiIndex);
       }
     }
 

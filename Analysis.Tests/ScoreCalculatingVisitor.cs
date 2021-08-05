@@ -45,7 +45,9 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.KokushiMusouJuusanMen | 
       Yaku.Pinfu |
       Yaku.Tsuuiisou |
-      Yaku.Chinroutou
+      Yaku.Chinroutou |
+      Yaku.ChuurenPoutou |
+      Yaku.JunseiChuurenPoutou// not in current test set
       ;
 
     private const Yaku ExternalYaku =
@@ -64,8 +66,7 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.HaiteiRaoyue;
 
     private const Yaku IgnoredYaku =
-      Yaku.Ryuuiisou |
-      Yaku.ChuurenPoutou;
+      Yaku.Ryuuiisou; 
 
     public ScoreCalculatingVisitor()
     {

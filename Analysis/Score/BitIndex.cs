@@ -47,11 +47,13 @@
 
     public const int MenzenTsumo = 12;
     
-    public const int Ryuuiisou = 62;
     public const int KokushiMusou = 0;
     public const int KokushiMusouJuusanmen = 1;
-
     public const int Tsuuiisou = 28;
     public const int Chinroutou = 38;
+    public const int ChuurenPoutou = 62;
+    public const int JunseiChuurenPoutou = 63;
+
+    public const int Ryuuiisou = 40;
   }
 }

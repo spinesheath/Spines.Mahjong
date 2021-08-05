@@ -56,5 +56,7 @@ namespace Spines.Mahjong.Analysis.Score
 
     Tsuuiisou = 1L << BitIndex.Tsuuiisou,
     Chinroutou = 1L << BitIndex.Chinroutou,
+    ChuurenPoutou = 1L << BitIndex.ChuurenPoutou,
+    JunseiChuurenPoutou = 1L << BitIndex.JunseiChuurenPoutou,
   }
 }
