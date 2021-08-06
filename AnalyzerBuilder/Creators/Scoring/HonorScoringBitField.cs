@@ -14,15 +14,16 @@ namespace AnalyzerBuilder.Creators.Scoring
       Jikaze(15);
       Bakaze(46);
       SangenYakuhai(42);
-      Sangen();
+      Daisangen(6);
+      Shousangen(23);
       Suushi();
       Pinfu(51);
-      Ankou(34 - 2);
+      Ankou(32);
       Chiitoitsu();
       HonitsuChinitsu(19);
       MenzenTsumo(12);
       KokushiMusou();
-      Tsuuiisou(25);
+      Tsuuiisou(2);
       Chinroutou(38);
     }
 
@@ -130,17 +131,21 @@ namespace AnalyzerBuilder.Creators.Scoring
       SumValue |= (long) koutsuCount << 12;
     }
 
-    private void Sangen()
+    private void Shousangen(int offset)
     {
       var koutsuCount = _arrangement.Blocks.Count(b => b.Index > 3 && b.IsKoutsu);
       var pairCount = _arrangement.Blocks.Count(b => b.Index > 3 && b.IsPair);
 
       var blockCount = pairCount == 1 ? koutsuCount + 1 : 0;
       var shousangenCount = blockCount > 1 ? blockCount + 1 : blockCount;
-      SumValue |= (long)shousangenCount << 3;
-      
+      SumValue |= (long)shousangenCount << offset;
+    }
+
+    private void Daisangen(int offset)
+    {
+      var koutsuCount = _arrangement.Blocks.Count(b => b.Index > 3 && b.IsKoutsu);
       var daisangenCount = koutsuCount > 1 ? koutsuCount + 1 : koutsuCount;
-      SumValue |= (long)daisangenCount << 6;
+      SumValue |= (long)daisangenCount << offset;
     }
 
     private void IipeikouRyanpeikou(int offset)

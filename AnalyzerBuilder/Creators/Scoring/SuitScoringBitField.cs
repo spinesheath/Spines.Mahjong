@@ -16,7 +16,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       Tanyao(30);
       IipeikouRyanpeikouChiitoitsu();
       Pinfu(51);
-      Ankou(34 - 2);
+      Ankou(32);
       HonitsuChinitsu(19);
       MenzenTsumo(12);
       KokushiMusou();
@@ -248,14 +248,6 @@ namespace AnalyzerBuilder.Creators.Scoring
       if (TileCounts[0] + TileCounts[8] == 0)
       {
         OrValue |= 0b1L << offset;
-      }
-    }
-
-    private void Tsuuiisou(int offset)
-    {
-      if (TileCount == 0)
-      {
-        AndValue |= 0b1L << offset;
       }
     }
 

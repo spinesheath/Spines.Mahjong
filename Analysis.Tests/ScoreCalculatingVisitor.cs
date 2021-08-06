@@ -47,7 +47,9 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.Tsuuiisou |
       Yaku.Chinroutou |
       Yaku.ChuurenPoutou |
-      Yaku.JunseiChuurenPoutou// not in current test set
+      Yaku.JunseiChuurenPoutou //|
+      //Yaku.ClosedChanta | 
+      //Yaku.OpenChanta
       ;
 
     private const Yaku ExternalYaku =

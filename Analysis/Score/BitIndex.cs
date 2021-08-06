@@ -6,7 +6,7 @@
     public const int OpenSanshokuDoujun = 3;
     public const int SanshokuDoukou = 4;
 
-    public const int Shousangen = 5;
+    public const int Shousangen = 25;
     public const int Daisangen = 8;
     
     public const int Pinfu = 51;
@@ -49,10 +49,13 @@
     
     public const int KokushiMusou = 0;
     public const int KokushiMusouJuusanmen = 1;
-    public const int Tsuuiisou = 28;
+    public const int Tsuuiisou = 5;
     public const int Chinroutou = 38;
     public const int ChuurenPoutou = 62;
     public const int JunseiChuurenPoutou = 63;
+    
+    public const int ClosedChanta = 26;
+    public const int OpenChanta = 27;
 
     public const int Ryuuiisou = 40;
   }

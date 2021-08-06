@@ -19,10 +19,6 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     public long OrValue { get; private set; }
 
-    public long SumValue { get; } = 0L;
-
-    public long WaitShiftValue { get; private set; }
-
     private readonly bool _hasMelds;
 
     private readonly IReadOnlyList<Block> _melds;
@@ -33,12 +29,6 @@ namespace AnalyzerBuilder.Creators.Scoring
       {
         OrValue |= 0b101L << (offset + 4);
       }
-    }
-
-    private void Ankou(int offset)
-    {
-      var ankanCount = _melds.Count(m => m.IsAnkan);
-      WaitShiftValue |= (long)ankanCount << offset;
     }
 
     private void Ittsuu(int offset)
@@ -59,22 +49,6 @@ namespace AnalyzerBuilder.Creators.Scoring
       }
     }
 
-    private void Chuuren(int offset)
-    {
-      if (!_hasMelds)
-      {
-        AndValue |= 0b1L << offset;
-      }
-    }
-
-    private void Chinroutou(int offset)
-    {
-      if (_melds.All(m => m.IsJunchanBlock && !m.IsShuntsu))
-      {
-        AndValue |= 0b1L << offset;
-      }
-    }
-
     private void Junchan(int offset)
     {
       if (!_hasMelds)
@@ -85,22 +59,6 @@ namespace AnalyzerBuilder.Creators.Scoring
       if (_melds.All(m => m.IsJunchanBlock))
       {
         AndValue |= 0b1L << (offset + 1);
-      }
-    }
-
-    private void Tanyao(int offset)
-    {
-      if (_melds.All(m => !m.IsJunchanBlock))
-      {
-        AndValue |= 0b1L << offset;
-      }
-    }
-
-    private void Tsuuiisou(int offset)
-    {
-      if (!_hasMelds)
-      {
-        AndValue |= 0b1L << offset;
       }
     }
 

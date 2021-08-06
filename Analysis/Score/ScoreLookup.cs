@@ -88,6 +88,8 @@ namespace Spines.Mahjong.Analysis.Score
       return mask;
     }
     
+    // TODO is the distinction between Open/Closed Kan / Pon necessary for meld lookups? Ankan count is applied otherwise. But meld lookup should be replaced anyways
+
     public static long Flags(HandCalculator hand, Tile winningTile, bool isRon, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds)
     {
       var isOpen = melds.Any(m => !m.IsKan || m.CalledTile != null);
@@ -146,7 +148,8 @@ namespace Spines.Mahjong.Analysis.Score
       
       waitAndRonShift += bigSum & (0b111L << AnkouRonShiftSumFilterIndex);
       waitAndRonShift += waitAndRonShift & (0b101L << AnkouRonShiftSumFilterIndex);
-      
+
+      // TODO { -1: 789p111222333s44z}
       var result = 0L;
 
       var valueWindFilter = ValueWindFilter(roundWind, seatWind);
@@ -243,7 +246,7 @@ namespace Spines.Mahjong.Analysis.Score
     private const long NoChantaCallsFilter = ~((0b1L << BitIndex.ClosedTanyao) | (0b1L << BitIndex.OpenTanyao));
     private const long ChinroutouCallFilter = ~(0b1L << BitIndex.Chinroutou);
 
-    private const long SuitBigSumFilter = (0b11000010100011_00000_1111_0000L << 19) | (0b1L << (BitIndex.Pinfu - 1)) | (0b1L << BitIndex.ChuurenPoutou);
+    private const long SuitBigSumFilter = (0b11000010100011_00000_0101_0000L << 19) | (0b1L << (BitIndex.Pinfu - 1)) | (0b1L << BitIndex.ChuurenPoutou);
     private const long HonorBigSumFilter = (0b00000010000011_00000_0000_1111L << 19) | (0b1L << BitIndex.Pinfu);
     
     private const long TankiUpgradeableFilter = (0b1L << BitIndex.Suuankou) | (0b1L << BitIndex.KokushiMusou) | (0b1L << BitIndex.ChuurenPoutou);
