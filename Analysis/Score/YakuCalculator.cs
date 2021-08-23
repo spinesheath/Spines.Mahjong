@@ -69,7 +69,7 @@ namespace Spines.Mahjong.Analysis.Score
       { ScoringFieldYaku.Toitoi, Yaku.Toitoihou },
       { ScoringFieldYaku.Sanankou, Yaku.Sanankou },
       { ScoringFieldYaku.Shousangen, Yaku.Shousangen },
-      //{ ScoringFieldYaku.None, Yaku.Honroutou },
+      { ScoringFieldYaku.Honroutou, Yaku.Honroutou },
       { ScoringFieldYaku.Ryanpeikou, Yaku.Ryanpeikou },
       //{ ScoringFieldYaku.None, Yaku.OpenJunchan },
       //{ ScoringFieldYaku.None, Yaku.ClosedJunchan },

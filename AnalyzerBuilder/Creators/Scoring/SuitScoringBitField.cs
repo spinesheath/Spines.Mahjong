@@ -12,8 +12,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       
       SanshokuDoujun();
       SanshokuDoukou();
-      Toitoi(29);
-      Tanyao(30);
+      Tanyao(29);
       IipeikouRyanpeikouChiitoitsu();
       Pinfu(51);
       Ankou(32);
@@ -22,6 +21,9 @@ namespace AnalyzerBuilder.Creators.Scoring
       KokushiMusou();
       Chinroutou(38);
       Chuuren(62);
+      Chanta(27);
+      Honroutou(40);
+      Toitoi(31);
     }
 
     public long AndValue { get; private set; }
@@ -251,11 +253,17 @@ namespace AnalyzerBuilder.Creators.Scoring
       }
     }
 
+    /// <summary>
+    /// Only 1/9/honors allowed. If no honors, it's chinroutou instead.
+    /// Chinroutou is a yakuman, so it clears out any non-yakuman.
+    /// So we can ignore the "at least 1 honor group" requirement.
+    /// Only need to AND the suits, then potentially set the bit to 0 because of a meld.
+    /// </summary>
     private void Honroutou(int offset)
     {
-      if (_interpretations.Any(g => g.Blocks.All(b => b.IsJunchanBlock && !b.IsShuntsu)))
+      if (TileCounts.Skip(1).Take(7).Sum() == 0)
       {
-        AndValue |= 0b1L << offset;
+        OrValue |= 0b1L << offset;
       }
     }
 
@@ -269,10 +277,9 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Chanta(int offset)
     {
-      if (_interpretations.Any(g => g.Blocks.All(b => b.IsJunchanBlock)))
+      if (_interpretations.Any(g => g.IsStandard && g.Blocks.All(b => b.IsJunchanBlock)))
       {
-        // 1 bit closed, 1 bit open
-        AndValue |= 0b11L << offset;
+        OrValue |= 0b1L << offset;
       }
     }
 

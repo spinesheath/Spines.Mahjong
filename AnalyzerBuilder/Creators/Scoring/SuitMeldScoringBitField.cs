@@ -70,19 +70,6 @@ namespace AnalyzerBuilder.Creators.Scoring
       }
     }
 
-    private void Chanta(int offset)
-    {
-      if (!_hasMelds)
-      {
-        AndValue |= 0b1L << offset;
-      }
-
-      if (_melds.All(m => m.IsJunchanBlock))
-      {
-        AndValue |= 0b1L << (offset + 1);
-      }
-    }
-
     private void SanshokuDoukou()
     {
       for (var i = 0; i < 9; i++)

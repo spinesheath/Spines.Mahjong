@@ -13,12 +13,13 @@ namespace AnalyzerBuilder.Creators.Scoring
 
       Jikaze(15);
       Bakaze(46);
-      SangenYakuhai(42);
+      HakuHatsuChun(42);
       Daisangen(6);
       Shousangen(23);
       Suushi();
       HonitsuChinitsu(19);
       Tsuuiisou(2);
+      Chanta(26);
     }
 
     public long AndValue { get; private set; }
@@ -26,8 +27,6 @@ namespace AnalyzerBuilder.Creators.Scoring
     public long OrValue { get; private set; }
 
     public long SumValue { get; private set; }
-
-    public long WaitShiftValue { get; private set; }
 
     private readonly bool _hasMelds;
     private readonly IReadOnlyList<Block> _melds;
@@ -42,17 +41,6 @@ namespace AnalyzerBuilder.Creators.Scoring
       {
         SumValue |= 0b11L << offset;
       }
-    }
-
-    private void Ankou(int offset)
-    {
-      var ankanCount = _melds.Count(m => m.IsAnkan);
-      WaitShiftValue |= (long)ankanCount << offset;
-    }
-
-    private void Pinfu(int offset)
-    {
-
     }
 
     private void Suushi()
@@ -76,7 +64,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       SumValue |= (long)sangenCount << offset;
     }
 
-    private void SangenYakuhai(int offset)
+    private void HakuHatsuChun(int offset)
     {
       foreach (var meld in _melds)
       {
@@ -118,31 +106,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       }
     }
 
-    private void Chuuren(int offset)
-    {
-      if (!_hasMelds)
-      {
-        AndValue |= 0b1L << offset;
-      }
-    }
-
-    private void Chinroutou(int offset)
-    {
-      if (!_hasMelds)
-      {
-        AndValue |= 0b1L << offset;
-      }
-    }
-
     private void Junchan(int offset)
-    {
-      if (!_hasMelds)
-      {
-        AndValue |= 0b1L << offset;
-      }
-    }
-
-    private void Tanyao(int offset)
     {
       if (!_hasMelds)
       {
@@ -164,28 +128,12 @@ namespace AnalyzerBuilder.Creators.Scoring
       }
     }
 
-    private void Toitoi(int offset)
-    {
-      AndValue |= 0b1L << offset;
-    }
-
     private void Chanta(int offset)
     {
       if (_hasMelds)
       {
-        AndValue |= 0b10L << offset;
-        OrValue |= 0b10L << offset;
+        SumValue |= 0b11L << offset;
       }
-    }
-
-    private void SanshokuDoukou(int offset)
-    {
-      AndValue |= 0b111111111L << offset;
-    }
-
-    private void SanshokuDoujun(int offset)
-    {
-      AndValue |= 0b1111111_1111111L << offset;
     }
   }
 }

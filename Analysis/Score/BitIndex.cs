@@ -23,9 +23,9 @@
     public const int BakazeShaa = 48;
     public const int BakazePei = 49;
 
-    public const int Toitoi = 29;
-    public const int ClosedTanyao = 30;
-    public const int OpenTanyao = 31;
+    public const int Toitoi = 31;
+    public const int ClosedTanyao = 29;
+    public const int OpenTanyao = 30;
     
     public const int Sanankou = 34;
     public const int Suuankou = 35;
@@ -54,9 +54,10 @@
     public const int ChuurenPoutou = 62;
     public const int JunseiChuurenPoutou = 63;
     
-    public const int ClosedChanta = 26;
-    public const int OpenChanta = 27;
+    public const int ClosedChanta = 27;
+    public const int OpenChanta = 28;
+    public const int Honroutou = 40;
 
-    public const int Ryuuiisou = 40;
+    public const int Ryuuiisou = 39;
   }
 }

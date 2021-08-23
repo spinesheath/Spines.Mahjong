@@ -9,8 +9,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       _arrangement = arrangement;
       _isEmpty = arrangement.TileCount == 0;
       
-      Toitoi(29);
-      Tanyao(30);
+      Tanyao(29);
       Jikaze(15);
       Bakaze(46);
       SangenYakuhai(42);
@@ -25,6 +24,9 @@ namespace AnalyzerBuilder.Creators.Scoring
       KokushiMusou();
       Tsuuiisou(2);
       Chinroutou(38);
+      Chanta(26);
+      Toitoi(31);
+      Honroutou(40);
     }
 
     public long AndValue { get; private set; }
@@ -148,10 +150,6 @@ namespace AnalyzerBuilder.Creators.Scoring
       SumValue |= (long)daisangenCount << offset;
     }
 
-    private void IipeikouRyanpeikou(int offset)
-    {
-    }
-
     private void SangenYakuhai(int offset)
     {
       for (var i = 0; i < 3; i++)
@@ -193,14 +191,6 @@ namespace AnalyzerBuilder.Creators.Scoring
       }
     }
 
-    private void Chuuren(int offset)
-    {
-      if (_isEmpty)
-      {
-        AndValue |= 0b1L << offset;
-      }
-    }
-
     private void Chinroutou(int offset)
     {
       if (_isEmpty)
@@ -233,12 +223,12 @@ namespace AnalyzerBuilder.Creators.Scoring
       }
     }
 
+    /// <summary>
+    /// Does not really matter (see comments in suit), but is always set to 1 for calculation reuse purposes.
+    /// </summary>
     private void Honroutou(int offset)
     {
-      if (!_isEmpty)
-      {
-        AndValue |= 0b1L << offset;
-      }
+      SumValue |= 0b1L << offset;
     }
 
     private void Toitoi(int offset)
@@ -251,20 +241,10 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Chanta(int offset)
     {
-      if (!_isEmpty)
+      if (!_isEmpty && _arrangement.IsStandard)
       {
-        AndValue |= 0b11L << offset;
+        SumValue |= 0b11L << offset;
       }
-    }
-
-    private void SanshokuDoukou(int offset)
-    {
-      AndValue |= 0b111111111L << offset;
-    }
-
-    private void SanshokuDoujun(int offset)
-    {
-      AndValue |= 0b1111111_1111111L << offset;
     }
 
     private static readonly long[] PinfuWindBits = 
