@@ -21,8 +21,8 @@ namespace Spines.Mahjong.Analysis.Score
 
     Pinfu = 1L << BitIndex.Pinfu,
 
-    Shousuushi = 1L << BitIndex.Shousuushi,
-    Daisuushi = 1L << BitIndex.Daisuushi,
+    Shousuushii = 1L << BitIndex.Shousuushi,
+    Daisuushii = 1L << BitIndex.Daisuushi,
 
     JikazeTon = 1L << BitIndex.JikazeTon,
     JikazeNan = 1L << BitIndex.JikazeNan,

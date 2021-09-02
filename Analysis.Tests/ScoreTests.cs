@@ -24,6 +24,21 @@ namespace Spines.Mahjong.Analysis.Tests
       Assert.Equal(0, visitor.CalculationCount);
     }
 
+    [Fact]
+    public void BundlesWithClassicVisitor()
+    {
+      var files = BundlesFolders.SelectMany(Directory.EnumerateFiles);
+      var visitor = new ClassicScoreCalculatingVisitor();
+      foreach (var file in files)
+      {
+        using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
+        ReplayParser.Parse(fileStream, visitor);
+      }
+
+      Assert.Equal(0, visitor.FailureCount);
+      Assert.Equal(0, visitor.CalculationCount);
+    }
+
     private static readonly string[] BundlesFolders = 
     {
       @"C:\tenhou\compressed\2014\yonma\bundles",

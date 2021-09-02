@@ -726,8 +726,8 @@ namespace Spines.Mahjong.Analysis.Replay
       Yaku.JunseiChuurenPoutou, // 46
       Yaku.KokushiMusou, // 47
       Yaku.KokushiMusouJuusanMen, // 48
-      Yaku.Daisuushi, // 49
-      Yaku.Shousuushi, // 50
+      Yaku.Daisuushii, // 49
+      Yaku.Shousuushii, // 50
       Yaku.Suukantsu, // 51
       Yaku.Dora, // 52
       Yaku.UraDora, // 53
@@ -785,8 +785,8 @@ namespace Spines.Mahjong.Analysis.Replay
       Yaku.JunseiChuurenPoutou, // 46
       Yaku.KokushiMusou, // 47
       Yaku.KokushiMusouJuusanMen, // 48
-      Yaku.Daisuushi, // 49
-      Yaku.Shousuushi, // 50
+      Yaku.Daisuushii, // 49
+      Yaku.Shousuushii, // 50
       Yaku.Suukantsu, // 51
       Yaku.Dora, // 52
       Yaku.UraDora, // 53

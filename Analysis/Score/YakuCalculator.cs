@@ -91,8 +91,8 @@ namespace Spines.Mahjong.Analysis.Score
       { ScoringFieldYaku.JunseiChuurenPoutou, Yaku.JunseiChuurenPoutou },
       { ScoringFieldYaku.KokushiMusou, Yaku.KokushiMusou },
       { ScoringFieldYaku.KokushiMusouJuusanmen, Yaku.KokushiMusouJuusanMen },
-      { ScoringFieldYaku.Daisuushi, Yaku.Daisuushi },
-      { ScoringFieldYaku.Shousuushi, Yaku.Shousuushi },
+      { ScoringFieldYaku.Daisuushii, Yaku.Daisuushii },
+      { ScoringFieldYaku.Shousuushii, Yaku.Shousuushii },
       //{ ScoringFieldYaku.None, Yaku.Suukantsu },
 
       //{ ScoringFieldYaku.None, Yaku.Dora },

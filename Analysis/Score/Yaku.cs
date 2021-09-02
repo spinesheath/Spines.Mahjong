@@ -63,8 +63,8 @@ namespace Spines.Mahjong.Analysis.Score
     JunseiChuurenPoutou = 1L << 53,
     KokushiMusou = 1L << 54,
     KokushiMusouJuusanMen = 1L << 55,
-    Daisuushi = 1L << 56,
-    Shousuushi = 1L << 57,
+    Daisuushii = 1L << 56,
+    Shousuushii = 1L << 57,
     Suukantsu = 1L << 58,
 
     Dora = 1L << 59,

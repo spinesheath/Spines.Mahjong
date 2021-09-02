@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Spines.Mahjong.Analysis.Replay;
 using Spines.Mahjong.Analysis.Score;
 using Spines.Mahjong.Analysis.Shanten;
@@ -6,7 +7,7 @@ using Spines.Mahjong.Analysis.State;
 
 namespace Spines.Mahjong.Analysis.Tests
 {
-  internal class ScoreCalculatingVisitor : IReplayVisitor
+  internal class ClassicScoreCalculatingVisitor : IReplayVisitor
   {
     private const Yaku YakuFilter = 
       Yaku.Haku | 
@@ -50,7 +51,8 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.JunseiChuurenPoutou |
       Yaku.ClosedChanta |
       Yaku.OpenChanta |
-      Yaku.Honroutou
+      Yaku.Honroutou |
+      Yaku.Ryuuiisou
       ;
 
     private const Yaku ExternalYaku =
@@ -68,10 +70,7 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.HouteiRaoyui |
       Yaku.HaiteiRaoyue;
 
-    private const Yaku IgnoredYaku =
-      Yaku.Ryuuiisou; 
-
-    public ScoreCalculatingVisitor()
+    public ClassicScoreCalculatingVisitor()
     {
       _wall = new FakeWall();
       _board = new Board(_wall);
@@ -161,25 +160,15 @@ namespace Spines.Mahjong.Analysis.Tests
     public void Ron(int who, int fromWho, PaymentInformation payment)
     {
       CalculationCount += 1;
-
-      if ((payment.Yaku & IgnoredYaku) != 0)
-      {
-        return;
-      }
-
+      
       var seat = _board.Seats[who];
       if (_currentShouminkanTile == null)
       {
-        //if (!AgariValidation2.CanRon(_board, who))
-        //{
-        //  FailureCount += 1;
-        //}
-
         var discard = _board.CurrentDiscard!;
-        var hand = (HandCalculator)seat.Hand.WithTile(discard.TileType);
         var roundWind = _board.RoundWind.Index;
         var seatWind = seat.SeatWind.Index;
-        var yaku = YakuCalculator.Ron(hand, discard, roundWind, seatWind, seat.Melds);
+        var concealedTilesAndDiscard = seat.ConcealedTiles.Concat(new []{discard}).ToList();
+        var yaku = ClassicYakuCalculator.Ron(discard, roundWind, seatWind, seat.Melds, concealedTilesAndDiscard);
         if ((payment.Yaku & ExternalYaku) == payment.Yaku && yaku != Yaku.None)
         {
           return;
@@ -192,16 +181,11 @@ namespace Spines.Mahjong.Analysis.Tests
       }
       else
       {
-        //if (!AgariValidation2.CanChankan(_board, who, _currentShouminkanTile))
-        //{
-        //  FailureCount += 1;
-        //}
-
         var discard = _currentShouminkanTile;
-        var hand = (HandCalculator)seat.Hand.WithTile(discard.TileType);
         var roundWind = _board.RoundWind.Index;
         var seatWind = seat.SeatWind.Index;
-        var yaku = YakuCalculator.Chankan(hand, discard, roundWind, seatWind, seat.Melds);
+        var concealedTilesAndDiscard = seat.ConcealedTiles.Concat(new[] { discard }).ToList();
+        var yaku = ClassicYakuCalculator.Chankan(discard, roundWind, seatWind, seat.Melds, concealedTilesAndDiscard);
         if ((payment.Yaku & ExternalYaku) == payment.Yaku && yaku != Yaku.None)
         {
           return;
@@ -217,23 +201,12 @@ namespace Spines.Mahjong.Analysis.Tests
     public void Tsumo(int who, PaymentInformation payment)
     {
       CalculationCount += 1;
-
-      if ((payment.Yaku & IgnoredYaku) != 0)
-      {
-        return;
-      }
-
-      //if (!AgariValidation2.CanTsumo(_board, false))
-      //{
-      //  FailureCount += 1;
-      //}
-
+      
       var seat = _board.Seats[who];
-      var hand = seat.Hand;
       var draw = seat.CurrentDraw!;
       var roundWind = _board.RoundWind.Index;
       var seatWind = seat.SeatWind.Index;
-      var yaku = YakuCalculator.Tsumo(hand, draw, roundWind, seatWind, seat.Melds);
+      var yaku = ClassicYakuCalculator.Tsumo(draw, roundWind, seatWind, seat.Melds, seat.ConcealedTiles);
       if ((payment.Yaku & ExternalYaku) == payment.Yaku && yaku != Yaku.None)
       {
         return;
@@ -243,8 +216,6 @@ namespace Spines.Mahjong.Analysis.Tests
       {
         FailureCount += 1;
       }
-
-      //var score = ScoreCalculator.Tsumo(_board, false);
     }
 
     private Board _board;
