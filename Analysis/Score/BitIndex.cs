@@ -14,14 +14,14 @@
     public const int Shousuushi = 11;
     public const int Daisuushi = 14;
     
-    public const int JikazeTon = 15;
-    public const int JikazeNan = 16;
-    public const int JikazeShaa = 17;
-    public const int JikazePei = 18;
-    public const int BakazeTon = 46;
-    public const int BakazeNan = 47;
-    public const int BakazeShaa = 48;
-    public const int BakazePei = 49;
+    public const int JikazeTon = 54;
+    public const int JikazeNan = 55;
+    public const int JikazeShaa = 56;
+    public const int JikazePei = 57;
+    public const int BakazeTon = 58;
+    public const int BakazeNan = 59;
+    public const int BakazeShaa = 60;
+    public const int BakazePei = 61;
 
     public const int Toitoi = 31;
     public const int ClosedTanyao = 29;
@@ -34,9 +34,9 @@
     public const int Iipeikou = 37;
     public const int Chiitoitsu = 41;
     
-    public const int Haku = 42;
-    public const int Hatsu = 43;
-    public const int Chun = 44;
+    public const int Haku = 15;
+    public const int Hatsu = 16;
+    public const int Chun = 17;
 
     public const int Ryanpeikou = 45;
 

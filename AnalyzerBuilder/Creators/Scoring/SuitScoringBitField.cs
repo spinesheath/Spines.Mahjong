@@ -16,7 +16,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       IipeikouRyanpeikouChiitoitsu();
       Pinfu(51);
       Ankou(32);
-      HonitsuChinitsu(19);
+      HonitsuChinitsu(20);
       MenzenTsumo(12);
       KokushiMusou();
       Chinroutou(38);
@@ -25,8 +25,6 @@ namespace AnalyzerBuilder.Creators.Scoring
       Honroutou(40);
       Toitoi(31);
     }
-
-    public long AndValue { get; private set; }
 
     public long OrValue { get; private set; }
 
@@ -69,7 +67,7 @@ namespace AnalyzerBuilder.Creators.Scoring
     {
       if (TileCount > 0)
       {
-        OrValue |= 0b101L << (offset + 4);
+        OrValue |= 0b101000L << offset;
       }
     }
 
@@ -154,14 +152,6 @@ namespace AnalyzerBuilder.Creators.Scoring
       return shuntsus.Any(s => s.Index == 0) && shuntsus.Any(s => s.Index == 3) && shuntsus.Any(s => s.Index == 6);
     }
 
-    private void Ittsuu(int offset)
-    {
-      foreach (var block in _interpretations.SelectMany(a => a.Blocks).Where(b => b.IsShuntsu && b.Index % 3 == 0))
-      {
-        AndValue |= 0b1L << offset + block.Index / 3;
-      }
-    }
-
     private void IipeikouRyanpeikouChiitoitsu()
     {
       const int baseIndex = 37;
@@ -188,14 +178,6 @@ namespace AnalyzerBuilder.Creators.Scoring
       if (canBeChiitoitsu)
       {
         OrValue |= 1L << (baseIndex + 2);
-      }
-    }
-
-    private void Ryuuiisou(int offset)
-    {
-      if (TileCount == 0 || TileCounts[0] + TileCounts[4] + TileCounts[6] + TileCounts[8] == 0)
-      {
-        AndValue |= 0b1L << offset;
       }
     }
 
@@ -233,15 +215,6 @@ namespace AnalyzerBuilder.Creators.Scoring
       if (TileCounts[0] + TileCounts[8] == TileCount)
       {
         OrValue |= 0b1L << offset;
-      }
-    }
-
-    private void Junchan(int offset)
-    {
-      if (_interpretations.Any(g => g.Blocks.All(b => b.IsJunchanBlock)))
-      {
-        // 1 bit closed, 1 bit open
-        AndValue |= 0b11L << offset;
       }
     }
 

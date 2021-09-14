@@ -11,20 +11,16 @@ namespace AnalyzerBuilder.Creators.Scoring
       _melds = melds;
       _hasMelds = melds.Count > 0;
 
-      Jikaze(15);
-      Bakaze(46);
-      HakuHatsuChun(42);
+      Jikaze(54);
+      Bakaze(58);
+      HakuHatsuChun(15);
       Daisangen(6);
       Shousangen(23);
       Suushi();
-      HonitsuChinitsu(19);
+      HonitsuChinitsu(20);
       Tsuuiisou(2);
-      Chanta(26);
+      Chanta(27);
     }
-
-    public long AndValue { get; private set; }
-
-    public long OrValue { get; private set; }
 
     public long SumValue { get; private set; }
 
@@ -33,13 +29,9 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void HonitsuChinitsu(int offset)
     {
-      if (!_hasMelds)
+      if (_hasMelds)
       {
-        SumValue |= 0b1L << (offset + 2);
-      }
-      else
-      {
-        SumValue |= 0b11L << offset;
+        SumValue |= 0b1L << offset;
       }
     }
 
@@ -97,42 +89,16 @@ namespace AnalyzerBuilder.Creators.Scoring
       }
     }
 
-    private void Ryuuiisou(int offset)
-    {
-      if (!_hasMelds || _melds.All(m => m.Index == 5))
-      {
-        AndValue |= 0b1L << offset;
-        OrValue |= 0b1L << offset;
-      }
-    }
-
-    private void Junchan(int offset)
-    {
-      if (!_hasMelds)
-      {
-        AndValue |= 0b1L << offset;
-      }
-    }
-
     private void Tsuuiisou(int offset)
     {
       SumValue |= (long)_melds.Count << offset;
-    }
-
-    private void Honroutou(int offset)
-    {
-      if (_hasMelds)
-      {
-        AndValue |= 0b1L << offset;
-        OrValue |= 0b1L << offset;
-      }
     }
 
     private void Chanta(int offset)
     {
       if (_hasMelds)
       {
-        SumValue |= 0b11L << offset;
+        SumValue |= 0b1L << offset;
       }
     }
   }

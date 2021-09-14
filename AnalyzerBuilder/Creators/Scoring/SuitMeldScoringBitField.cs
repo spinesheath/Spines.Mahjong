@@ -12,10 +12,8 @@ namespace AnalyzerBuilder.Creators.Scoring
       
       SanshokuDoujun();
       SanshokuDoukou();
-      HonitsuChinitsu(19);
+      HonitsuChinitsu(20);
     }
-
-    public long AndValue { get; private set; }
 
     public long OrValue { get; private set; }
 
@@ -27,46 +25,7 @@ namespace AnalyzerBuilder.Creators.Scoring
     {
       if (_hasMelds)
       {
-        OrValue |= 0b101L << (offset + 4);
-      }
-    }
-
-    private void Ittsuu(int offset)
-    {
-      foreach (var meld in _melds.Where(b => b.IsShuntsu && b.Index % 3 == 0))
-      {
-        OrValue |= 0b1L << offset + meld.Index / 3;
-      }
-
-      AndValue |= 0b111L << offset;
-    }
-
-    private void Ryuuiisou(int offset)
-    {
-      if (_melds.All(m => !new[] {0, 4, 6, 8}.Contains(m.Index) && (!m.IsShuntsu || m.Index == 1)))
-      {
-        AndValue |= 0b1L << offset;
-      }
-    }
-
-    private void Junchan(int offset)
-    {
-      if (!_hasMelds)
-      {
-        AndValue |= 0b1L << offset;
-      }
-
-      if (_melds.All(m => m.IsJunchanBlock))
-      {
-        AndValue |= 0b1L << (offset + 1);
-      }
-    }
-
-    private void Honroutou(int offset)
-    {
-      if (_melds.All(m => m.IsJunchanBlock && !m.IsShuntsu))
-      {
-        AndValue |= 0b1L << offset;
+        OrValue |= 0b101000L << offset;
       }
     }
 

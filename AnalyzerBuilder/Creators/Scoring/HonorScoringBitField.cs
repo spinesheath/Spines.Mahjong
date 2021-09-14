@@ -8,28 +8,28 @@ namespace AnalyzerBuilder.Creators.Scoring
     {
       _arrangement = arrangement;
       _isEmpty = arrangement.TileCount == 0;
-      
+
       Tanyao(29);
-      Jikaze(15);
-      Bakaze(46);
-      SangenYakuhai(42);
+      Jikaze(54);
+      Bakaze(58);
+      HakuHatsuChun(15);
       Daisangen(6);
       Shousangen(23);
       Suushi();
       Pinfu(51);
       Ankou(32);
       Chiitoitsu();
-      HonitsuChinitsu(19);
+      HonitsuChinitsu(20);
       MenzenTsumo(12);
       KokushiMusou();
       Tsuuiisou(2);
       Chinroutou(38);
-      Chanta(26);
+      Chanta(27);
       Toitoi(31);
       Honroutou(40);
     }
 
-    public long AndValue { get; private set; }
+    public long OrValue { get; private set; }
 
     public long SumValue { get; private set; }
 
@@ -62,13 +62,13 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void HonitsuChinitsu(int offset)
     {
-      if (_isEmpty)
+      if (!_isEmpty)
       {
-        SumValue |= 0b1L << (offset + 2);
+        OrValue |= 0b1L << offset;
       }
       else
       {
-        SumValue |= 0b11L << offset;
+        OrValue |= 0b100L << offset;
       }
     }
 
@@ -78,7 +78,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       var minCountWithWait = countsWithWait.Min();
       var maxCountWithWait = countsWithWait.Max();
 
-      SumValue |= (long)minCountWithWait << offset;
+      OrValue |= (long)minCountWithWait << offset;
       WaitShiftValue |= (long)(maxCountWithWait - minCountWithWait) << offset;
       for (var i = 0; i < 9; i++)
       {
@@ -101,7 +101,7 @@ namespace AnalyzerBuilder.Creators.Scoring
 
       if (canBeChiitoitsu)
       {
-        SumValue |= 1L << (baseIndex + 2);
+        OrValue |= 1L << (baseIndex + 2);
       }
     }
 
@@ -112,11 +112,11 @@ namespace AnalyzerBuilder.Creators.Scoring
         var pair = _arrangement.Blocks.FirstOrDefault(b => b.IsPair);
         if (pair != null && pair.Index < 4 && _arrangement.Blocks.Count == 1)
         {
-          SumValue|= PinfuWindBits[pair.Index] << offset;
+          OrValue|= PinfuWindBits[pair.Index] << offset;
         }
         else if (!_arrangement.Blocks.Any())
         {
-          SumValue |= 0b111_111_111_111_1L << offset;
+          OrValue |= 0b101_110_111_111_1L << offset;
         }
       }
 
@@ -150,7 +150,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       SumValue |= (long)daisangenCount << offset;
     }
 
-    private void SangenYakuhai(int offset)
+    private void HakuHatsuChun(int offset)
     {
       for (var i = 0; i < 3; i++)
       {
@@ -183,27 +183,11 @@ namespace AnalyzerBuilder.Creators.Scoring
       }
     }
 
-    private void Ryuuiisou(int offset)
-    {
-      if (_isEmpty || _arrangement.TileCounts[5] == _arrangement.TileCount)
-      {
-        AndValue |= 0b1L << offset;
-      }
-    }
-
     private void Chinroutou(int offset)
     {
       if (_isEmpty)
       {
-        SumValue |= 0b1L << offset;
-      }
-    }
-
-    private void Junchan(int offset)
-    {
-      if (_isEmpty)
-      {
-        AndValue |= 0b1L << offset;
+        OrValue |= 0b1L << offset;
       }
     }
 
@@ -211,7 +195,7 @@ namespace AnalyzerBuilder.Creators.Scoring
     {
       if (_isEmpty)
       {
-        SumValue |= 0b1L << offset;
+        OrValue |= 0b1L << offset;
       }
     }
 
@@ -228,14 +212,14 @@ namespace AnalyzerBuilder.Creators.Scoring
     /// </summary>
     private void Honroutou(int offset)
     {
-      SumValue |= 0b1L << offset;
+      OrValue |= 0b1L << offset;
     }
 
     private void Toitoi(int offset)
     {
       if (_arrangement.IsStandard)
       {
-        SumValue |= 0b1L << offset;
+        OrValue |= 0b1L << offset;
       }
     }
 
@@ -243,7 +227,7 @@ namespace AnalyzerBuilder.Creators.Scoring
     {
       if (!_isEmpty && _arrangement.IsStandard)
       {
-        SumValue |= 0b11L << offset;
+        OrValue |= 0b1L << offset;
       }
     }
 

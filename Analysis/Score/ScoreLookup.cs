@@ -12,6 +12,7 @@ namespace Spines.Mahjong.Analysis.Score
     static ScoreLookup()
     {
       HonorSumLookup = Resource.LongLookup("Scoring", "HonorSumLookup.dat");
+      HonorOrLookup = Resource.LongLookup("Scoring", "HonorOrLookup.dat");
       HonorMeldSumLookup = Resource.LongLookup("Scoring", "HonorMeldSumLookup.dat");
       HonorWaitShiftLookup = Resource.LongLookup("Scoring", "HonorWaitShiftLookup.dat");
 
@@ -25,6 +26,13 @@ namespace Spines.Mahjong.Analysis.Score
       var concealed = HonorSumLookup[concealedIndex];
       var melded = HonorMeldSumLookup[meldIndex];
       return concealed + melded;
+    }
+
+    private static long HonorOr(int concealedIndex, int meldIndex)
+    {
+      var concealed = HonorOrLookup[concealedIndex];
+      var melded = HonorMeldSumLookup[meldIndex];
+      return concealed | melded;
     }
 
     private static long SuitOr(HandCalculator hand, int suitId)
@@ -52,6 +60,7 @@ namespace Spines.Mahjong.Analysis.Score
     }
 
     private static readonly long[] HonorSumLookup;
+    private static readonly long[] HonorOrLookup;
     private static readonly long[] HonorMeldSumLookup;
     private static readonly long[] HonorWaitShiftLookup;
     private static readonly long[] SuitOrLookup;
@@ -99,7 +108,8 @@ namespace Spines.Mahjong.Analysis.Score
       var hasNonChantaCalls = melds.Any(m => !m.Tiles.Any(t => t.TileType.IsKyuuhai));
       var hasNonChinroutouCalls = melds.Any(m => m.Tiles.Any(t => t.TileType.Suit == Suit.Jihai || t.TileType.Index > 0 && t.TileType.Index < 8));
       var hasNonHonroutouCalls = melds.Any(m => m.Tiles.Any(t => t.TileType.Suit != Suit.Jihai && t.TileType.Index > 0 && t.TileType.Index < 8));
-      
+      var hasHonorCalls = melds.Any(m => m.Tiles.Any(t => t.TileType.Suit == Suit.Jihai));
+
       var honorConcealedIndex = hand.Base5Hash(3);
       var honorMeldIndex = MeldIndex(hand, 3);
       
@@ -111,12 +121,12 @@ namespace Spines.Mahjong.Analysis.Score
 
       var suitOr = new[] { SuitOr(hand, 0), SuitOr(hand, 1), SuitOr(hand, 2), ~0L };
       var suitsAnd = suitOr[0] & suitOr[1] & suitOr[2];
-      var honorSum = HonorSum(honorConcealedIndex, honorMeldIndex);
+      var honorOr = HonorOr(honorConcealedIndex, honorMeldIndex);
 
       var bigSum = (suitOr[0] & SuitBigSumFilter) +
                    (suitOr[1] & SuitBigSumFilter) +
                    (suitOr[2] & SuitBigSumFilter) +
-                   (honorSum & HonorBigSumFilter) & ankanYakuFilter;
+                   (honorOr & HonorBigSumFilter) & ankanYakuFilter;
 
       var sanshoku = (suitsAnd >> (int)suitsAnd) & SanshokuYakuFilter;
 
@@ -130,7 +140,7 @@ namespace Spines.Mahjong.Analysis.Score
        * A flag in BigSum is created by adding 1 for each suit with a pair and a 2 for honors.
        * This will leave a 0 in the second bit in the bad case: 11223399m11p11s44z This 0 is aligned with the pinfu bit index.
        */
-      var honorWindShift = honorSum >> WindShiftHonor(roundWind, seatWind);
+      var honorWindShift = honorOr >> WindShiftHonor(roundWind, seatWind);
       var waitAndWindShift = waitShiftValues[0] & waitShiftValues[1] & waitShiftValues[2] & waitShiftValues[3] & honorWindShift;
       var pinfu = waitAndWindShift & 
                   (suitOr[winningTile.TileType.SuitId] >> (int)((winningTile.TileType.Index + (suitsAnd & 1)) * (sanshoku >> 2))) & 
@@ -153,17 +163,14 @@ namespace Spines.Mahjong.Analysis.Score
       waitAndRonShift += waitAndRonShift & (0b101L << AnkouRonShiftSumFilterIndex);
       
       var result = 0L;
-
-      var valueWindFilter = ValueWindFilter(roundWind, seatWind);
-      result |= honorSum & HonorSumYakuFilter & valueWindFilter;
+      
       result |= waitAndRonShift & WaitAndRonShiftYakuFilter;
 
       result |= sanshoku;
-      var bigAnd = suitsAnd & honorSum;
+      var bigAnd = suitsAnd & honorOr;
 
       result |= bigAnd & AllAndYakuFilter;
 
-      // TODO alternate chiitoi calculation: bigSum either +4 if clear chiitoi or +1 if possible (+0 if ryanpeikou in single suit)
       result |= pinfu;
 
       if (hasChii)
@@ -176,12 +183,19 @@ namespace Spines.Mahjong.Analysis.Score
       var bigSumPostElimination = bigSum & ~((bigSum & BigSumEliminationFilter) >> IipeikouDelta);
       result |= bigSumPostElimination & BigSumPostEliminationYakuFilter;
 
-      result += (result & TankiUpgradeableFilter) * tankiBit;
-
       result += (result & OpenBitFilter) * openBit;
 
       var sanankouBit = (result >> BitIndex.Sanankou) & 1L;
       result -= (result & ((1L << BitIndex.Pinfu) | (1L << BitIndex.Iipeikou))) * sanankouBit;
+
+      // TODO alternate chiitoi calculation: bigSum either +4 if clear chiitoi or +1 if possible (+0 if ryanpeikou in single suit)
+      //result -= result & (1L << BitIndex.ClosedChanta) & (result >> (BitIndex.Chiitoitsu - BitIndex.ClosedChanta));
+
+      var honorSum = HonorSum(honorConcealedIndex, honorMeldIndex);
+      var valueWindFilter = ValueWindFilter(roundWind, seatWind);
+      result |= honorSum & HonorSumYakuFilter & valueWindFilter;
+
+      result += (result & TankiUpgradeableFilter) * tankiBit;
 
       if (hasNonChinroutouCalls)
       {
@@ -218,6 +232,11 @@ namespace Spines.Mahjong.Analysis.Score
         result &= HonroutouCallFilter;
       }
 
+      if (hasHonorCalls)
+      {
+        result &= HonorCallFilter;
+      }
+
       return result;
     }
 
@@ -241,10 +260,13 @@ namespace Spines.Mahjong.Analysis.Score
                                                    (0b1L << BitIndex.Toitoi);
 
     private const long HonorSumYakuFilter = (0b1L << BitIndex.Haku) | (0b1L << BitIndex.Hatsu) | (0b1L << BitIndex.Chun) |
-                                           (0b1L << BitIndex.JikazeTon) | (0b1L << BitIndex.JikazeNan) | (0b1L << BitIndex.JikazeShaa) | (0b1L << BitIndex.JikazePei) |
-                                           (0b1L << BitIndex.BakazeTon) | (0b1L << BitIndex.BakazeNan) | (0b1L << BitIndex.BakazeShaa) | (0b1L << BitIndex.BakazePei) |
-                                           (0b1L << BitIndex.Shousangen) | (0b1L << BitIndex.Daisangen) | (0b1L << BitIndex.Shousuushi) | (0b1L << BitIndex.Daisuushi) |
-                                           (0b1L << BitIndex.KokushiMusou) | (0b1L << BitIndex.Tsuuiisou);
+                                            (0b1L << BitIndex.JikazeTon) | (0b1L << BitIndex.JikazeNan) | 
+                                            (0b1L << BitIndex.JikazeShaa) | (0b1L << BitIndex.JikazePei) |
+                                            (0b1L << BitIndex.BakazeTon) | (0b1L << BitIndex.BakazeNan) |
+                                            (0b1L << BitIndex.BakazeShaa) | (0b1L << BitIndex.BakazePei) |
+                                            (0b1L << BitIndex.Shousangen) | (0b1L << BitIndex.Daisangen) |
+                                            (0b1L << BitIndex.Shousuushi) | (0b1L << BitIndex.Daisuushi) |
+                                            (0b1L << BitIndex.KokushiMusou) | (0b1L << BitIndex.Tsuuiisou);
 
     private const long YakumanFilter = (0b1L << BitIndex.Daisangen) | (0b1L << BitIndex.Shousuushi) | (0b1L << BitIndex.Daisuushi) | 
                                        (0b1L << BitIndex.Suuankou) | (0b1L << BitIndex.SuuankouTanki) |
@@ -271,6 +293,7 @@ namespace Spines.Mahjong.Analysis.Score
     private const long OnlyChantaCallsFilter = ~((0b1L << BitIndex.ClosedChanta) | (0b1L << BitIndex.OpenChanta));
     private const long ChinroutouCallFilter = ~(0b1L << BitIndex.Chinroutou);
     private const long HonroutouCallFilter = ~(0b1L << BitIndex.Honroutou);
+    private const long HonorCallFilter = ~((0b1L << BitIndex.ClosedChinitsu) | (0b1L << BitIndex.OpenChinitsu));
 
     private const long SuitBigSumFilter = (0b11000010100011_00000_0101_0000L << 19) | (0b1L << (BitIndex.Pinfu - 1)) | (0b1L << BitIndex.ChuurenPoutou);
     private const long HonorBigSumFilter = (0b00000010000011_00000_0000_1111L << 19) | (0b1L << BitIndex.Pinfu);

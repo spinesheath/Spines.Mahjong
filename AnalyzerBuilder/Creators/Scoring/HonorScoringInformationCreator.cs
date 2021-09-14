@@ -17,6 +17,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       const int maxLookupIndex = 78125; // 5^7
       var sumLookup = new long[maxLookupIndex];
       var waitShiftLookup = new long[maxLookupIndex];
+      var orLookup = new long[maxLookupIndex];
 
       var language = CreateAnalyzedWords();
       foreach (var word in language)
@@ -29,10 +30,14 @@ namespace AnalyzerBuilder.Creators.Scoring
 
         Debug.Assert(waitShiftLookup[index] == 0 || waitShiftLookup[index] == field.WaitShiftValue);
         waitShiftLookup[index] = field.WaitShiftValue;
+
+        Debug.Assert(orLookup[index] == 0 || orLookup[index] == field.OrValue);
+        orLookup[index] = field.OrValue;
       }
 
       Write("HonorSumLookup.dat", sumLookup);
       Write("HonorWaitShiftLookup.dat", waitShiftLookup);
+      Write("HonorOrLookup.dat", orLookup);
     }
 
     private void Write(string filename, long[] data)
