@@ -9,22 +9,26 @@ namespace AnalyzerBuilder.Creators.Scoring
     public SuitScoringBitField(IEnumerable<ConcealedArrangement> interpretations)
     {
       _interpretations = interpretations.ToList();
-      
+      _iipeikouCount = CalculateIipeikouCount();
+
       SanshokuDoujun();
       SanshokuDoukou();
       Tanyao(29);
-      IipeikouRyanpeikouChiitoitsu();
+      IipeikouRyanpeikou(39);
+      Chiitoitsu(41);
       Pinfu(51);
       Ankou(32);
       HonitsuChinitsu(20);
       MenzenTsumo(12);
       KokushiMusou();
-      Chinroutou(38);
+      Chinroutou(37);
       Chuuren(62);
       Chanta(27);
-      Honroutou(40);
+      Honroutou(38);
       Toitoi(31);
     }
+
+    private readonly int _iipeikouCount;
 
     public long OrValue { get; private set; }
 
@@ -152,32 +156,68 @@ namespace AnalyzerBuilder.Creators.Scoring
       return shuntsus.Any(s => s.Index == 0) && shuntsus.Any(s => s.Index == 3) && shuntsus.Any(s => s.Index == 6);
     }
 
-    private void IipeikouRyanpeikouChiitoitsu()
+    private void IipeikouRyanpeikou(int offset)
     {
-      const int baseIndex = 37;
+      if (_iipeikouCount == 1)
+      {
+        OrValue |= 1L << offset;
+      }
+      else if (_iipeikouCount == 2)
+      {
+        OrValue |= 10L << offset;
+      }
+    }
 
-      var canBeChiitoitsu = TileCounts.All(c => c == 0 || c == 2);
-
+    private int CalculateIipeikouCount()
+    {
       var iipeikouCount = 0;
       foreach (var arrangement in _interpretations)
       {
         var identicalShuntsuGroupings = arrangement.Blocks.Where(b => b.IsShuntsu).GroupBy(b => b.Index).Where(g => g.Count() > 1);
         iipeikouCount = Math.Max(iipeikouCount, identicalShuntsuGroupings.Count());
       }
-      
-      if (iipeikouCount == 1)
+
+      return iipeikouCount;
+    }
+
+    private void Chiitoitsu(int offset)
+    {
+      var canBeChiitoitsu = TileCounts.All(c => c == 0 || c == 2);
+      if (TileCount == 0 || !canBeChiitoitsu || _iipeikouCount == 2)
       {
-        OrValue |= 1L << (baseIndex + 0);
-        OrValue |= 1L << (baseIndex + 7);
-      }
-      else if (iipeikouCount == 2)
-      {
-        OrValue |= 1L << (baseIndex + 8);
+        return;
       }
 
-      if (canBeChiitoitsu)
+      var pairCount = TileCounts.Count(c => c == 2);
+      switch (pairCount)
       {
-        OrValue |= 1L << (baseIndex + 2);
+        case 7:
+        case 6:
+        case 5:
+        {
+          OrValue |= 8L << offset;
+          break;
+        }
+        case 4:
+        {
+          OrValue |= (6L - 2L * _iipeikouCount) << offset;
+          break;
+        }
+        case 3:
+        {
+          OrValue |= (4L - 2L * _iipeikouCount) << offset;
+          break;
+        }
+        case 2:
+        {
+          OrValue |= 3L << offset;
+          break;
+        }
+        case 1:
+        {
+          OrValue |= 2L << offset;
+          break;
+        }
       }
     }
 

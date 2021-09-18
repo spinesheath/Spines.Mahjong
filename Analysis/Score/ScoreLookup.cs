@@ -67,10 +67,7 @@ namespace Spines.Mahjong.Analysis.Score
     private static readonly long[] SuitMeldOrLookup;
     private static readonly long[] SuitWaitShiftLookup;
 
-    private const int IipeikouDelta = 4;
-    private const int IipeikouBitIndex = 37;
-    private const int ChiitoitsuBitIndex = IipeikouBitIndex + IipeikouDelta;
-    private const int RyanpeikouBitIndex = ChiitoitsuBitIndex + IipeikouDelta;
+    private const int EliminationDelta = 4;
 
     private static int MeldIndex(HandCalculator hand, int suitId)
     {
@@ -180,17 +177,24 @@ namespace Spines.Mahjong.Analysis.Score
       
       bigSum |= bigAnd & ((0b1L << BitIndex.Toitoi) | (0b1L << BitIndex.ClosedChanta));
 
-      var bigSumPostElimination = bigSum & ~((bigSum & BigSumEliminationFilter) >> IipeikouDelta);
+      var bigSumPostElimination = bigSum & ~((bigSum & BigSumEliminationFilter) >> EliminationDelta);
       result |= bigSumPostElimination & BigSumPostEliminationYakuFilter;
+
+      if ((result & (1L << BitIndex.Chiitoitsu)) != 0)
+      {
+        result &= ~((1L << BitIndex.ClosedChanta | 1L << BitIndex.Iipeikou));
+      }
 
       result += (result & OpenBitFilter) * openBit;
 
       var sanankouBit = (result >> BitIndex.Sanankou) & 1L;
-      result -= (result & ((1L << BitIndex.Pinfu) | (1L << BitIndex.Iipeikou))) * sanankouBit;
-
-      // TODO alternate chiitoi calculation: bigSum either +4 if clear chiitoi or +1 if possible (+0 if ryanpeikou in single suit)
-      //result -= result & (1L << BitIndex.ClosedChanta) & (result >> (BitIndex.Chiitoitsu - BitIndex.ClosedChanta));
-
+      var iipeikouBit = (result >> BitIndex.Iipeikou) & 1L;
+      var closedChantaBit = (result >> BitIndex.ClosedChanta) & 1L;
+      var x = iipeikouBit * closedChantaBit;
+      var y = (sanankouBit - x) * sanankouBit;
+      result -= (result & ((1L << BitIndex.Pinfu) | (1L << BitIndex.Iipeikou))) * y;
+      result -= (result & (1L << BitIndex.Sanankou)) * x;
+      
       var honorSum = HonorSum(honorConcealedIndex, honorMeldIndex);
       var valueWindFilter = ValueWindFilter(roundWind, seatWind);
       result |= honorSum & HonorSumYakuFilter & valueWindFilter;
@@ -249,12 +253,12 @@ namespace Spines.Mahjong.Analysis.Score
     private const long AllAndYakuFilter = (0b1L << BitIndex.Honroutou) | 
                                           (0b1L << BitIndex.ClosedTanyao) | (0b1L << BitIndex.Chinroutou);
 
-    private const long BigSumPostEliminationYakuFilter = (0b1L << IipeikouBitIndex) | (0b1L << ChiitoitsuBitIndex) | (0b1L << RyanpeikouBitIndex) |
+    private const long BigSumPostEliminationYakuFilter = (0b1L << BitIndex.Iipeikou) | (0b1L << BitIndex.Chiitoitsu) | (0b1L << BitIndex.Ryanpeikou) |
                                                          (0b1L << BitIndex.ClosedChinitsu) | (0b1L << BitIndex.ClosedHonitsu) |
                                                          (0b1L << BitIndex.ChuurenPoutou) |
                                                          (0b1L << BitIndex.ClosedChanta) | (0b1L << BitIndex.Toitoi);
 
-    private const long BigSumEliminationFilter = (0b1L << ChiitoitsuBitIndex) | (0b1L << RyanpeikouBitIndex) |
+    private const long BigSumEliminationFilter = (0b1L << 41) | (0b1L << BitIndex.Ryanpeikou) |
                                                    (0b1L << (BitIndex.ClosedChinitsu + 4)) | (0b1L << (BitIndex.OpenChinitsu + 4)) |
                                                    (0b1L << (BitIndex.ClosedHonitsu + 4)) | (0b1L << (BitIndex.OpenHonitsu + 4)) |
                                                    (0b1L << BitIndex.Toitoi);
@@ -295,8 +299,15 @@ namespace Spines.Mahjong.Analysis.Score
     private const long HonroutouCallFilter = ~(0b1L << BitIndex.Honroutou);
     private const long HonorCallFilter = ~((0b1L << BitIndex.ClosedChinitsu) | (0b1L << BitIndex.OpenChinitsu));
 
-    private const long SuitBigSumFilter = (0b11000010100011_00000_0101_0000L << 19) | (0b1L << (BitIndex.Pinfu - 1)) | (0b1L << BitIndex.ChuurenPoutou);
-    private const long HonorBigSumFilter = (0b00000010000011_00000_0000_1111L << 19) | (0b1L << BitIndex.Pinfu);
+    // TODO if I shift honisu chinitsu, also change this filter
+    private const long SuitBigSumFilter = (0b11_00000_0101_0000L << 19) | 
+                                          (0b1L << (BitIndex.Pinfu - 1)) | 
+                                          (0b1L << BitIndex.ChuurenPoutou) | 
+                                          (0b1111L << (BitIndex.Chiitoitsu - 3)) |
+                                          (0b11L << BitIndex.Iipeikou);
+    private const long HonorBigSumFilter = (0b11_00000_0000_1111L << 19) | 
+                                           (0b1L << BitIndex.Pinfu) | 
+                                           (0b1111L << (BitIndex.Chiitoitsu - 3));
     
     private const long TankiUpgradeableFilter = (0b1L << BitIndex.Suuankou) | (0b1L << BitIndex.KokushiMusou) | (0b1L << BitIndex.ChuurenPoutou);
     private const long OpenBitFilter = (0b1L << BitIndex.ClosedChinitsu) | (0b1L << BitIndex.ClosedHonitsu) | (0b1L << BitIndex.ClosedSanshokuDoujun) |

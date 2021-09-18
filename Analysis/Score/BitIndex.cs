@@ -31,14 +31,13 @@
     public const int Suuankou = 35;
     public const int SuuankouTanki = 36;
 
-    public const int Iipeikou = 37;
-    public const int Chiitoitsu = 41;
-    
+    public const int Iipeikou = 39;
+    public const int Ryanpeikou = 40;
+    public const int Chiitoitsu = 44;
+
     public const int Haku = 15;
     public const int Hatsu = 16;
     public const int Chun = 17;
-
-    public const int Ryanpeikou = 45;
 
     public const int ClosedHonitsu = 20;
     public const int OpenHonitsu = 21;
@@ -50,14 +49,14 @@
     public const int KokushiMusou = 0;
     public const int KokushiMusouJuusanmen = 1;
     public const int Tsuuiisou = 5;
-    public const int Chinroutou = 38;
+    public const int Chinroutou = 37;
     public const int ChuurenPoutou = 62;
     public const int JunseiChuurenPoutou = 63;
     
     public const int ClosedChanta = 27;
     public const int OpenChanta = 28;
-    public const int Honroutou = 40;
+    public const int Honroutou = 38;
 
-    public const int Ryuuiisou = 39;
+    public const int Ryuuiisou = 32;
   }
 }

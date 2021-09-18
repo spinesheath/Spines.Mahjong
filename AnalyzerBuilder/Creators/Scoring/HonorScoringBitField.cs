@@ -18,15 +18,15 @@ namespace AnalyzerBuilder.Creators.Scoring
       Suushi();
       Pinfu(51);
       Ankou(32);
-      Chiitoitsu();
+      Chiitoitsu(41);
       HonitsuChinitsu(20);
       MenzenTsumo(12);
       KokushiMusou();
       Tsuuiisou(2);
-      Chinroutou(38);
+      Chinroutou(37);
       Chanta(27);
       Toitoi(31);
-      Honroutou(40);
+      Honroutou(38);
     }
 
     public long OrValue { get; private set; }
@@ -93,15 +93,43 @@ namespace AnalyzerBuilder.Creators.Scoring
       }
     }
 
-    private void Chiitoitsu()
+    private void Chiitoitsu(int offset)
     {
-      const int baseIndex = 37;
-
       var canBeChiitoitsu = _arrangement.TileCounts.All(c => c == 0 || c == 2);
-
-      if (canBeChiitoitsu)
+      if (_arrangement.TileCount == 0 || !canBeChiitoitsu)
       {
-        OrValue |= 1L << (baseIndex + 2);
+        return;
+      }
+
+      var pairCount = _arrangement.TileCounts.Count(c => c == 2);
+      switch (pairCount)
+      {
+        case 6:
+        case 5:
+        {
+          OrValue |= 8L << offset;
+          break;
+        }
+        case 4:
+        {
+          OrValue |= 6L << offset;
+          break;
+        }
+        case 3:
+        {
+          OrValue |= 4L << offset;
+          break;
+        }
+        case 2:
+        {
+          OrValue |= 3L << offset;
+          break;
+        }
+        case 1:
+        {
+          OrValue |= 2L << offset;
+          break;
+        }
       }
     }
 
