@@ -2,14 +2,13 @@
 using System.Linq;
 using Spines.Mahjong.Analysis.Replay;
 using Spines.Mahjong.Analysis.Score;
-using Spines.Mahjong.Analysis.State;
 
 namespace Spines.Mahjong.Analysis.Tests
 {
   internal class ClassicYakuCalculator
   {
     private readonly IReadOnlyList<Tile> _concealedTiles;
-    private readonly IReadOnlyList<Meld> _melds;
+    private readonly IReadOnlyList<State.Meld> _melds;
     private readonly Tile _winningTile;
     private readonly int _roundWind;
     private readonly int _seatWind;
@@ -20,7 +19,7 @@ namespace Spines.Mahjong.Analysis.Tests
     private readonly IReadOnlyList<Arrangement> _arrangements;
     private readonly IReadOnlyList<Tile> _allTiles;
 
-    private ClassicYakuCalculator(IReadOnlyList<Tile> concealedTiles, IReadOnlyList<Meld> melds, Tile winningTile, int roundWind, int seatWind, bool isRon)
+    private ClassicYakuCalculator(IReadOnlyList<Tile> concealedTiles, IReadOnlyList<State.Meld> melds, Tile winningTile, int roundWind, int seatWind, bool isRon)
     {
       _concealedTiles = concealedTiles;
       _melds = melds;
@@ -338,17 +337,17 @@ namespace Spines.Mahjong.Analysis.Tests
       public List<TileType> Koutsus { get; } = new List<TileType>();
     }
 
-    public static Yaku Ron(Tile winningTile, int roundWind, int seatWind, IReadOnlyList<Meld> melds, IReadOnlyList<Tile> concealedTiles)
+    public static Yaku Ron(Tile winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds, IReadOnlyList<Tile> concealedTiles)
     {
       return new ClassicYakuCalculator(concealedTiles, melds, winningTile, roundWind, seatWind, true)._result;
     }
 
-    public static Yaku Tsumo(Tile winningTile, int roundWind, int seatWind, IReadOnlyList<Meld> melds, IReadOnlyList<Tile> concealedTiles)
+    public static Yaku Tsumo(Tile winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds, IReadOnlyList<Tile> concealedTiles)
     {
       return new ClassicYakuCalculator(concealedTiles, melds, winningTile, roundWind, seatWind, false)._result;
     }
 
-    public static Yaku Chankan(Tile winningTile, int roundWind, int seatWind, IReadOnlyList<Meld> melds, IReadOnlyList<Tile> concealedTiles)
+    public static Yaku Chankan(Tile winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds, IReadOnlyList<Tile> concealedTiles)
     {
       return new ClassicYakuCalculator(concealedTiles, melds, winningTile, roundWind, seatWind, true)._result;
     }
@@ -745,7 +744,7 @@ namespace Spines.Mahjong.Analysis.Tests
       return _isClosed ? Yaku.ClosedChanta : Yaku.OpenChanta;
     }
 
-    private static bool ContainsKyuuhai(Meld meld)
+    private static bool ContainsKyuuhai(State.Meld meld)
     {
       return meld.Tiles.Any(t => t.TileType.IsKyuuhai);
     }
@@ -875,7 +874,7 @@ namespace Spines.Mahjong.Analysis.Tests
       return !_isRon && _melds.All(IsAnkan) ? Yaku.MenzenTsumo : Yaku.None;
     }
 
-    private static bool IsAnkan(Meld m)
+    private static bool IsAnkan(State.Meld m)
     {
       return m.IsKan && m.CalledTile == null;
     }

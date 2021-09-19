@@ -57,6 +57,9 @@
     public const int OpenChanta = 28;
     public const int Honroutou = 38;
 
+    public const int ClosedJunchan = 45;
+    public const int OpenJunchan = 46;
+
     public const int Ryuuiisou = 32;
   }
 }

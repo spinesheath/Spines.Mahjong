@@ -61,5 +61,8 @@ namespace Spines.Mahjong.Analysis.Score
     ClosedChanta = 1L << BitIndex.ClosedChanta,
     OpenChanta = 1L << BitIndex.OpenChanta,
     Honroutou = 1L << BitIndex.Honroutou,
+
+    ClosedJunchan = 1L << BitIndex.ClosedJunchan,
+    OpenJunchan = 1L << BitIndex.OpenJunchan,
   }
 }

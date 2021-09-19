@@ -26,9 +26,8 @@ namespace AnalyzerBuilder.Creators.Scoring
       Chanta(27);
       Honroutou(38);
       Toitoi(31);
+      Junchan(45);
     }
-
-    private readonly int _iipeikouCount;
 
     public long OrValue { get; private set; }
 
@@ -39,9 +38,19 @@ namespace AnalyzerBuilder.Creators.Scoring
     private int TileCount => _interpretations.First().TileCount;
 
     private IReadOnlyList<int> TileCounts => _interpretations.First().TileCounts;
-
+    
     private readonly IReadOnlyList<ConcealedArrangement> _interpretations;
 
+    private readonly int _iipeikouCount;
+
+    private void Junchan(int offset)
+    {
+      if (_interpretations.Any(a => a.IsStandard && a.Blocks.All(b => b.IsJunchanBlock)))
+      {
+        OrValue |= 0b1L << offset;
+      }
+    }
+    
     private void KokushiMusou()
     {
       foreach (var arrangement in _interpretations)

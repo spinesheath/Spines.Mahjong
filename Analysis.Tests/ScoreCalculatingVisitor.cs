@@ -49,10 +49,10 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.ClosedChanta |
       Yaku.OpenChanta |
       Yaku.Honroutou |
-
+      Yaku.ClosedJunchan |
+      Yaku.OpenJunchan |
       Yaku.ChuurenPoutou |
-      Yaku.JunseiChuurenPoutou
-      ;
+      Yaku.JunseiChuurenPoutou;
 
     private const Yaku ExternalYaku =
       Yaku.AkaDora |

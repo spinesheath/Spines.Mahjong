@@ -482,6 +482,8 @@ namespace Spines.Mahjong.Analysis.Shanten
     {
       foreach (var meldId in meldIds)
       {
+        _melds[3] <<= 6;
+        _melds[3] += 1 + meldId;
         _meldCount += 1;
 
         if (meldId < 7 + 9)

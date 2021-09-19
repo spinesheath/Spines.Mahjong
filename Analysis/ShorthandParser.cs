@@ -30,7 +30,7 @@ namespace Spines.Mahjong.Analysis
       }
     }
 
-    internal IEnumerable<Meld> Melds
+    public IEnumerable<Meld> Melds
     {
       get
       {

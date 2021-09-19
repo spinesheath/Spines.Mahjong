@@ -27,6 +27,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       Chanta(27);
       Toitoi(31);
       Honroutou(38);
+      Junchan(45);
     }
 
     public long OrValue { get; private set; }
@@ -37,6 +38,14 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private readonly ConcealedArrangement _arrangement;
     private readonly bool _isEmpty;
+
+    private void Junchan(int offset)
+    {
+      if (_isEmpty)
+      {
+        OrValue |= 0b1L << offset;
+      }
+    }
 
     private void KokushiMusou()
     {

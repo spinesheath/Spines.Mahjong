@@ -2,7 +2,7 @@
 
 namespace Spines.Mahjong.Analysis
 {
-  internal struct Meld
+  public struct Meld
   {
     public Suit Suit { get; }
 
