@@ -55,6 +55,7 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.OpenIttsuu |
       Yaku.Sankantsu |
       Yaku.Suukantsu |
+      Yaku.Ryuuiisou |
       Yaku.ChuurenPoutou |
       Yaku.JunseiChuurenPoutou;
 
@@ -72,9 +73,6 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.RinshanKaihou |
       Yaku.HouteiRaoyui |
       Yaku.HaiteiRaoyue;
-
-    private const Yaku IgnoredYaku =
-      Yaku.Ryuuiisou; 
 
     public ScoreCalculatingVisitor()
     {
@@ -167,11 +165,6 @@ namespace Spines.Mahjong.Analysis.Tests
     {
       CalculationCount += 1;
 
-      if ((payment.Yaku & IgnoredYaku) != 0)
-      {
-        return;
-      }
-
       var seat = _board.Seats[who];
       if (_currentShouminkanTile == null)
       {
@@ -222,11 +215,6 @@ namespace Spines.Mahjong.Analysis.Tests
     public void Tsumo(int who, PaymentInformation payment)
     {
       CalculationCount += 1;
-
-      if ((payment.Yaku & IgnoredYaku) != 0)
-      {
-        return;
-      }
 
       //if (!AgariValidation2.CanTsumo(_board, false))
       //{

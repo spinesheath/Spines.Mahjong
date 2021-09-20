@@ -28,6 +28,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       Toitoi(31);
       Junchan(49);
       Ittsuu(44);
+      Ryuuiisou(28);
     }
 
     public long OrValue { get; private set; }
@@ -43,6 +44,22 @@ namespace AnalyzerBuilder.Creators.Scoring
     private readonly IReadOnlyList<ConcealedArrangement> _interpretations;
 
     private readonly int _iipeikouCount;
+
+    private void Ryuuiisou(int offset)
+    {
+      foreach (var arrangement in _interpretations.Where(a => a.IsStandard))
+      {
+        if (arrangement.TileCount == 0)
+        {
+          OrValue |= 0b1L << offset;
+        }
+
+        if (arrangement.TileCounts[0] + arrangement.TileCounts[4] + arrangement.TileCounts[6] + arrangement.TileCounts[8] == 0)
+        {
+          OrValue |= 0b1L << (offset + 2);
+        }
+      }
+    }
 
     private void Ittsuu(int offset)
     {

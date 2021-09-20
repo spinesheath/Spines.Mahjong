@@ -14,7 +14,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       Bakaze(58);
       HakuHatsuChun(15);
       Daisangen(6);
-      Shousangen(23);
+      Shousangen(51);
       Suushi();
       Pinfu(51);
       Ankou(32);
@@ -28,6 +28,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       Toitoi(31);
       Honroutou(26);
       Junchan(49);
+      Ryuuiisou(28);
     }
 
     public long OrValue { get; private set; }
@@ -38,6 +39,14 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private readonly ConcealedArrangement _arrangement;
     private readonly bool _isEmpty;
+
+    private void Ryuuiisou(int offset)
+    {
+      if (_arrangement.TileCounts[5] == _arrangement.TileCount)
+      {
+        SumValue |= 6L << offset;
+      }
+    }
 
     private void Junchan(int offset)
     {

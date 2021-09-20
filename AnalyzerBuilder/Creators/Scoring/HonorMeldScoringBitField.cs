@@ -15,17 +15,26 @@ namespace AnalyzerBuilder.Creators.Scoring
       Bakaze(58);
       HakuHatsuChun(15);
       Daisangen(6);
-      Shousangen(23);
+      Shousangen(51);
       Suushi();
       HonitsuChinitsu(20);
       Tsuuiisou(2);
       Chanta(27);
+      Ryuuiisou(28);
     }
 
     public long SumValue { get; private set; }
 
     private readonly bool _hasMelds;
     private readonly IReadOnlyList<Block> _melds;
+
+    private void Ryuuiisou(int offset)
+    {
+      if (_melds.All(m => m.Index == 5))
+      {
+        SumValue |= 4L << offset;
+      }
+    }
 
     private void HonitsuChinitsu(int offset)
     {

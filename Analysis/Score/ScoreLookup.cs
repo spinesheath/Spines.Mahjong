@@ -107,6 +107,8 @@ namespace Spines.Mahjong.Analysis.Score
       var hasNonChinroutouCalls = melds.Any(m => m.Tiles.Any(t => t.TileType.Suit == Suit.Jihai || t.TileType.Index > 0 && t.TileType.Index < 8));
       var hasNonHonroutouCalls = melds.Any(m => m.Tiles.Any(t => t.TileType.Suit != Suit.Jihai && t.TileType.Index > 0 && t.TileType.Index < 8));
       var hasHonorCalls = melds.Any(m => m.Tiles.Any(t => t.TileType.Suit == Suit.Jihai));
+      var hasNonRyuuiisouCalls = HasNonRyuuiisouCalls(melds);
+
       var kanCount = melds.Count(m => m.IsKan);
 
       var honorConcealedIndex = hand.Base5Hash(3);
@@ -210,10 +212,20 @@ namespace Spines.Mahjong.Analysis.Score
 
       result += (result & TankiUpgradeableFilter) * tankiBit;
       result |= (1L << (kanCount + BitIndex.Sankantsu - 3)) & (11L << BitIndex.Sankantsu);
+      var ryuuiisouSum = (suitOr[0] & RyuuiisouSumFilter01) + 
+                         (suitOr[1] & RyuuiisouSumFilter01) + 
+                         (suitOr[2] & RyuuiisouSumFilter2) + 
+                         honorSum;
+      result |= ryuuiisouSum & (1L << BitIndex.Ryuuiisou);
 
       if (hasNonChinroutouCalls)
       {
         result &= ChinroutouCallFilter;
+      }
+
+      if (hasNonRyuuiisouCalls)
+      {
+        result &= RyuuiisouFilter;
       }
 
       var yakuman = result & YakumanFilter;
@@ -254,6 +266,38 @@ namespace Spines.Mahjong.Analysis.Score
       return result;
     }
 
+    private static bool HasNonRyuuiisouCalls(IReadOnlyList<State.Meld> melds)
+    {
+      foreach (var meld in melds)
+      {
+        var tileType = meld.LowestTile.TileType;
+        var suit = tileType.Suit;
+        var index = tileType.Index;
+        
+        if (suit == Suit.Manzu || suit == Suit.Pinzu)
+        {
+          return true;
+        }
+
+        if (meld.MeldType == MeldType.Shuntsu && index != 1)
+        {
+          return true;
+        }
+
+        if (suit == Suit.Jihai && index != 5)
+        {
+          return true;
+        }
+
+        if (meld.MeldType != MeldType.Shuntsu && suit != Suit.Jihai && index % 2 == 0 && index != 2)
+        {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
     private static string PrintBinarySegment(long bits, int from, int length)
     {
       return Convert.ToString((bits >> from) & ((1L << length) - 1), 2).PadLeft(length, '0');
@@ -289,7 +333,7 @@ namespace Spines.Mahjong.Analysis.Score
                                        (0b1L << BitIndex.KokushiMusou) | (0b1L << BitIndex.KokushiMusouJuusanmen) |
                                        (0b1L << BitIndex.Tsuuiisou) | (0b1L << BitIndex.Chinroutou) |
                                        (0b1L << BitIndex.ChuurenPoutou) | (0b1L << BitIndex.JunseiChuurenPoutou) |
-                                       (0b1L << BitIndex.Suukantsu);
+                                       (0b1L << BitIndex.Suukantsu) | (0b1L << BitIndex.Ryuuiisou);
     private const long ClosedYakuFilter = ~((0b1L << BitIndex.ClosedSanshokuDoujun) | (0b1L << BitIndex.Iipeikou) |
                                             (0b1L << BitIndex.Chiitoitsu) | (0b1L << BitIndex.Ryanpeikou) |
                                             (0b1L << BitIndex.ClosedHonitsu) | (0b1L << BitIndex.ClosedChinitsu) |
@@ -330,5 +374,9 @@ namespace Spines.Mahjong.Analysis.Score
     private const long OpenBitFilter = (0b1L << BitIndex.ClosedChinitsu) | (0b1L << BitIndex.ClosedHonitsu) | (0b1L << BitIndex.ClosedSanshokuDoujun) |
                                        (0b1L << BitIndex.ClosedTanyao) | (0b1L << BitIndex.ClosedChanta) | (0b1L << BitIndex.ClosedJunchan) |
                                        (0b1L << BitIndex.ClosedIttsuu);
+
+    private const long RyuuiisouFilter = ~(1L << BitIndex.Ryuuiisou);
+    private const long RyuuiisouSumFilter01 = 0b1L << (BitIndex.Ryuuiisou - 4);
+    private const long RyuuiisouSumFilter2 = 0b1L << (BitIndex.Ryuuiisou - 2);
   }
 }
