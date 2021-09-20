@@ -44,6 +44,8 @@ namespace Spines.Mahjong.Analysis.Tests
     [InlineData("123456789m44p123P", 0, 0, "4p", Yaku.OpenIttsuu)]
     [InlineData("123456m44p123P789M", 0, 0, "4p", Yaku.OpenIttsuu)]
     [InlineData("12344p123M456M789M", 0, 0, "4p", Yaku.OpenIttsuu)]
+    [InlineData("11m123M1111P3333P5555P", 0, 0, "1m", Yaku.Sankantsu | Yaku.Sanankou)]
+    [InlineData("11m1111P3333P5555P7777P", 0, 0, "1m", Yaku.Suukantsu | Yaku.SuuankouTanki)]
     public void SomeHandByRon(string handString, int roundWind, int seatWind, string discardString, Yaku expectedYaku)
     {
       var discard = Tile.FromTileType(TileType.FromString(discardString), 0);

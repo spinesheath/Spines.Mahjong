@@ -65,7 +65,7 @@ namespace Spines.Mahjong.Analysis.Score
       { ScoringFieldYaku.OpenDoujun, Yaku.OpenSanshokuDoujun },
       { ScoringFieldYaku.ClosedDoujun, Yaku.ClosedSanshokuDoujun },
       { ScoringFieldYaku.Doukou, Yaku.SanshokuDoukou },
-      //{ ScoringFieldYaku.None, Yaku.Sankantsu },
+      { ScoringFieldYaku.Sankantsu, Yaku.Sankantsu },
       { ScoringFieldYaku.Toitoi, Yaku.Toitoihou },
       { ScoringFieldYaku.Sanankou, Yaku.Sanankou },
       { ScoringFieldYaku.Shousangen, Yaku.Shousangen },
@@ -93,7 +93,7 @@ namespace Spines.Mahjong.Analysis.Score
       { ScoringFieldYaku.KokushiMusouJuusanmen, Yaku.KokushiMusouJuusanMen },
       { ScoringFieldYaku.Daisuushii, Yaku.Daisuushii },
       { ScoringFieldYaku.Shousuushii, Yaku.Shousuushii },
-      //{ ScoringFieldYaku.None, Yaku.Suukantsu },
+      { ScoringFieldYaku.Suukantsu, Yaku.Suukantsu },
 
       //{ ScoringFieldYaku.None, Yaku.Dora },
       //{ ScoringFieldYaku.None, Yaku.UraDora },
