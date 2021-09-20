@@ -13,6 +13,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       SanshokuDoujun();
       SanshokuDoukou();
       HonitsuChinitsu(20);
+      Ittsuu(44);
     }
 
     public long OrValue { get; private set; }
@@ -20,6 +21,17 @@ namespace AnalyzerBuilder.Creators.Scoring
     private readonly bool _hasMelds;
 
     private readonly IReadOnlyList<Block> _melds;
+
+    private void Ittsuu(int offset)
+    {
+      for (var i = 0; i < 3; i++)
+      {
+        if (_melds.Any(b => b.IsShuntsu && b.Index == i * 3))
+        {
+          OrValue |= 0b1L << offset + i;
+        }
+      }
+    }
 
     private void HonitsuChinitsu(int offset)
     {

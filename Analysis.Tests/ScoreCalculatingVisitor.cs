@@ -51,6 +51,8 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.Honroutou |
       Yaku.ClosedJunchan |
       Yaku.OpenJunchan |
+      Yaku.ClosedIttsuu |
+      Yaku.OpenIttsuu |
       Yaku.ChuurenPoutou |
       Yaku.JunseiChuurenPoutou;
 
