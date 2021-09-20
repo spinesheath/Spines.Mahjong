@@ -102,12 +102,6 @@ namespace Spines.Mahjong.Analysis.Score
     {
       var isOpen = melds.Any(m => !m.IsKan || m.CalledTile != null);
       var hasChii = melds.Any(m => m.MeldType == MeldType.Shuntsu);
-      var hasChantaCalls = melds.Any(m => m.Tiles.Any(t => t.TileType.IsKyuuhai));
-      var hasNonChantaCalls = melds.Any(m => !m.Tiles.Any(t => t.TileType.IsKyuuhai));
-      var hasNonChinroutouCalls = melds.Any(m => m.Tiles.Any(t => t.TileType.Suit == Suit.Jihai || t.TileType.Index > 0 && t.TileType.Index < 8));
-      var hasNonHonroutouCalls = melds.Any(m => m.Tiles.Any(t => t.TileType.Suit != Suit.Jihai && t.TileType.Index > 0 && t.TileType.Index < 8));
-      var hasHonorCalls = melds.Any(m => m.Tiles.Any(t => t.TileType.Suit == Suit.Jihai));
-      var hasNonRyuuiisouCalls = HasNonRyuuiisouCalls(melds);
 
       var kanCount = melds.Count(m => m.IsKan);
 
@@ -218,15 +212,8 @@ namespace Spines.Mahjong.Analysis.Score
                          honorSum;
       result |= ryuuiisouSum & (1L << BitIndex.Ryuuiisou);
 
-      if (hasNonChinroutouCalls)
-      {
-        result &= ChinroutouCallFilter;
-      }
-
-      if (hasNonRyuuiisouCalls)
-      {
-        result &= RyuuiisouFilter;
-      }
+      var meldMask = GetMeldMask(melds);
+      result &= meldMask;
 
       var yakuman = result & YakumanFilter;
       if (yakuman != 0)
@@ -234,68 +221,87 @@ namespace Spines.Mahjong.Analysis.Score
         return yakuman;
       }
 
-      if (isOpen)
-      {
-        result &= ClosedYakuFilter;
-      }
-      else
-      {
-        result &= OpenYakuFilter;
-      }
-
-      if (hasChantaCalls)
-      {
-        result &= NoChantaCallsFilter;
-      }
-
-      if (hasNonChantaCalls)
-      {
-        result &= OnlyChantaCallsFilter;
-      }
-
-      if (hasNonHonroutouCalls)
-      {
-        result &= HonroutouCallFilter;
-      }
-
-      if (hasHonorCalls)
-      {
-        result &= HonorCallFilter;
-      }
-
       return result;
     }
 
-    private static bool HasNonRyuuiisouCalls(IReadOnlyList<State.Meld> melds)
+    private static long GetMeldMask(IReadOnlyList<State.Meld> melds)
     {
+      var isOpen = false;
+      var x = ~0L;
       foreach (var meld in melds)
       {
-        var tileType = meld.LowestTile.TileType;
-        var suit = tileType.Suit;
-        var index = tileType.Index;
-        
-        if (suit == Suit.Manzu || suit == Suit.Pinzu)
+        var suit = meld.LowestTile.TileType.Suit;
+        var index = meld.LowestTile.TileType.Index;
+
+        if (meld.MeldType != MeldType.ClosedKan)
         {
-          return true;
+          isOpen = true;
         }
 
-        if (meld.MeldType == MeldType.Shuntsu && index != 1)
+        if (suit == Suit.Jihai)
         {
-          return true;
+          x &= HonorCallFilter;
+          x &= ChinroutouCallFilter;
+
+          if (index != 5)
+          {
+            x &= RyuuiisouFilter;
+          }
+        }
+        else
+        {
+          if (meld.MeldType == MeldType.Shuntsu)
+          {
+            x &= ChinroutouCallFilter;
+            x &= HonroutouCallFilter;
+          }
+          else if (index > 0 && index < 8)
+          {
+            x &= ChinroutouCallFilter;
+            x &= HonroutouCallFilter;
+          }
+
+          if (suit == Suit.Souzu)
+          {
+            if (meld.MeldType == MeldType.Shuntsu && index != 1)
+            {
+              x &= RyuuiisouFilter;
+            }
+
+            if (meld.MeldType != MeldType.Shuntsu && index % 2 == 0 && index != 2)
+            {
+              x &= RyuuiisouFilter;
+            }
+          }
+          else
+          {
+            x &= RyuuiisouFilter;
+          }
         }
 
-        if (suit == Suit.Jihai && index != 5)
+        if (meld.Tiles.Any(t => t.TileType.IsKyuuhai))
         {
-          return true;
+          x &= NoChantaCallsFilter;
         }
-
-        if (meld.MeldType != MeldType.Shuntsu && suit != Suit.Jihai && index % 2 == 0 && index != 2)
+        else
         {
-          return true;
+          x &= OnlyChantaCallsFilter;
         }
       }
 
-      return false;
+      var mask = ~0L;
+      if (isOpen)
+      {
+        mask &= ClosedYakuFilter;
+      }
+      else
+      {
+        mask &= OpenYakuFilter;
+      }
+
+      mask &= x;
+
+      return mask;
     }
 
     private static string PrintBinarySegment(long bits, int from, int length)
