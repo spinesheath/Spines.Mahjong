@@ -18,7 +18,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       Suushi();
       Pinfu(51);
       Ankou(32);
-      Chiitoitsu(41);
+      Chiitoitsu(40);
       HonitsuChinitsu(20);
       MenzenTsumo(12);
       KokushiMusou();
@@ -26,8 +26,8 @@ namespace AnalyzerBuilder.Creators.Scoring
       Chinroutou(37);
       Chanta(27);
       Toitoi(31);
-      Honroutou(38);
-      Junchan(45);
+      Honroutou(26);
+      Junchan(49);
     }
 
     public long OrValue { get; private set; }

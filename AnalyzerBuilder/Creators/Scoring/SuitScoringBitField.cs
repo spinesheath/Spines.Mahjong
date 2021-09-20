@@ -14,8 +14,8 @@ namespace AnalyzerBuilder.Creators.Scoring
       SanshokuDoujun();
       SanshokuDoukou();
       Tanyao(29);
-      IipeikouRyanpeikou(39);
-      Chiitoitsu(41);
+      IipeikouRyanpeikou(38);
+      Chiitoitsu(40);
       Pinfu(51);
       Ankou(32);
       HonitsuChinitsu(20);
@@ -24,9 +24,9 @@ namespace AnalyzerBuilder.Creators.Scoring
       Chinroutou(37);
       Chuuren(62);
       Chanta(27);
-      Honroutou(38);
+      Honroutou(26);
       Toitoi(31);
-      Junchan(45);
+      Junchan(49);
     }
 
     public long OrValue { get; private set; }
