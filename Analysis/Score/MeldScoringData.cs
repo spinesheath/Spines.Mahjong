@@ -11,20 +11,86 @@ namespace Spines.Mahjong.Analysis.Score
     static MeldScoringData()
     {
       HonorMeldSumLookup = Resource.LongLookup("Scoring", "HonorMeldSumLookup.dat");
-      SuitMeldOrLookup = Resource.LongLookup("Scoring", "SuitMeldOrLookup.dat");
     }
 
     public MeldScoringData(HandCalculator hand, IReadOnlyList<State.Meld> melds)
     {
       CalculateFilters(melds);
+      CalculateLookupValues(melds);
 
-      var lookupValues = new long[4];
-      lookupValues[0] = SuitMeldOrLookup[MeldIndex(hand, 0)];
-      lookupValues[1] = SuitMeldOrLookup[MeldIndex(hand, 1)];
-      lookupValues[2] = SuitMeldOrLookup[MeldIndex(hand, 2)];
-      lookupValues[3] = HonorMeldSumLookup[MeldIndex(hand, 3)];
+      MeldLookupValues = _lookupValues;
+    }
 
-      MeldLookupValues = lookupValues;
+    private void CalculateLookupValues(IReadOnlyList<State.Meld> melds)
+    {
+      const int suitHonitsuOffset = 20;
+      const int suitIttsuuOffset = 44;
+      const int honorTsuuiisouOffset = 2;
+      const int honorChantaOffset = 27;
+      const int honorJikazeOffset = 54;
+      const int honorBakazeOffset = 58;
+      const int honorHakuHatsuChunOffset = 15;
+      const int honorHonitsuChinitsuOffset = 20;
+      const int honorRyuuiisouOffset = 28;
+      const int honorDaisangenOffset = 6;
+      const int honorShousangenOffset = 51;
+      const int honorShousuushiiOffset = 9;
+      const int honorDaisuushiiOffset = 12;
+
+      _lookupValues[3] |= 4L << honorRyuuiisouOffset;
+
+      foreach (var meld in melds)
+      {
+        var tileType = meld.LowestTile.TileType;
+        var suit = tileType.Suit;
+        var index = tileType.Index;
+
+        if (suit == Suit.Jihai)
+        {
+          _lookupValues[3] |= 1L << honorChantaOffset;
+          _lookupValues[3] |= 1L << honorHonitsuChinitsuOffset;
+          _lookupValues[3] += 1L << honorTsuuiisouOffset;
+
+          if (index < 4)
+          {
+            _lookupValues[3] |= 1L << (honorJikazeOffset + index);
+            _lookupValues[3] |= 1L << (honorBakazeOffset + index);
+            _lookupValues[3] += 1L << honorShousuushiiOffset;
+            _lookupValues[3] += 1L << honorDaisuushiiOffset;
+          }
+          else
+          {
+            _lookupValues[3] |= 1L << (honorHakuHatsuChunOffset + index - 4);
+            _lookupValues[3] += 1L << honorShousangenOffset;
+            _lookupValues[3] += 1L << honorDaisangenOffset;
+          }
+
+          if (index != 5)
+          {
+            _lookupValues[3] &= ~(4L << honorRyuuiisouOffset);
+          }
+        }
+        else
+        {
+          _lookupValues[tileType.SuitId] |= 0b101000L << suitHonitsuOffset;
+
+          if (meld.MeldType == MeldType.Shuntsu)
+          {
+            if (index % 3 == 0)
+            {
+              _lookupValues[tileType.SuitId] |= 1L << (suitIttsuuOffset + index / 3);
+            }
+
+            _lookupValues[tileType.SuitId] |= index + 4L;
+            _lookupValues[tileType.SuitId] |= 1L << (index + 6);
+          }
+          else
+          {
+            _lookupValues[tileType.SuitId] |= index + 9L;
+            _lookupValues[tileType.SuitId] |= 1L << (index + 13);
+          }
+        }
+      }
     }
 
     public long AnkanYakuFilter { get; private set; }
@@ -71,8 +137,8 @@ namespace Spines.Mahjong.Analysis.Score
     private const long NoAnkanYakuFilter = ~((1L << BitIndex.Pinfu) | (1L << BitIndex.Chiitoitsu));
 
     private static readonly long[] HonorMeldSumLookup;
-
-    private static readonly long[] SuitMeldOrLookup;
+    
+    private readonly long[] _lookupValues = new long[4];
 
     private void CalculateFilters(IReadOnlyList<State.Meld> melds)
     {

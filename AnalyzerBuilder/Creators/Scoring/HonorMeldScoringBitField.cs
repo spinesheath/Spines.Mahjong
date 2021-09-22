@@ -16,7 +16,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       HakuHatsuChun(15);
       Daisangen(6);
       Shousangen(51);
-      Suushi();
+      Suushii();
       HonitsuChinitsu(20);
       Tsuuiisou(2);
       Chanta(27);
@@ -44,7 +44,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       }
     }
 
-    private void Suushi()
+    private void Suushii()
     {
       var koutsuCount = _melds.Count(b => b.Index < 4);
       SumValue |= (long) koutsuCount << 9;
@@ -54,15 +54,13 @@ namespace AnalyzerBuilder.Creators.Scoring
     private void Daisangen(int offset)
     {
       var koutsuCount = _melds.Count(b => b.Index > 3);
-      var sangenCount = koutsuCount > 1 ? koutsuCount + 1 : koutsuCount;
-      SumValue |= (long) sangenCount << offset;
+      SumValue |= (long) koutsuCount << offset;
     }
 
     private void Shousangen(int offset)
     {
       var koutsuCount = _melds.Count(b => b.Index > 3);
-      var sangenCount = koutsuCount > 1 ? koutsuCount + 1 : koutsuCount;
-      SumValue |= (long)sangenCount << offset;
+      SumValue |= (long)koutsuCount << offset;
     }
 
     private void HakuHatsuChun(int offset)

@@ -184,15 +184,14 @@ namespace AnalyzerBuilder.Creators.Scoring
       var koutsuCount = _arrangement.Blocks.Count(b => b.Index > 3 && b.IsKoutsu);
       var pairCount = _arrangement.Blocks.Count(b => b.Index > 3 && b.IsPair);
 
-      var blockCount = pairCount == 1 ? koutsuCount + 1 : 0;
-      var shousangenCount = blockCount > 1 ? blockCount + 1 : blockCount;
+      var shousangenCount = 2 * pairCount + koutsuCount;
       SumValue |= (long)shousangenCount << offset;
     }
 
     private void Daisangen(int offset)
     {
       var koutsuCount = _arrangement.Blocks.Count(b => b.Index > 3 && b.IsKoutsu);
-      var daisangenCount = koutsuCount > 1 ? koutsuCount + 1 : koutsuCount;
+      var daisangenCount = koutsuCount + 1;
       SumValue |= (long)daisangenCount << offset;
     }
 
