@@ -61,7 +61,6 @@ namespace AnalyzerBuilder.Creators.Scoring
 
       for (var i = 0; i < 7; i++)
       {
-        // TODO probably want redundancies here, so order of melds doesn't matter
         // avoid redundancies by looking at the blocks already in the stack
         if (tileCounts[i] < 4 && tileCounts[i + 1] < 4 && tileCounts[i + 2] < 4 && blocks.All(b => b.IsShuntsu && b.Index <= i))
         {

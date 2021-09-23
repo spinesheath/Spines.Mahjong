@@ -3,7 +3,6 @@ using System.Linq;
 
 namespace AnalyzerBuilder.Creators.Scoring
 {
-  // TODO construct this progressively in HandCalculator?
   internal class HonorMeldScoringBitField
   {
     public HonorMeldScoringBitField(IReadOnlyList<Block> melds)

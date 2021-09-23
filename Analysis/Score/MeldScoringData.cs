@@ -24,7 +24,7 @@ namespace Spines.Mahjong.Analysis.Score
 
     public long ShiftedAnkanCount { get; private set; }
 
-    public long ToitoiFilter { get; private set; }
+    public long BigAndToSumFilter { get; private set; }
 
     public long SankantsuSuukantsu { get; private set; }
 
@@ -38,8 +38,6 @@ namespace Spines.Mahjong.Analysis.Score
     private const long OpenYakuFilter = ~((1L << BitIndex.OpenSanshokuDoujun) | (1L << BitIndex.OpenHonitsu) | (1L << BitIndex.OpenChinitsu) |
                                           (1L << BitIndex.OpenTanyao) | (1L << BitIndex.OpenChanta) | (1L << BitIndex.OpenJunchan) |
                                           (1L << BitIndex.OpenIttsuu));
-
-    private const long NoChiiYakuFilter = ~(1L << BitIndex.Toitoi);
 
     private const long RyuuiisouFilter = ~(1L << BitIndex.Ryuuiisou);
 
@@ -133,7 +131,7 @@ namespace Spines.Mahjong.Analysis.Score
 
     private void CalculateFilters(IReadOnlyList<State.Meld> melds)
     {
-      ToitoiFilter = ~0L;
+      BigAndToSumFilter = (0b1L << BitIndex.Toitoi) | (0b1L << BitIndex.ClosedChanta);
       SankantsuSuukantsu = 1L << (BitIndex.Sankantsu - 3);
 
       var x = ~0L;
@@ -156,7 +154,7 @@ namespace Spines.Mahjong.Analysis.Score
 
         if (meld.MeldType == MeldType.Shuntsu)
         {
-          ToitoiFilter = NoChiiYakuFilter;
+          BigAndToSumFilter = 0b1L << BitIndex.ClosedChanta;
         }
 
         if (meld.IsKan)

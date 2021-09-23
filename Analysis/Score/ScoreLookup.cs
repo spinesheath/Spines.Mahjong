@@ -139,9 +139,8 @@ namespace Spines.Mahjong.Analysis.Score
       result |= pinfu;
       result |= bigAnd & BigAndYakuFilter;
       
-      bigSum |= bigAnd & meldInfo.ToitoiFilter & ((0b1L << BitIndex.Toitoi) | (0b1L << BitIndex.ClosedChanta));
+      bigSum |= bigAnd & meldInfo.BigAndToSumFilter;
 
-      // TODO this currently only affects toitoi => chanta and honitsu?
       var bigSumPostElimination = bigSum & ~((bigSum & BigSumEliminationFilter) >> EliminationDelta);
       result |= bigSumPostElimination & BigSumPostEliminationYakuFilter;
 
