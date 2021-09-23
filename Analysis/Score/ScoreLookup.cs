@@ -95,7 +95,7 @@ namespace Spines.Mahjong.Analysis.Score
       var bigSum = (suitOr[0] & SuitBigSumFilter) +
                    (suitOr[1] & SuitBigSumFilter) +
                    (suitOr[2] & SuitBigSumFilter) +
-                   (honorOr & HonorBigSumFilter) & meldInfo.AnkanYakuFilter;
+                   (honorOr & HonorBigSumFilter);
 
       var sanshoku = (suitsAnd >> (int)suitsAnd) & SanshokuYakuFilter;
 
@@ -114,8 +114,7 @@ namespace Spines.Mahjong.Analysis.Score
       var pinfu = waitAndWindShift & 
                   (suitOr[winningTileSuit] >> (int)((winningTileIndex + (suitsAnd & 1)) * (sanshoku >> 2))) & 
                   bigSum &
-                  PinfuYakuFilter & 
-                  meldInfo.AnkanYakuFilter;
+                  PinfuYakuFilter;
 
       var tankiBit = waitShiftValues[winningTileSuit] & 0b1L;
       var openBit = meldInfo.OpenBit;
@@ -149,7 +148,7 @@ namespace Spines.Mahjong.Analysis.Score
       var valueWindFilter = ValueWindFilter(roundWind, seatWind);
       result |= honorSum & HonorSumYakuFilter & valueWindFilter;
 
-      result |= (1L << (meldInfo.KanCount + BitIndex.Sankantsu - 3)) & (11L << BitIndex.Sankantsu);
+      result |= meldInfo.SankantsuSuukantsu & (11L << BitIndex.Sankantsu);
 
       var ryuuiisouSum = (suitOr[0] & RyuuiisouSumFilter01) +
                          (suitOr[1] & RyuuiisouSumFilter01) +

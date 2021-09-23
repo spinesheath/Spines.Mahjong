@@ -13,9 +13,7 @@ namespace Spines.Mahjong.Analysis.Score
 
       MeldLookupValues = _lookupValues;
     }
-
-    public long AnkanYakuFilter { get; private set; }
-
+    
     public long FinalMask { get; private set; }
 
     public int KanCount { get; private set; }
@@ -27,6 +25,8 @@ namespace Spines.Mahjong.Analysis.Score
     public long ShiftedAnkanCount { get; private set; }
 
     public long ToitoiFilter { get; private set; }
+
+    public long SankantsuSuukantsu { get; private set; }
 
     private const long ClosedYakuFilter = ~((1L << BitIndex.ClosedSanshokuDoujun) | (1L << BitIndex.Iipeikou) |
                                             (1L << BitIndex.Chiitoitsu) | (1L << BitIndex.Ryanpeikou) |
@@ -134,7 +134,7 @@ namespace Spines.Mahjong.Analysis.Score
     private void CalculateFilters(IReadOnlyList<State.Meld> melds)
     {
       ToitoiFilter = ~0L;
-      AnkanYakuFilter = ~0L;
+      SankantsuSuukantsu = 1L << (BitIndex.Sankantsu - 3);
 
       var x = ~0L;
       var baseMask = OpenYakuFilter;
@@ -145,7 +145,7 @@ namespace Spines.Mahjong.Analysis.Score
 
         if (meld.MeldType == MeldType.ClosedKan)
         {
-          AnkanYakuFilter = NoAnkanYakuFilter;
+          x &= NoAnkanYakuFilter;
           ShiftedAnkanCount += 1L << (BitIndex.Sanankou - 2);
         }
         else
@@ -162,6 +162,7 @@ namespace Spines.Mahjong.Analysis.Score
         if (meld.IsKan)
         {
           KanCount += 1;
+          SankantsuSuukantsu <<= 1;
         }
 
         if (suit == Suit.Jihai)
