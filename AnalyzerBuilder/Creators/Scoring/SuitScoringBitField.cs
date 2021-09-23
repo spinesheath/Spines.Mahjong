@@ -118,6 +118,11 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Ankou(int offset)
     {
+      if (_iipeikouCount == 2)
+      {
+        return;
+      }
+
       var countsWithWait = Enumerable.Range(0, 9).Select(i => _interpretations.Max(a => AnkouCountWithWait(i, a))).ToList();
       var minCountWithWait = countsWithWait.Min();
       var maxCountWithWait = countsWithWait.Max();
@@ -211,14 +216,15 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private int CalculateIipeikouCount()
     {
-      var iipeikouCount = 0;
+      var bestCount = 0;
       foreach (var arrangement in _interpretations)
       {
         var identicalShuntsuGroupings = arrangement.Blocks.Where(b => b.IsShuntsu).GroupBy(b => b.Index).Where(g => g.Count() > 1);
-        iipeikouCount = Math.Max(iipeikouCount, identicalShuntsuGroupings.Count());
+        var currentCount = identicalShuntsuGroupings.Select(g => g.Count() / 2).Sum();
+        bestCount = Math.Max(bestCount, currentCount);
       }
 
-      return iipeikouCount;
+      return bestCount;
     }
 
     private void Chiitoitsu(int offset)
