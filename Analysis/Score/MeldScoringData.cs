@@ -1,25 +1,63 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Spines.Mahjong.Analysis.Replay;
-using Spines.Mahjong.Analysis.Resources;
-using Spines.Mahjong.Analysis.Shanten;
 
 namespace Spines.Mahjong.Analysis.Score
 {
   internal class MeldScoringData
   {
-    static MeldScoringData()
-    {
-      HonorMeldSumLookup = Resource.LongLookup("Scoring", "HonorMeldSumLookup.dat");
-    }
-
-    public MeldScoringData(HandCalculator hand, IReadOnlyList<State.Meld> melds)
+    public MeldScoringData(IReadOnlyList<State.Meld> melds)
     {
       CalculateFilters(melds);
       CalculateLookupValues(melds);
 
       MeldLookupValues = _lookupValues;
     }
+
+    public long AnkanYakuFilter { get; private set; }
+
+    public long FinalMask { get; private set; }
+
+    public int KanCount { get; private set; }
+
+    public IReadOnlyList<long> MeldLookupValues { get; }
+
+    public long OpenBit { get; private set; }
+
+    public long ShiftedAnkanCount { get; private set; }
+
+    public long ToitoiFilter { get; private set; }
+
+    private const long ClosedYakuFilter = ~((1L << BitIndex.ClosedSanshokuDoujun) | (1L << BitIndex.Iipeikou) |
+                                            (1L << BitIndex.Chiitoitsu) | (1L << BitIndex.Ryanpeikou) |
+                                            (1L << BitIndex.ClosedHonitsu) | (1L << BitIndex.ClosedChinitsu) |
+                                            (1L << BitIndex.ClosedTanyao) | (1L << BitIndex.MenzenTsumo) |
+                                            (1L << BitIndex.Pinfu) | (1L << BitIndex.ClosedChanta) |
+                                            (1L << BitIndex.ClosedJunchan) | (1L << BitIndex.ClosedIttsuu));
+
+    private const long OpenYakuFilter = ~((1L << BitIndex.OpenSanshokuDoujun) | (1L << BitIndex.OpenHonitsu) | (1L << BitIndex.OpenChinitsu) |
+                                          (1L << BitIndex.OpenTanyao) | (1L << BitIndex.OpenChanta) | (1L << BitIndex.OpenJunchan) |
+                                          (1L << BitIndex.OpenIttsuu));
+
+    private const long NoChiiYakuFilter = ~(1L << BitIndex.Toitoi);
+
+    private const long RyuuiisouFilter = ~(1L << BitIndex.Ryuuiisou);
+
+    private const long HonorCallFilter = ~((1L << BitIndex.ClosedChinitsu) | (1L << BitIndex.OpenChinitsu) |
+                                           (1L << BitIndex.ClosedJunchan) | (1L << BitIndex.OpenJunchan));
+
+    private const long ChinroutouCallFilter = ~(1L << BitIndex.Chinroutou);
+
+    private const long HonroutouCallFilter = ~(1L << BitIndex.Honroutou);
+
+    private const long NoChantaCallsFilter = ~((1L << BitIndex.ClosedTanyao) | (1L << BitIndex.OpenTanyao));
+
+    private const long OnlyChantaCallsFilter = ~((1L << BitIndex.ClosedChanta) | (1L << BitIndex.OpenChanta) |
+                                                 (1L << BitIndex.ClosedJunchan) | (1L << BitIndex.OpenJunchan));
+
+    private const long NoAnkanYakuFilter = ~(1L << BitIndex.Pinfu);
+
+    private readonly long[] _lookupValues = new long[4];
 
     private void CalculateLookupValues(IReadOnlyList<State.Meld> melds)
     {
@@ -92,53 +130,6 @@ namespace Spines.Mahjong.Analysis.Score
         }
       }
     }
-
-    public long AnkanYakuFilter { get; private set; }
-
-    public long FinalMask { get; private set; }
-
-    public int KanCount { get; private set; }
-
-    public IReadOnlyList<long> MeldLookupValues { get; }
-
-    public long OpenBit { get; private set; }
-
-    public long ShiftedAnkanCount { get; private set; }
-
-    public long ToitoiFilter { get; private set; }
-
-    private const long ClosedYakuFilter = ~((1L << BitIndex.ClosedSanshokuDoujun) | (1L << BitIndex.Iipeikou) |
-                                            (1L << BitIndex.Chiitoitsu) | (1L << BitIndex.Ryanpeikou) |
-                                            (1L << BitIndex.ClosedHonitsu) | (1L << BitIndex.ClosedChinitsu) |
-                                            (1L << BitIndex.ClosedTanyao) | (1L << BitIndex.MenzenTsumo) |
-                                            (1L << BitIndex.Pinfu) | (1L << BitIndex.ClosedChanta) |
-                                            (1L << BitIndex.ClosedJunchan) | (1L << BitIndex.ClosedIttsuu));
-
-    private const long OpenYakuFilter = ~((1L << BitIndex.OpenSanshokuDoujun) | (1L << BitIndex.OpenHonitsu) | (1L << BitIndex.OpenChinitsu) |
-                                          (1L << BitIndex.OpenTanyao) | (1L << BitIndex.OpenChanta) | (1L << BitIndex.OpenJunchan) |
-                                          (1L << BitIndex.OpenIttsuu));
-
-    private const long NoChiiYakuFilter = ~(1L << BitIndex.Toitoi);
-
-    private const long RyuuiisouFilter = ~(1L << BitIndex.Ryuuiisou);
-
-    private const long HonorCallFilter = ~((1L << BitIndex.ClosedChinitsu) | (1L << BitIndex.OpenChinitsu) |
-                                           (1L << BitIndex.ClosedJunchan) | (1L << BitIndex.OpenJunchan));
-
-    private const long ChinroutouCallFilter = ~(1L << BitIndex.Chinroutou);
-
-    private const long HonroutouCallFilter = ~(1L << BitIndex.Honroutou);
-
-    private const long NoChantaCallsFilter = ~((1L << BitIndex.ClosedTanyao) | (1L << BitIndex.OpenTanyao));
-
-    private const long OnlyChantaCallsFilter = ~((1L << BitIndex.ClosedChanta) | (1L << BitIndex.OpenChanta) |
-                                                 (1L << BitIndex.ClosedJunchan) | (1L << BitIndex.OpenJunchan));
-
-    private const long NoAnkanYakuFilter = ~((1L << BitIndex.Pinfu) | (1L << BitIndex.Chiitoitsu));
-
-    private static readonly long[] HonorMeldSumLookup;
-    
-    private readonly long[] _lookupValues = new long[4];
 
     private void CalculateFilters(IReadOnlyList<State.Meld> melds)
     {
@@ -225,18 +216,6 @@ namespace Spines.Mahjong.Analysis.Score
       }
 
       FinalMask = baseMask & x;
-    }
-
-    private static int MeldIndex(HandCalculator hand, int suitId)
-    {
-      var meldIndex = 0;
-      foreach (var i in hand.MeldIds(suitId))
-      {
-        meldIndex *= 35;
-        meldIndex += i + 1;
-      }
-
-      return meldIndex;
     }
   }
 }

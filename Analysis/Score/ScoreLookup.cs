@@ -17,16 +17,16 @@ namespace Spines.Mahjong.Analysis.Score
       SuitWaitShiftLookup = Resource.LongLookup("Scoring", "SuitWaitShiftLookup.dat");
     }
 
-    private static long HonorSum(int concealedIndex, MeldScoringData meld)
+    private static long HonorSum(HandCalculator hand, MeldScoringData meld)
     {
-      var concealed = HonorSumLookup[concealedIndex];
+      var concealed = HonorSumLookup[hand.Base5Hash(3)];
       var melded = meld.MeldLookupValues[3];
       return concealed + melded;
     }
 
-    private static long HonorOr(int concealedIndex, MeldScoringData meld)
+    private static long HonorOr(HandCalculator hand, MeldScoringData meld)
     {
-      var concealed = HonorOrLookup[concealedIndex];
+      var concealed = HonorOrLookup[hand.Base5Hash(3)];
       var melded = meld.MeldLookupValues[3];
       return concealed | melded;
     }
@@ -79,17 +79,18 @@ namespace Spines.Mahjong.Analysis.Score
     
     public static long Flags(HandCalculator hand, Tile winningTile, bool isRon, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds)
     {
-      var meldInfo = new MeldScoringData(hand, melds);
+      var meldInfo = new MeldScoringData(melds);
 
-      var honorConcealedIndex = hand.Base5Hash(3);
-      
+      var winningTileIndex = winningTile.TileType.Index;
+      var winningTileSuit = winningTile.TileType.SuitId;
+
       var waitShiftValues = new [] {SuitWaitShift(hand, 0), SuitWaitShift(hand, 1), SuitWaitShift(hand, 2), HonorWaitShift(hand)};
-      waitShiftValues[winningTile.TileType.SuitId] >>= winningTile.TileType.Index + 1;
+      waitShiftValues[winningTileSuit] >>= winningTileIndex + 1;
 
       var suitOr = new[] { SuitOr(hand, 0, meldInfo), SuitOr(hand, 1, meldInfo), SuitOr(hand, 2, meldInfo), ~0L };
       var suitsAnd = suitOr[0] & suitOr[1] & suitOr[2];
-      var honorOr = HonorOr(honorConcealedIndex, meldInfo);
-      var honorSum = HonorSum(honorConcealedIndex, meldInfo);
+      var honorOr = HonorOr(hand, meldInfo);
+      var honorSum = HonorSum(hand, meldInfo);
 
       var bigSum = (suitOr[0] & SuitBigSumFilter) +
                    (suitOr[1] & SuitBigSumFilter) +
@@ -111,15 +112,15 @@ namespace Spines.Mahjong.Analysis.Score
       var honorWindShift = honorOr >> WindShiftHonor(roundWind, seatWind);
       var waitAndWindShift = waitShiftValues[0] & waitShiftValues[1] & waitShiftValues[2] & waitShiftValues[3] & honorWindShift;
       var pinfu = waitAndWindShift & 
-                  (suitOr[winningTile.TileType.SuitId] >> (int)((winningTile.TileType.Index + (suitsAnd & 1)) * (sanshoku >> 2))) & 
+                  (suitOr[winningTileSuit] >> (int)((winningTileIndex + (suitsAnd & 1)) * (sanshoku >> 2))) & 
                   bigSum &
                   PinfuYakuFilter & 
                   meldInfo.AnkanYakuFilter;
 
-      var tankiBit = waitShiftValues[winningTile.TileType.SuitId] & 0b1L;
+      var tankiBit = waitShiftValues[winningTileSuit] & 0b1L;
       var openBit = meldInfo.OpenBit;
 
-      waitShiftValues[winningTile.TileType.SuitId] >>= isRon ? 9 : 0;
+      waitShiftValues[winningTileSuit] >>= isRon ? 9 : 0;
 
       var waitAndRonShift = (waitShiftValues[0] & RonShiftSumFilter) + 
                             (waitShiftValues[1] & RonShiftSumFilter) + 
