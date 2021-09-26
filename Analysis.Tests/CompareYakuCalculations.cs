@@ -52,8 +52,8 @@ namespace Spines.Mahjong.Analysis.Tests
           var hand = new HandCalculator();
           hand.Init(tiles.Select(t => t.TileType));
           
-          var classicRon = ClassicYakuCalculator.Ron(winningTile, roundWind, seatWind, melds, tiles);
-          var ron = YakuCalculator.Ron(hand, winningTile, roundWind, seatWind, melds);
+          var classicRon = ClassicYakuCalculator.Tsumo(winningTile, roundWind, seatWind, melds, tiles);
+          var ron = YakuCalculator.Tsumo(hand, winningTile, roundWind, seatWind, melds);
 
           Assert.Equal(classicRon, ron);
         }

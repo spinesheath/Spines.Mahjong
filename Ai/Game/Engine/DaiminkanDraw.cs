@@ -31,6 +31,8 @@ namespace Game.Engine
 
     public override void Shouminkan(Tile tile)
     {
+      // TODO apparently daiminkan > shouminkan > chankan means 0 dora indicators
+      // TODO otherwise daiminkan > shouminkan > no chankan > dora > discard > dora
       NextState = new DoraIndicator(new Shouminkan(tile));
     }
 

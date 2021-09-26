@@ -372,7 +372,12 @@ namespace Spines.Mahjong.Analysis.Tests
           results.Add(yaku);
         }
       }
-      
+
+      if (results.Any(r => (r & (Yaku.Toitoihou | Yaku.Sanankou)) == (Yaku.Toitoihou | Yaku.Sanankou)))
+      {
+        results.RemoveAll(r => (r & Yaku.Iipeikou) == Yaku.Iipeikou);
+      }
+
       return results.OrderByDescending(x => x).First();
     }
 

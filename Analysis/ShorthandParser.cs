@@ -15,7 +15,7 @@ namespace Spines.Mahjong.Analysis
       _hand = hand;
     }
 
-    internal IEnumerable<TileType> Tiles
+    public IEnumerable<TileType> Tiles
     {
       get
       {

@@ -354,6 +354,17 @@ namespace AnalyzerBuilder.Creators.Scoring
           OrValue |= 0b1L << (shift + 6);
         }
       }
+
+      if (TileCount == 8)
+      {
+        for (var i = 0; i < 6; i++)
+        {
+          if (TileCounts[i] == 3 && TileCounts[i + 1] == 1 && TileCounts[i + 2] == 1 && TileCounts[i + 3] == 3)
+          {
+            OrValue |= 0b1L << 35;
+          }
+        }
+      }
     }
 
     private void SanshokuDoujun()

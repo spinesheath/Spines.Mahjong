@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Spines.Mahjong.Analysis.Resources;
 using Spines.Mahjong.Analysis.Shanten;
 
@@ -119,7 +120,8 @@ namespace Spines.Mahjong.Analysis.Score
       var tankiBit = waitShiftValues[winningTileSuit] & 0b1L;
       var openBit = meldInfo.OpenBit;
 
-      waitShiftValues[winningTileSuit] >>= isRon ? 9 : 0;
+      var ronShiftAmount = isRon ? 9 : 0;
+      waitShiftValues[winningTileSuit] >>= ronShiftAmount;
 
       var waitAndRonShift = (waitShiftValues[0] & RonShiftSumFilter) + 
                             (waitShiftValues[1] & RonShiftSumFilter) + 
@@ -168,17 +170,23 @@ namespace Spines.Mahjong.Analysis.Score
       var closedChantaBit = (result >> BitIndex.ClosedChanta) & 1L;
       var closedJunchanBit = (result >> BitIndex.ClosedJunchan) & 1L;
       var openJunchanBit = (result >> BitIndex.OpenJunchan) & 1L;
+      var toitoiBit = (result >> BitIndex.Toitoi) & 1L;
 
       var x = iipeikouBit & (closedChantaBit | closedJunchanBit);
       var y = (sanankouBit ^ x) & sanankouBit;
       var z = iipeikouBit & sanankouBit & openJunchanBit;
-      result -= (result & (1L << BitIndex.Sanankou)) * x;
+      result -= (result & (1L << BitIndex.Sanankou)) * x * (1 - toitoiBit);
       result -= (result & ((1L << BitIndex.Pinfu) | (1L << BitIndex.Iipeikou))) * y;
       result -= (result & (1L << BitIndex.OpenJunchan)) * z;
+      result -= (result & ((1L << BitIndex.Iipeikou) | (1L << BitIndex.ClosedJunchan))) * (toitoiBit & (1 - openBit));
 
       result += (result & TankiUpgradeableFilter) * tankiBit;
 
       result &= meldInfo.FinalMask;
+      
+      var w = suitOr[winningTileSuit] >> 31 & (1L << 4);
+      var d3 = (suitsAnd >> (winningTileIndex + ronShiftAmount)) & w;
+      result -= d3 & (result >> (BitIndex.Sanankou - 4));
 
       var yakuman = result & YakumanFilter;
       if (yakuman != 0)
