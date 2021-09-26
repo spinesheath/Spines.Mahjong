@@ -18,6 +18,9 @@ namespace Spines.Mahjong.Analysis.Tests
     private readonly bool _isClosed;
     private readonly IReadOnlyList<Arrangement> _arrangements;
     private readonly IReadOnlyList<Tile> _allTiles;
+    private readonly IReadOnlyList<int> _allCounts;
+    private readonly IReadOnlyList<int> _concealedCounts;
+    private readonly int _suitPresence;
 
     private ClassicYakuCalculator(IReadOnlyList<Tile> concealedTiles, IReadOnlyList<State.Meld> melds, Tile winningTile, int roundWind, int seatWind, bool isRon)
     {
@@ -29,8 +32,31 @@ namespace Spines.Mahjong.Analysis.Tests
       _isRon = isRon;
       _isClosed = IsClosed();
 
+      var allTiles = new List<Tile>();
+      var allCounts = new int[34];
+      var concealedCounts = new int[34];
+      foreach (var tile in concealedTiles)
+      {
+        allTiles.Add(tile);
+        var tileType = tile.TileType;
+        _suitPresence |= 1 << tileType.SuitId;
+        allCounts[tileType.TileTypeId] += 1;
+        concealedCounts[tileType.TileTypeId] += 1;
+      }
+
+      foreach (var tile in melds.SelectMany(t => t.Tiles))
+      {
+        allTiles.Add(tile);
+        var tileType = tile.TileType;
+        _suitPresence |= 1 << tileType.SuitId;
+        allCounts[tileType.TileTypeId] += 1;
+      }
+
+      _allTiles = allTiles;
+      _allCounts = allCounts;
+      _concealedCounts = concealedCounts;
+
       _arrangements = Arrangements();
-      _allTiles = concealedTiles.Concat(_melds.SelectMany(m => m.Tiles)).ToList();
 
       _result = Flags();
     }
@@ -44,15 +70,14 @@ namespace Spines.Mahjong.Analysis.Tests
     {
       var result = new List<Arrangement>();
 
-      var groupedByType = _concealedTiles.GroupBy(t => t.TileType).ToList();
-      if (groupedByType.Any(g => g.Key.Suit == Suit.Jihai && g.Count() == 1))
+      if (_allCounts[32] == 1 || _allCounts[33] == 1)
       {
-        var pair = groupedByType.First(g => g.Count() == 2).Key;
+        var pair = _concealedTiles.GroupBy(t => t.TileType).First(g => g.Count() == 2).Key;
         result.Add(new Arrangement {IsKokushi = true, Pair = pair});
       }
       else
       {
-        if (groupedByType.All(g => g.Count() == 2) && !_melds.Any())
+        if (_allCounts.All(c => c == 0 || c == 2) && !_melds.Any())
         {
           result.Add(new Arrangement { IsChiitoitsu = true });
         }
@@ -87,27 +112,18 @@ namespace Spines.Mahjong.Analysis.Tests
 
     private Arrangement Jihai()
     {
-      var tileCounts = new int[7];
-      foreach (var tile in _concealedTiles)
-      {
-        var tileType = tile.TileType;
-        if (tileType.Suit == Suit.Jihai)
-        {
-          tileCounts[tileType.Index] += 1;
-        }
-      }
-
       var arrangement = new Arrangement();
-      for (var i = 0; i < 7; i++)
+      for (var i = 27; i < 34; i++)
       {
-        if (tileCounts[i] == 2)
+        var tileType = TileType.FromTileTypeId(i);
+        if (_concealedCounts[i] == 2)
         {
-          arrangement.Pair = TileType.FromSuitAndIndex(Suit.Jihai, i);
+          arrangement.Pair = tileType;
         }
 
-        if (tileCounts[i] == 3)
+        if (_concealedCounts[i] == 3)
         {
-          arrangement.Koutsus.Add(TileType.FromSuitAndIndex(Suit.Jihai, i));
+          arrangement.Koutsus.Add(tileType);
         }
       }
       
@@ -488,8 +504,7 @@ namespace Spines.Mahjong.Analysis.Tests
         return Yaku.None;
       }
 
-      var bySuit = _allTiles.GroupBy(t => t.TileType.Suit).ToList();
-      if (bySuit.Count == 1 && bySuit.First().Key != Suit.Jihai)
+      if (_suitPresence == 1 || _suitPresence == 2 || _suitPresence == 4)
       {
         var counts = new int[9];
         foreach (var tile in _allTiles)
@@ -549,15 +564,12 @@ namespace Spines.Mahjong.Analysis.Tests
 
     private Yaku HonitsuChinitsu()
     {
-      var suitCount = _allTiles.GroupBy(t => t.TileType.SuitId).Count(g => g.Any());
-      var honors = _allTiles.Any(t => t.TileType.Suit == Suit.Jihai);
-
-      if (suitCount == 1 && !honors)
+      if (_suitPresence == 4 || _suitPresence == 2 || _suitPresence == 1)
       {
         return _isClosed ? Yaku.ClosedChinitsu : Yaku.OpenChinitsu;
       }
 
-      if (suitCount == 2 && honors)
+      if (_suitPresence == 9 || _suitPresence == 10 || _suitPresence == 12)
       {
         return _isClosed ? Yaku.ClosedHonitsu : Yaku.OpenHonitsu;
       }
@@ -766,7 +778,13 @@ namespace Spines.Mahjong.Analysis.Tests
         return Yaku.None;
       }
 
-      var count = arrangement.Shuntsus.GroupBy(s => s).Count(g => g.Count() == 2 || g.Count() == 3) + 2 * arrangement.Shuntsus.GroupBy(s => s).Count(g => g.Count() == 4);
+      var count = 0;
+      var grouped = arrangement.Shuntsus.GroupBy(s => s);
+      foreach (var g in grouped)
+      {
+        count += g.Count() / 2;
+      }
+
       if (count == 1)
       {
         return Yaku.Iipeikou;
@@ -854,9 +872,7 @@ namespace Spines.Mahjong.Analysis.Tests
 
     private bool HasHonorTriplet(TileType tileType)
     {
-      var concealed = _concealedTiles.Count(t => t.TileType == tileType) == 3;
-      var melded = _melds.Any(m => m.LowestTile.TileType.Index == tileType.Index && m.LowestTile.TileType.Suit == tileType.Suit);
-      return concealed || melded;
+      return _allCounts[tileType.TileTypeId] >= 3;
     }
 
     private Yaku Suukantsu()
