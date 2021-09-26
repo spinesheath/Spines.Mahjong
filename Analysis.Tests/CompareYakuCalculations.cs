@@ -33,7 +33,6 @@ namespace Spines.Mahjong.Analysis.Tests
             continue;
           }
 
-
           var tiles = new List<Tile>();
           for (var i = 0; i < 34; i++)
           {
@@ -45,17 +44,20 @@ namespace Spines.Mahjong.Analysis.Tests
             }
           }
 
-          var melds = new List<State.Meld>();
-          var winningTile = tiles.First();
-          var roundWind = 0;
-          var seatWind = 0;
-          var hand = new HandCalculator();
-          hand.Init(tiles.Select(t => t.TileType));
-          
-          var classicRon = ClassicYakuCalculator.Tsumo(winningTile, roundWind, seatWind, melds, tiles);
-          var ron = YakuCalculator.Tsumo(hand, winningTile, roundWind, seatWind, melds);
+          foreach (var tile in tiles.GroupBy(t => t.TileType))
+          {
+            var melds = new List<State.Meld>();
+            var winningTile = tile.First();
+            var roundWind = 0;
+            var seatWind = 0;
+            var hand = new HandCalculator();
+            hand.Init(tiles.Select(t => t.TileType));
 
-          Assert.Equal(classicRon, ron);
+            var classicRon = ClassicYakuCalculator.Ron(winningTile, roundWind, seatWind, melds, tiles);
+            var ron = YakuCalculator.Ron(hand, winningTile, roundWind, seatWind, melds);
+
+            Assert.Equal(classicRon, ron);
+          }
         }
       }
     }

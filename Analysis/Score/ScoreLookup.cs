@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Spines.Mahjong.Analysis.Resources;
 using Spines.Mahjong.Analysis.Shanten;
 
@@ -88,7 +87,7 @@ namespace Spines.Mahjong.Analysis.Score
       var waitShiftValues = new [] {SuitWaitShift(hand, 0), SuitWaitShift(hand, 1), SuitWaitShift(hand, 2), HonorWaitShift(hand)};
       waitShiftValues[winningTileSuit] >>= winningTileIndex + 1;
 
-      var suitOr = new[] { SuitOr(hand, 0, meldInfo), SuitOr(hand, 1, meldInfo), SuitOr(hand, 2, meldInfo), ~0L };
+      var suitOr = new[] { SuitOr(hand, 0, meldInfo), SuitOr(hand, 1, meldInfo), SuitOr(hand, 2, meldInfo), 0L };
       var suitsAnd = suitOr[0] & suitOr[1] & suitOr[2];
       var honorOr = HonorOr(hand, meldInfo);
       var honorSum = HonorSum(hand, meldInfo);
@@ -182,11 +181,11 @@ namespace Spines.Mahjong.Analysis.Score
 
       result += (result & TankiUpgradeableFilter) * tankiBit;
 
-      result &= meldInfo.FinalMask;
-      
-      var w = suitOr[winningTileSuit] >> 31 & (1L << 4);
+      var w = suitOr[winningTileSuit] >> 31 & (1L << BitIndex.SanshokuDoukou);
       var d3 = (suitsAnd >> (winningTileIndex + ronShiftAmount)) & w;
       result -= d3 & (result >> (BitIndex.Sanankou - 4));
+
+      result &= meldInfo.FinalMask;
 
       var yakuman = result & YakumanFilter;
       if (yakuman != 0)
