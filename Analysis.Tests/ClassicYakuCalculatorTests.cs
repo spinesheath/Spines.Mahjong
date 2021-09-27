@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Spines.Mahjong.Analysis.Score;
-using Spines.Mahjong.Analysis.Shanten;
 using Xunit;
 
 namespace Spines.Mahjong.Analysis.Tests

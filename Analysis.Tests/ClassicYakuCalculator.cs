@@ -22,6 +22,13 @@ namespace Spines.Mahjong.Analysis.Tests
     private readonly IReadOnlyList<int> _concealedCounts;
     private readonly int _suitPresence;
 
+    private static readonly Dictionary<int, IReadOnlyList<Arrangement>>[] SuitArrangementCaches = 
+    {
+      new Dictionary<int, IReadOnlyList<Arrangement>>(),
+      new Dictionary<int, IReadOnlyList<Arrangement>>(),
+      new Dictionary<int, IReadOnlyList<Arrangement>>()
+    };
+
     private ClassicYakuCalculator(IReadOnlyList<Tile> concealedTiles, IReadOnlyList<State.Meld> melds, Tile winningTile, int roundWind, int seatWind, bool isRon)
     {
       _concealedTiles = concealedTiles;
@@ -82,9 +89,9 @@ namespace Spines.Mahjong.Analysis.Tests
           result.Add(new Arrangement { IsChiitoitsu = true });
         }
 
-        var manzu = SuitArrangements(0).DefaultIfEmpty(new Arrangement()).ToList();
-        var pinzu = SuitArrangements(1).DefaultIfEmpty(new Arrangement()).ToList();
-        var souzu = SuitArrangements(2).DefaultIfEmpty(new Arrangement()).ToList();
+        var manzu = CachedSuitArrangements(0);
+        var pinzu = CachedSuitArrangements(1);
+        var souzu = CachedSuitArrangements(2);
         var jihai = Jihai();
 
         foreach (var m in manzu)
@@ -110,6 +117,50 @@ namespace Spines.Mahjong.Analysis.Tests
       return result;
     }
 
+    private IReadOnlyList<Arrangement> CachedSuitArrangements(int suitId)
+    {
+      var tileCounts = new int[9];
+      var tileCount = 0;
+      var hash = 0;
+      foreach (var tile in _concealedTiles)
+      {
+        var tileType = tile.TileType;
+        if (tileType.SuitId == suitId)
+        {
+          tileCounts[tileType.Index] += 1;
+          tileCount += 1;
+          hash += Base5Table[tileType.Index];
+        }
+      }
+
+      if (hash > 0)
+      {
+        if (SuitArrangementCaches[suitId].TryGetValue(hash, out var result))
+        {
+          return result;
+        }
+
+        var newResult = SuitArrangements(suitId, tileCount, tileCounts).DefaultIfEmpty(new Arrangement()).ToList();
+        SuitArrangementCaches[suitId][hash] = newResult;
+        return newResult;
+      }
+
+      return SuitArrangements(suitId, tileCount, tileCounts).DefaultIfEmpty(new Arrangement()).ToList();
+    }
+
+    private protected static readonly int[] Base5Table =
+    {
+      1,
+      5,
+      25,
+      125,
+      625,
+      3125,
+      15625,
+      78125,
+      390625
+    };
+
     private Arrangement Jihai()
     {
       var arrangement = new Arrangement();
@@ -130,20 +181,8 @@ namespace Spines.Mahjong.Analysis.Tests
       return arrangement;
     }
 
-    private IEnumerable<Arrangement> SuitArrangements(int suitId)
+    private IEnumerable<Arrangement> SuitArrangements(int suitId, int tileCount, int[] tileCounts)
     {
-      var tileCounts = new int[9];
-      var tileCount = 0;
-      foreach (var tile in _concealedTiles)
-      {
-        var tileType = tile.TileType;
-        if (tileType.SuitId == suitId)
-        {
-          tileCounts[tileType.Index] += 1;
-          tileCount += 1;
-        }
-      }
-
       if (tileCount % 3 == 1)
       {
         yield break;

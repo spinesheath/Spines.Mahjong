@@ -46,7 +46,6 @@ namespace Spines.Mahjong.Analysis.Tests
     [InlineData("11122333m111p111s", 0, 0, "1m", Yaku.SanshokuDoukou | Yaku.Toitoihou | Yaku.Sanankou)]
     [InlineData("11122233399m111p", 0, 0, "1m", Yaku.Sanankou | Yaku.Toitoihou)]
     [InlineData("11777888999m111p", 0, 0, "9m", Yaku.Sanankou | Yaku.Toitoihou)]
-    // TODO why was this found before "11222m222p222s111z" ??
     [InlineData("11222m222p222s222z", 0, 0, "2z", Yaku.Sanankou | Yaku.Toitoihou | Yaku.SanshokuDoukou)]
 
     public void SomeHandByRon(string handString, int roundWind, int seatWind, string discardString, Yaku expectedYaku)

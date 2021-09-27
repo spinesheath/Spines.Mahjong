@@ -19,14 +19,25 @@ namespace Spines.Mahjong.Analysis.Tests
         {
           var tileCounts = new int[34];
           tileCounts[pair] += 2;
+
           var g = groupsHash;
-          AddGroup(tileCounts, g % groupKinds);
+          var k0 = g % groupKinds;
           g /= groupKinds;
-          AddGroup(tileCounts, g % groupKinds);
+          var k1 = g % groupKinds;
           g /= groupKinds;
-          AddGroup(tileCounts, g % groupKinds);
+          var k2 = g % groupKinds;
           g /= groupKinds;
-          AddGroup(tileCounts, g);
+          var k3 = g;
+
+          if (k0 > k1 || k1 > k2 || k2 > k3)
+          {
+            continue;
+          }
+
+          AddGroup(tileCounts, k0);
+          AddGroup(tileCounts, k1);
+          AddGroup(tileCounts, k2);
+          AddGroup(tileCounts, k3);
 
           if (tileCounts.Any(c => c > 4))
           {
@@ -55,6 +66,11 @@ namespace Spines.Mahjong.Analysis.Tests
 
             var classicRon = ClassicYakuCalculator.Ron(winningTile, roundWind, seatWind, melds, tiles);
             var ron = YakuCalculator.Ron(hand, winningTile, roundWind, seatWind, melds);
+
+            if (classicRon != ron)
+            {
+
+            }
 
             Assert.Equal(classicRon, ron);
           }
