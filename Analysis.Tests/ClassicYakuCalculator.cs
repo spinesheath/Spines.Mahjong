@@ -428,9 +428,9 @@ namespace Spines.Mahjong.Analysis.Tests
         }
       }
 
-      if (results.Any(r => (r & (Yaku.Toitoihou | Yaku.Sanankou)) == (Yaku.Toitoihou | Yaku.Sanankou)))
+      if (results.Count > 0 && results.Any(r => (r & (Yaku.Toitoihou | Yaku.Sanankou)) != Yaku.None))
       {
-        results.RemoveAll(r => (r & Yaku.Iipeikou) == Yaku.Iipeikou);
+        results.RemoveAll(r => (r & (Yaku.Iipeikou | Yaku.OpenJunchan)) != Yaku.None && (r & (Yaku.Toitoihou | Yaku.Sanankou)) == Yaku.None);
       }
 
       return results.OrderByDescending(x => x).First();

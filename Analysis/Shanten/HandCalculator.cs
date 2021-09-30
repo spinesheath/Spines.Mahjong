@@ -12,15 +12,19 @@ namespace Spines.Mahjong.Analysis.Shanten
   public class HandCalculator : IHandCalculator
   {
     public HandCalculator(ShorthandParser initial)
-      : this()
+      : this(initial.Tiles, initial.ManzuMeldIds, initial.PinzuMeldIds, initial.SouzuMeldIds, initial.JihaiMeldIds)
     {
-      InitializeSuitMelds(initial.ManzuMeldIds, 0);
-      InitializeSuitMelds(initial.PinzuMeldIds, 1);
-      InitializeSuitMelds(initial.SouzuMeldIds, 2);
-      InitializeJihaiMelds(initial.JihaiMeldIds);
-      Init(initial.Tiles);
     }
 
+    public HandCalculator(IEnumerable<TileType> concealedTiles, IEnumerable<int> manzuMeldIds, IEnumerable<int> pinzuMeldIds, IEnumerable<int> souzuMeldIds, IEnumerable<int> jihaiMeldIds)
+      : this()
+    {
+      InitializeSuitMelds(manzuMeldIds, 0);
+      InitializeSuitMelds(pinzuMeldIds, 1);
+      InitializeSuitMelds(souzuMeldIds, 2);
+      InitializeJihaiMelds(jihaiMeldIds);
+      Init(concealedTiles);
+    }
 
     /// <summary>
     /// Creates a new instance of Hand.

@@ -93,6 +93,7 @@ namespace Spines.Mahjong.Analysis.Score
             _lookupValues[3] |= 1L << (honorBakazeOffset + index);
             _lookupValues[3] += 1L << honorShousuushiiOffset;
             _lookupValues[3] += 1L << honorDaisuushiiOffset;
+            _lookupValues[3] &= ~(1L << (honorShousuushiiOffset + 2));
           }
           else
           {

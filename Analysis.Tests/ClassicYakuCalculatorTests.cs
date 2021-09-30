@@ -15,6 +15,22 @@ namespace Spines.Mahjong.Analysis.Tests
       var parser = new ShorthandParser(handString);
       var tiles = parser.Tiles.Select(t => Tile.FromTileType(t, 0)).ToList();
       var melds = new List<State.Meld>();
+      foreach (var meld in parser.Melds)
+      {
+        var meldTiles = meld.Tiles.Select(t => Tile.FromTileType(t, 0)).ToList();
+        if (meld.MeldId < 8)
+        {
+          melds.Add(State.Meld.Chii(meldTiles, meldTiles.First()));
+        }
+        else if (meld.MeldId < 7 + 9)
+        {
+          melds.Add(State.Meld.Pon(meldTiles, meldTiles.First()));
+        }
+        else
+        {
+          melds.Add(State.Meld.Ankan(meld.Tiles.First()));
+        }
+      }
       var winningTile = Tile.FromTileType(TileType.FromString(discardString), 0);
 
       var classicRon = ClassicYakuCalculator.Ron(winningTile, roundWind, seatWind, melds, tiles);

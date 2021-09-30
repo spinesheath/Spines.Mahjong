@@ -46,7 +46,11 @@ namespace AnalyzerBuilder.Creators.Scoring
     private void Suushii()
     {
       var koutsuCount = _melds.Count(b => b.Index < 4);
-      SumValue |= (long) koutsuCount << 9;
+      if (koutsuCount < 4)
+      {
+        SumValue |= (long) koutsuCount << 9;
+      }
+
       SumValue |= (long) koutsuCount << 12;
     }
 

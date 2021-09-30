@@ -173,9 +173,10 @@ namespace Spines.Mahjong.Analysis.Score
 
       var x = iipeikouBit & (closedChantaBit | closedJunchanBit);
       var y = (sanankouBit ^ x) & sanankouBit;
-      var z = iipeikouBit & sanankouBit & openJunchanBit;
+      var z = iipeikouBit & (sanankouBit | toitoiBit) & openJunchanBit;
       result -= (result & (1L << BitIndex.Sanankou)) * x * (1 - toitoiBit);
-      result -= (result & ((1L << BitIndex.Pinfu) | (1L << BitIndex.Iipeikou))) * y;
+      // (iipeikouBit << BitIndex.OpenChanta) means 111222333 shape and chanta, here excluded in case of sanankou
+      result -= (result & ((1L << BitIndex.Pinfu) | (1L << BitIndex.Iipeikou) | (iipeikouBit << BitIndex.OpenChanta))) * y;
       result -= (result & (1L << BitIndex.OpenJunchan)) * z;
       result -= (result & ((1L << BitIndex.Iipeikou) | (1L << BitIndex.ClosedJunchan))) * (toitoiBit & (1 - openBit));
 

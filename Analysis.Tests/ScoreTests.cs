@@ -47,6 +47,11 @@ namespace Spines.Mahjong.Analysis.Tests
     [InlineData("11122233399m111p", 0, 0, "1m", Yaku.Sanankou | Yaku.Toitoihou)]
     [InlineData("11777888999m111p", 0, 0, "9m", Yaku.Sanankou | Yaku.Toitoihou)]
     [InlineData("11222m222p222s222z", 0, 0, "2z", Yaku.Sanankou | Yaku.Toitoihou | Yaku.SanshokuDoukou)]
+    [InlineData("11777888999m111P", 0, 0, "7m", Yaku.Toitoihou)]
+    [InlineData("11777888999m222P", 0, 0, "7m", Yaku.Toitoihou)]
+    [InlineData("11m111Z222Z333Z444Z", 0, 0, "1m", Yaku.Daisuushii)]
+    [InlineData("111m11333444z222Z", 0, 0, "1m", Yaku.Shousuushii)]
+    [InlineData("111222333m11z123M", 0, 0, "1z", Yaku.Sanankou | Yaku.OpenHonitsu)]
 
     public void SomeHandByRon(string handString, int roundWind, int seatWind, string discardString, Yaku expectedYaku)
     {
@@ -65,7 +70,7 @@ namespace Spines.Mahjong.Analysis.Tests
       var files = BundlesFolders.SelectMany(Directory.EnumerateFiles);
       var visitor = new ScoreCalculatingVisitor();
       //foreach (var file in files.Take(500))
-      foreach (var file in files.Take(100))
+      foreach (var file in files)
       {
         using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
         ReplayParser.Parse(fileStream, visitor);
