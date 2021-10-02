@@ -1,12 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using Spines.Mahjong.Analysis.Resources;
 using Spines.Mahjong.Analysis.Score;
 
 namespace Spines.Mahjong.Analysis.Shanten
 {
-  internal class ProgressiveMeldScoringData : IMeldScoringData
+  internal class ProgressiveScoringData : IScoringData
   {
-    public ProgressiveMeldScoringData()
+    static ProgressiveScoringData()
+    {
+      HonorSumLookup = Resource.LongLookup("Scoring", "HonorSumLookup.dat");
+      HonorOrLookup = Resource.LongLookup("Scoring", "HonorOrLookup.dat");
+      HonorWaitShiftLookup = Resource.LongLookup("Scoring", "HonorWaitShiftLookup.dat");
+
+      SuitOrLookup = Resource.LongLookup("Scoring", "SuitOrLookup.dat");
+      SuitWaitShiftLookup = Resource.LongLookup("Scoring", "SuitWaitShiftLookup.dat");
+    }
+
+    public ProgressiveScoringData()
     {
       _lookupValues[3] |= 4L << HonorRyuuiisouOffset;
 
@@ -15,9 +26,23 @@ namespace Spines.Mahjong.Analysis.Shanten
 
       _baseMaskFilter = ~0L;
       _baseMask = OpenYakuFilter;
+      
+      var suitWaitShift0 = SuitWaitShiftLookup[0];
+      WaitShiftValues = new[] {suitWaitShift0, suitWaitShift0, suitWaitShift0, HonorWaitShiftLookup[0]};
+      //WaitShiftValues = new[] {2251799814732800L, 2251799814732800L, 2251799814732800L, 2251799814732800L};
+      
+      var suitOr0 = SuitOrLookup[0];
+      SuitOr = new[] {suitOr0, suitOr0, suitOr0, 0L};
+      //SuitOr = new[] {4609997310233935872L, 4609997310233935872L, 4609997310233935872L, 0L};
+      
+      HonorOr = HonorOrLookup[0] | _lookupValues[3];
+      //HonorOr = -4901605103171010560L;
+
+      HonorSum = HonorSumLookup[0] + _lookupValues[3];
+      //HonorSum = 2684354624L;
     }
 
-    public void Ankan(TileType tileType)
+    public void Ankan(TileType tileType, int base5Hash)
     {
       var suit = tileType.Suit;
       var index = tileType.Index;
@@ -58,7 +83,7 @@ namespace Spines.Mahjong.Analysis.Shanten
 
       _baseMaskFilter &= NoAnkanYakuFilter;
       ShiftedAnkanCount += 1L << (BitIndex.Sanankou - 2);
-      
+
       SankantsuSuukantsu <<= 1;
 
       if (suit == Suit.Jihai)
@@ -100,21 +125,20 @@ namespace Spines.Mahjong.Analysis.Shanten
       {
         _baseMaskFilter &= OnlyChantaCallsFilter;
       }
+
+      UpdateSuit(tileType.SuitId, base5Hash);
     }
 
-    public void Chii(TileType tileType)
+    public void Chii(TileType tileType, int base5Hash)
     {
-      const int suitHonitsuOffset = 20;
-      const int suitIttsuuOffset = 44;
-
       var index = tileType.Index;
       var suit = tileType.Suit;
 
-      _lookupValues[tileType.SuitId] |= 0b101000L << suitHonitsuOffset;
+      _lookupValues[tileType.SuitId] |= 0b101000L << SuitHonitsuOffset;
 
       if (index % 3 == 0)
       {
-        _lookupValues[tileType.SuitId] |= 1L << (suitIttsuuOffset + index / 3);
+        _lookupValues[tileType.SuitId] |= 1L << (SuitIttsuuOffset + index / 3);
       }
 
       _lookupValues[tileType.SuitId] |= index + 4L;
@@ -149,25 +173,31 @@ namespace Spines.Mahjong.Analysis.Shanten
       {
         _baseMaskFilter &= OnlyChantaCallsFilter;
       }
+
+      UpdateSuit(tileType.SuitId, base5Hash);
     }
 
-    public ProgressiveMeldScoringData Clone()
+    public ProgressiveScoringData Clone()
     {
-      var c = new ProgressiveMeldScoringData
+      var c = new ProgressiveScoringData
       {
         _baseMask = _baseMask,
         _baseMaskFilter = _baseMaskFilter,
         OpenBit = OpenBit,
         ShiftedAnkanCount = ShiftedAnkanCount,
         BigAndToSumFilter = BigAndToSumFilter,
-        SankantsuSuukantsu = SankantsuSuukantsu
+        SankantsuSuukantsu = SankantsuSuukantsu,
+        HonorSum = HonorSum,
+        HonorOr = HonorOr
       };
 
       Array.Copy(_lookupValues, c._lookupValues, _lookupValues.Length);
+      Array.Copy(WaitShiftValues, c.WaitShiftValues, WaitShiftValues.Length);
+      Array.Copy(SuitOr, c.SuitOr, SuitOr.Length);
       return c;
     }
 
-    public void Daiminkan(TileType tileType)
+    public void Daiminkan(TileType tileType, int base5Hash)
     {
       var suit = tileType.Suit;
       var index = tileType.Index;
@@ -207,7 +237,7 @@ namespace Spines.Mahjong.Analysis.Shanten
 
       _baseMask = ClosedYakuFilter;
       OpenBit = 1L;
-      
+
       SankantsuSuukantsu <<= 1;
 
       if (suit == Suit.Jihai)
@@ -249,9 +279,21 @@ namespace Spines.Mahjong.Analysis.Shanten
       {
         _baseMaskFilter &= OnlyChantaCallsFilter;
       }
+
+      UpdateSuit(tileType.SuitId, base5Hash);
     }
 
-    public void Pon(TileType tileType)
+    public void Discard(int suitId, int base5Hash)
+    {
+      UpdateSuit(suitId, base5Hash);
+    }
+
+    public void Draw(int suitId, int base5Hash)
+    {
+      UpdateSuit(suitId, base5Hash);
+    }
+
+    public void Pon(TileType tileType, int base5Hash)
     {
       var suit = tileType.Suit;
       var index = tileType.Index;
@@ -332,12 +374,32 @@ namespace Spines.Mahjong.Analysis.Shanten
       {
         _baseMaskFilter &= OnlyChantaCallsFilter;
       }
+
+      UpdateSuit(tileType.SuitId, base5Hash);
     }
 
-    public void Shouminkan()
+    public void Shouminkan(int suitId, int base5Hash)
     {
       SankantsuSuukantsu <<= 1;
+
+      UpdateSuit(suitId, base5Hash);
     }
+
+    public void Init(int[] base5Hashes)
+    {
+      UpdateSuit(0, base5Hashes[0]);
+      UpdateSuit(1, base5Hashes[1]);
+      UpdateSuit(2, base5Hashes[2]);
+      UpdateSuit(3, base5Hashes[3]);
+    }
+
+    public long[] WaitShiftValues { get; }
+
+    public long[] SuitOr { get; }
+
+    public long HonorOr { get; private set; }
+
+    public long HonorSum { get; private set; }
 
     public long FinalMask => _baseMask & _baseMaskFilter;
 
@@ -389,10 +451,33 @@ namespace Spines.Mahjong.Analysis.Shanten
     private const int HonorShousangenOffset = 51;
     private const int HonorShousuushiiOffset = 9;
     private const int HonorDaisuushiiOffset = 12;
+    private const int SuitIttsuuOffset = 44;
+
+    private static readonly long[] HonorSumLookup;
+    private static readonly long[] HonorOrLookup;
+    private static readonly long[] HonorWaitShiftLookup;
+    private static readonly long[] SuitOrLookup;
+    private static readonly long[] SuitWaitShiftLookup;
 
     private readonly long[] _lookupValues = new long[4];
 
     private long _baseMask;
     private long _baseMaskFilter;
+
+    private void UpdateSuit(int suitId, int base5Hash)
+    {
+      if (suitId == 3)
+      {
+        WaitShiftValues[3] = HonorWaitShiftLookup[base5Hash];
+        HonorOr = HonorOrLookup[base5Hash] | _lookupValues[3];
+        HonorSum = HonorSumLookup[base5Hash] + _lookupValues[3];
+      }
+      else
+      {
+        WaitShiftValues[suitId] = SuitWaitShiftLookup[base5Hash];
+        var suitOr = SuitOrLookup[base5Hash] | _lookupValues[suitId];
+        SuitOr[suitId] = suitOr + (1L << (BitIndex.ClosedIttsuu - 3));
+      }
+    }
   }
 }

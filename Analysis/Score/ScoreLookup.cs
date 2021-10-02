@@ -1,35 +1,24 @@
 ﻿using System;
-using Spines.Mahjong.Analysis.Resources;
 using Spines.Mahjong.Analysis.Shanten;
 
 namespace Spines.Mahjong.Analysis.Score
 {
   internal static class ScoreLookup
   {
-    static ScoreLookup()
-    {
-      HonorSumLookup = Resource.LongLookup("Scoring", "HonorSumLookup.dat");
-      HonorOrLookup = Resource.LongLookup("Scoring", "HonorOrLookup.dat");
-      HonorWaitShiftLookup = Resource.LongLookup("Scoring", "HonorWaitShiftLookup.dat");
-
-      SuitOrLookup = Resource.LongLookup("Scoring", "SuitOrLookup.dat");
-      SuitWaitShiftLookup = Resource.LongLookup("Scoring", "SuitWaitShiftLookup.dat");
-    }
-
     public static long Flags(HandCalculator hand, TileType winningTile, bool isRon, int roundWind, int seatWind)
     {
-      var meldInfo = hand.MeldScoringData;
+      var data = hand.ScoringData;
 
       var winningTileIndex = winningTile.Index;
       var winningTileSuit = winningTile.SuitId;
 
-      var waitShiftValues = new[] {SuitWaitShift(hand, 0), SuitWaitShift(hand, 1), SuitWaitShift(hand, 2), HonorWaitShift(hand)};
+      var waitShiftValues = data.WaitShiftValues;
       waitShiftValues[winningTileSuit] >>= winningTileIndex + 1;
 
-      var suitOr = new[] {SuitOr(hand, 0, meldInfo), SuitOr(hand, 1, meldInfo), SuitOr(hand, 2, meldInfo), 0L};
+      var suitOr = data.SuitOr;
       var suitsAnd = suitOr[0] & suitOr[1] & suitOr[2];
-      var honorOr = HonorOr(hand, meldInfo);
-      var honorSum = HonorSum(hand, meldInfo);
+      var honorOr = data.HonorOr;
+      var honorSum = data.HonorSum;
 
       var bigSum = (suitOr[0] & SuitBigSumFilter) +
                    (suitOr[1] & SuitBigSumFilter) +
@@ -56,7 +45,7 @@ namespace Spines.Mahjong.Analysis.Score
                   PinfuYakuFilter;
 
       var tankiBit = waitShiftValues[winningTileSuit] & 0b1L;
-      var openBit = meldInfo.OpenBit;
+      var openBit = data.OpenBit;
 
       var ronShiftAmount = isRon ? 9 : 0;
       waitShiftValues[winningTileSuit] >>= ronShiftAmount;
@@ -65,7 +54,7 @@ namespace Spines.Mahjong.Analysis.Score
                             (waitShiftValues[1] & RonShiftSumFilter) +
                             (waitShiftValues[2] & RonShiftSumFilter) +
                             (waitShiftValues[3] & RonShiftSumFilter);
-      waitAndRonShift += meldInfo.ShiftedAnkanCount;
+      waitAndRonShift += data.ShiftedAnkanCount;
 
       waitAndRonShift += bigSum & (0b111L << AnkouRonShiftSumFilterIndex);
       waitAndRonShift += waitAndRonShift & (0b101L << AnkouRonShiftSumFilterIndex);
@@ -79,7 +68,7 @@ namespace Spines.Mahjong.Analysis.Score
       result |= pinfu;
       result |= bigAnd & BigAndYakuFilter;
 
-      bigSum |= bigAnd & meldInfo.BigAndToSumFilter;
+      bigSum |= bigAnd & data.BigAndToSumFilter;
 
       var bigSumPostElimination = bigSum & ~((bigSum & BigSumEliminationFilter) >> EliminationDelta);
       result |= bigSumPostElimination & BigSumPostEliminationYakuFilter;
@@ -87,7 +76,7 @@ namespace Spines.Mahjong.Analysis.Score
       var valueWindFilter = ValueWindFilter(roundWind, seatWind);
       result |= honorSum & HonorSumYakuFilter & valueWindFilter;
 
-      result |= meldInfo.SankantsuSuukantsu & (11L << BitIndex.Sankantsu);
+      result |= data.SankantsuSuukantsu & (11L << BitIndex.Sankantsu);
 
       var ryuuiisouSum = (suitOr[0] & RyuuiisouSumFilter01) +
                          (suitOr[1] & RyuuiisouSumFilter01) +
@@ -125,7 +114,7 @@ namespace Spines.Mahjong.Analysis.Score
       var d3 = (suitsAnd >> (winningTileIndex + ronShiftAmount)) & w;
       result -= d3 & (result >> (BitIndex.Sanankou - 4));
 
-      result &= meldInfo.FinalMask;
+      result &= data.FinalMask;
 
       var yakuman = result & YakumanFilter;
       if (yakuman != 0)
@@ -195,51 +184,6 @@ namespace Spines.Mahjong.Analysis.Score
 
     private const long RyuuiisouSumFilter01 = 1L << (BitIndex.Ryuuiisou - 4);
     private const long RyuuiisouSumFilter2 = 1L << (BitIndex.Ryuuiisou - 2);
-
-    private static readonly long[] HonorSumLookup;
-    private static readonly long[] HonorOrLookup;
-    private static readonly long[] HonorWaitShiftLookup;
-    private static readonly long[] SuitOrLookup;
-    private static readonly long[] SuitWaitShiftLookup;
-
-    private static long HonorSum(HandCalculator hand, IMeldScoringData meld)
-    {
-      var concealed = HonorSumLookup[hand.Base5Hash(3)];
-      var melded = meld.MeldLookupValues[3];
-      return concealed + melded;
-    }
-
-    private static long HonorOr(HandCalculator hand, IMeldScoringData meld)
-    {
-      var concealed = HonorOrLookup[hand.Base5Hash(3)];
-      var melded = meld.MeldLookupValues[3];
-      return concealed | melded;
-    }
-
-    private static long SuitOr(HandCalculator hand, int suitId, IMeldScoringData meld)
-    {
-      var concealedIndex = hand.Base5Hash(suitId);
-      return SuitOr(concealedIndex, suitId, meld);
-    }
-
-    private static long SuitOr(int concealedIndex, int suitId, IMeldScoringData meld)
-    {
-      var concealed = SuitOrLookup[concealedIndex];
-      var melded = meld.MeldLookupValues[suitId];
-      var suitOr = concealed | melded;
-      suitOr += 1L << (BitIndex.ClosedIttsuu - 3);
-      return suitOr;
-    }
-
-    private static long SuitWaitShift(HandCalculator hand, int suitId)
-    {
-      return SuitWaitShiftLookup[hand.Base5Hash(suitId)];
-    }
-
-    private static long HonorWaitShift(HandCalculator hand)
-    {
-      return HonorWaitShiftLookup[hand.Base5Hash(3)];
-    }
 
     private static int WindShiftHonor(int roundWind, int seatWind)
     {

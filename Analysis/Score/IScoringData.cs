@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using Spines.Mahjong.Analysis.Shanten;
 
 namespace Spines.Mahjong.Analysis.Score
 {
-  internal interface IMeldScoringData
+  internal interface IScoringData
   {
     long BigAndToSumFilter { get; }
 
@@ -15,5 +16,13 @@ namespace Spines.Mahjong.Analysis.Score
     long SankantsuSuukantsu { get; }
 
     long ShiftedAnkanCount { get; }
+
+    long[] WaitShiftValues { get; }
+    
+    long[] SuitOr { get; }
+
+    long HonorOr { get; }
+
+    long HonorSum { get; }
   }
 }
