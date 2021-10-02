@@ -55,7 +55,7 @@ namespace Spines.Mahjong.Analysis.Tests
 
     public void SomeHandByRon(string handString, int roundWind, int seatWind, string discardString, Yaku expectedYaku)
     {
-      var discard = Tile.FromTileType(TileType.FromString(discardString), 0);
+      var discard = TileType.FromString(discardString);
       var sp = new ShorthandParser(handString);
       var hand = new HandCalculator(sp);
 
@@ -70,7 +70,7 @@ namespace Spines.Mahjong.Analysis.Tests
       var files = BundlesFolders.SelectMany(Directory.EnumerateFiles);
       var visitor = new ScoreCalculatingVisitor();
       //foreach (var file in files.Take(500))
-      foreach (var file in files)
+      foreach (var file in files.Take(100))
       {
         using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
         ReplayParser.Parse(fileStream, visitor);

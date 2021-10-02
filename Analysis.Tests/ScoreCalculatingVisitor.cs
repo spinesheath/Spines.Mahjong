@@ -84,6 +84,8 @@ namespace Spines.Mahjong.Analysis.Tests
 
     public int FailureCount { get; private set; }
 
+    public Yaku WeirdYakuCollector { get; private set; }
+
     public void Seed(TileType roundWind, int honba, int riichiSticks, int dice0, int dice1, Tile doraIndicator)
     {
       _wall = new FakeWall();
@@ -121,7 +123,27 @@ namespace Spines.Mahjong.Analysis.Tests
 
     public void Discard(int seatIndex, Tile tile)
     {
-      _board.Seats[seatIndex].Discard(tile);
+      var seat = _board.Seats[seatIndex];
+      seat.Discard(tile);
+
+      var hand = seat.Hand;
+      if (hand.Shanten == 0)
+      {
+        var ukeire = hand.GetUkeIreFor13();
+        for (var i = 0; i < ukeire.Length; i++)
+        {
+          if (ukeire[i] > 0)
+          {
+            var draw = TileType.FromTileTypeId(i);
+            var h = (HandCalculator) hand.WithTile(draw);
+            var roundWind = _board.RoundWind.Index;
+            var seatWind = seat.SeatWind.Index;
+            var tsumo = YakuCalculator.Tsumo(h, draw, roundWind, seatWind, seat.Melds);
+            var ron = YakuCalculator.Ron(h, draw, roundWind, seatWind, seat.Melds);
+            WeirdYakuCollector ^= tsumo | ron;
+          }
+        }
+      }
     }
 
     public void Ankan(int who, TileType tileType)
@@ -168,13 +190,8 @@ namespace Spines.Mahjong.Analysis.Tests
       var seat = _board.Seats[who];
       if (_currentShouminkanTile == null)
       {
-        //if (!AgariValidation2.CanRon(_board, who))
-        //{
-        //  FailureCount += 1;
-        //}
-
-        var discard = _board.CurrentDiscard!;
-        var hand = (HandCalculator)seat.Hand.WithTile(discard.TileType);
+        var discard = _board.CurrentDiscard!.TileType;
+        var hand = (HandCalculator)seat.Hand.WithTile(discard);
         var roundWind = _board.RoundWind.Index;
         var seatWind = seat.SeatWind.Index;
         var yaku = YakuCalculator.Ron(hand, discard, roundWind, seatWind, seat.Melds);
@@ -190,13 +207,8 @@ namespace Spines.Mahjong.Analysis.Tests
       }
       else
       {
-        //if (!AgariValidation2.CanChankan(_board, who, _currentShouminkanTile))
-        //{
-        //  FailureCount += 1;
-        //}
-
-        var discard = _currentShouminkanTile;
-        var hand = (HandCalculator)seat.Hand.WithTile(discard.TileType);
+        var discard = _currentShouminkanTile.TileType;
+        var hand = (HandCalculator)seat.Hand.WithTile(discard);
         var roundWind = _board.RoundWind.Index;
         var seatWind = seat.SeatWind.Index;
         var yaku = YakuCalculator.Chankan(hand, discard, roundWind, seatWind, seat.Melds);
@@ -216,14 +228,9 @@ namespace Spines.Mahjong.Analysis.Tests
     {
       CalculationCount += 1;
 
-      //if (!AgariValidation2.CanTsumo(_board, false))
-      //{
-      //  FailureCount += 1;
-      //}
-
       var seat = _board.Seats[who];
       var hand = seat.Hand;
-      var draw = seat.CurrentDraw!;
+      var draw = seat.CurrentDraw!.TileType;
       var roundWind = _board.RoundWind.Index;
       var seatWind = seat.SeatWind.Index;
       var yaku = YakuCalculator.Tsumo(hand, draw, roundWind, seatWind, seat.Melds);
@@ -236,8 +243,6 @@ namespace Spines.Mahjong.Analysis.Tests
       {
         FailureCount += 1;
       }
-
-      //var score = ScoreCalculator.Tsumo(_board, false);
     }
 
     private Board _board;

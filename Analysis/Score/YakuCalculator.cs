@@ -6,22 +6,22 @@ namespace Spines.Mahjong.Analysis.Score
 {
   public static class YakuCalculator
   {
-    private static ScoringFieldYaku CalculateInternal(HandCalculator hand, Tile winningTile, bool isRon, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds)
+    private static ScoringFieldYaku CalculateInternal(HandCalculator hand, TileType winningTile, bool isRon, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds)
     {
       return (ScoringFieldYaku) ScoreLookup.Flags(hand, winningTile, isRon, roundWind, seatWind, melds);
     }
 
-    public static Yaku Ron(HandCalculator hand, Tile winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds)
+    public static Yaku Ron(HandCalculator hand, TileType winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds)
     {
       return MapFlags(CalculateInternal(hand, winningTile, true, roundWind, seatWind, melds));
     }
 
-    public static Yaku Tsumo(HandCalculator hand, Tile winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds)
+    public static Yaku Tsumo(HandCalculator hand, TileType winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds)
     {
       return MapFlags(CalculateInternal(hand, winningTile, false, roundWind, seatWind, melds));
     }
 
-    public static Yaku Chankan(HandCalculator hand, Tile winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds)
+    public static Yaku Chankan(HandCalculator hand, TileType winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds)
     {
       return MapFlags(CalculateInternal(hand, winningTile, true, roundWind, seatWind, melds));
     }

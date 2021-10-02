@@ -31,7 +31,7 @@ namespace Spines.Mahjong.Analysis.Tests
           melds.Add(State.Meld.Ankan(meld.Tiles.First()));
         }
       }
-      var winningTile = Tile.FromTileType(TileType.FromString(discardString), 0);
+      var winningTile = TileType.FromString(discardString);
 
       var classicRon = ClassicYakuCalculator.Ron(winningTile, roundWind, seatWind, melds, tiles);
 

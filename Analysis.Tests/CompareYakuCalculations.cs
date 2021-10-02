@@ -101,7 +101,7 @@ namespace Spines.Mahjong.Analysis.Tests
             
             foreach (var tile in tiles.GroupBy(t => t.TileType))
             {
-              var winningTile = tile.First();
+              var winningTile = tile.Key;
               var roundWind = 0;
               var seatWind = 0;
               var hand = new HandCalculator(tileTypes, meldIds[0], meldIds[1], meldIds[2], meldIds[3]);

@@ -9,7 +9,7 @@ namespace Spines.Mahjong.Analysis.Tests
   {
     private readonly IReadOnlyList<Tile> _concealedTiles;
     private readonly IReadOnlyList<State.Meld> _melds;
-    private readonly Tile _winningTile;
+    private readonly TileType _winningTile;
     private readonly int _roundWind;
     private readonly int _seatWind;
     private readonly bool _isRon;
@@ -29,7 +29,7 @@ namespace Spines.Mahjong.Analysis.Tests
       new Dictionary<int, IReadOnlyList<Arrangement>>()
     };
 
-    private ClassicYakuCalculator(IReadOnlyList<Tile> concealedTiles, IReadOnlyList<State.Meld> melds, Tile winningTile, int roundWind, int seatWind, bool isRon)
+    private ClassicYakuCalculator(IReadOnlyList<Tile> concealedTiles, IReadOnlyList<State.Meld> melds, TileType winningTile, int roundWind, int seatWind, bool isRon)
     {
       _concealedTiles = concealedTiles;
       _melds = melds;
@@ -392,17 +392,17 @@ namespace Spines.Mahjong.Analysis.Tests
       public List<TileType> Koutsus { get; } = new List<TileType>();
     }
 
-    public static Yaku Ron(Tile winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds, IReadOnlyList<Tile> concealedTiles)
+    public static Yaku Ron(TileType winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds, IReadOnlyList<Tile> concealedTiles)
     {
       return new ClassicYakuCalculator(concealedTiles, melds, winningTile, roundWind, seatWind, true)._result;
     }
 
-    public static Yaku Tsumo(Tile winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds, IReadOnlyList<Tile> concealedTiles)
+    public static Yaku Tsumo(TileType winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds, IReadOnlyList<Tile> concealedTiles)
     {
       return new ClassicYakuCalculator(concealedTiles, melds, winningTile, roundWind, seatWind, false)._result;
     }
 
-    public static Yaku Chankan(Tile winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds, IReadOnlyList<Tile> concealedTiles)
+    public static Yaku Chankan(TileType winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds, IReadOnlyList<Tile> concealedTiles)
     {
       return new ClassicYakuCalculator(concealedTiles, melds, winningTile, roundWind, seatWind, true)._result;
     }
@@ -554,7 +554,7 @@ namespace Spines.Mahjong.Analysis.Tests
         var center = counts[1] * counts[2] * counts[3] * counts[4] * counts[5] * counts[6] * counts[7];
         if (counts[0] >= 3 && counts[8] >= 3 && center > 0 && center <= 2)
         {
-          if (counts[_winningTile.TileType.Index] == 2 || counts[_winningTile.TileType.Index] == 4)
+          if (counts[_winningTile.Index] == 2 || counts[_winningTile.Index] == 4)
           {
             return Yaku.JunseiChuurenPoutou;
           }
@@ -595,7 +595,7 @@ namespace Spines.Mahjong.Analysis.Tests
     {
       if (arrangement.IsKokushi)
       {
-        return arrangement.Pair == _winningTile.TileType ? Yaku.KokushiMusouJuusanMen : Yaku.KokushiMusou;
+        return arrangement.Pair == _winningTile ? Yaku.KokushiMusouJuusanMen : Yaku.KokushiMusou;
       }
 
       return Yaku.None;
@@ -662,9 +662,8 @@ namespace Spines.Mahjong.Analysis.Tests
     private Yaku SanankouSuuankou(Arrangement arrangement)
     {
       var ankanCount = _melds.Count(m => m.IsKan && m.CalledTile == null);
-      var tileType = _winningTile.TileType;
-      var considerWinningTile = _isRon && !arrangement.Shuntsus.Any(s => s.Suit == tileType.Suit && s.Index <= tileType.Index && s.Index + 2 >= tileType.Index);
-      var ankouCount = arrangement.Koutsus.Count(k => !considerWinningTile || k != tileType);
+      var considerWinningTile = _isRon && !arrangement.Shuntsus.Any(s => s.Suit == _winningTile.Suit && s.Index <= _winningTile.Index && s.Index + 2 >= _winningTile.Index);
+      var ankouCount = arrangement.Koutsus.Count(k => !considerWinningTile || k != _winningTile);
 
       var sum = ankanCount + ankouCount;
       if (sum == 3)
@@ -674,7 +673,7 @@ namespace Spines.Mahjong.Analysis.Tests
 
       if (sum == 4)
       {
-        return arrangement.Pair == tileType ? Yaku.SuuankouTanki : Yaku.Suuankou;
+        return arrangement.Pair == _winningTile ? Yaku.SuuankouTanki : Yaku.Suuankou;
       }
 
       return Yaku.None;
@@ -845,8 +844,7 @@ namespace Spines.Mahjong.Analysis.Tests
         return Yaku.None;
       }
 
-      var tileType = _winningTile.TileType;
-      return arrangement.Shuntsus.Any(s => IsPinfuWait(s, tileType)) ? Yaku.Pinfu : Yaku.None;
+      return arrangement.Shuntsus.Any(s => IsPinfuWait(s, _winningTile)) ? Yaku.Pinfu : Yaku.None;
     }
 
     private static bool IsPinfuWait(TileType shuntsu, TileType wait)
