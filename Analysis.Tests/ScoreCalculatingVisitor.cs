@@ -138,8 +138,8 @@ namespace Spines.Mahjong.Analysis.Tests
             var h = (HandCalculator) hand.WithTile(draw);
             var roundWind = _board.RoundWind.Index;
             var seatWind = seat.SeatWind.Index;
-            var tsumo = YakuCalculator.Tsumo(h, draw, roundWind, seatWind, seat.Melds);
-            var ron = YakuCalculator.Ron(h, draw, roundWind, seatWind, seat.Melds);
+            var tsumo = YakuCalculator.Tsumo(h, draw, roundWind, seatWind);
+            var ron = YakuCalculator.Ron(h, draw, roundWind, seatWind);
             WeirdYakuCollector ^= tsumo | ron;
           }
         }
@@ -194,7 +194,7 @@ namespace Spines.Mahjong.Analysis.Tests
         var hand = (HandCalculator)seat.Hand.WithTile(discard);
         var roundWind = _board.RoundWind.Index;
         var seatWind = seat.SeatWind.Index;
-        var yaku = YakuCalculator.Ron(hand, discard, roundWind, seatWind, seat.Melds);
+        var yaku = YakuCalculator.Ron(hand, discard, roundWind, seatWind);
         if ((payment.Yaku & ExternalYaku) == payment.Yaku && yaku != Yaku.None)
         {
           return;
@@ -211,7 +211,7 @@ namespace Spines.Mahjong.Analysis.Tests
         var hand = (HandCalculator)seat.Hand.WithTile(discard);
         var roundWind = _board.RoundWind.Index;
         var seatWind = seat.SeatWind.Index;
-        var yaku = YakuCalculator.Chankan(hand, discard, roundWind, seatWind, seat.Melds);
+        var yaku = YakuCalculator.Chankan(hand, discard, roundWind, seatWind);
         if ((payment.Yaku & ExternalYaku) == payment.Yaku && yaku != Yaku.None)
         {
           return;
@@ -233,7 +233,7 @@ namespace Spines.Mahjong.Analysis.Tests
       var draw = seat.CurrentDraw!.TileType;
       var roundWind = _board.RoundWind.Index;
       var seatWind = seat.SeatWind.Index;
-      var yaku = YakuCalculator.Tsumo(hand, draw, roundWind, seatWind, seat.Melds);
+      var yaku = YakuCalculator.Tsumo(hand, draw, roundWind, seatWind);
       if ((payment.Yaku & ExternalYaku) == payment.Yaku && yaku != Yaku.None)
       {
         return;

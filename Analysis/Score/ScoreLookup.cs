@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Spines.Mahjong.Analysis.Resources;
 using Spines.Mahjong.Analysis.Shanten;
 
@@ -17,9 +16,9 @@ namespace Spines.Mahjong.Analysis.Score
       SuitWaitShiftLookup = Resource.LongLookup("Scoring", "SuitWaitShiftLookup.dat");
     }
 
-    public static long Flags(HandCalculator hand, TileType winningTile, bool isRon, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds)
+    public static long Flags(HandCalculator hand, TileType winningTile, bool isRon, int roundWind, int seatWind)
     {
-      var meldInfo = new MeldScoringData(melds);
+      var meldInfo = hand.MeldScoringData;
 
       var winningTileIndex = winningTile.Index;
       var winningTileSuit = winningTile.SuitId;
@@ -203,27 +202,27 @@ namespace Spines.Mahjong.Analysis.Score
     private static readonly long[] SuitOrLookup;
     private static readonly long[] SuitWaitShiftLookup;
 
-    private static long HonorSum(HandCalculator hand, MeldScoringData meld)
+    private static long HonorSum(HandCalculator hand, IMeldScoringData meld)
     {
       var concealed = HonorSumLookup[hand.Base5Hash(3)];
       var melded = meld.MeldLookupValues[3];
       return concealed + melded;
     }
 
-    private static long HonorOr(HandCalculator hand, MeldScoringData meld)
+    private static long HonorOr(HandCalculator hand, IMeldScoringData meld)
     {
       var concealed = HonorOrLookup[hand.Base5Hash(3)];
       var melded = meld.MeldLookupValues[3];
       return concealed | melded;
     }
 
-    private static long SuitOr(HandCalculator hand, int suitId, MeldScoringData meld)
+    private static long SuitOr(HandCalculator hand, int suitId, IMeldScoringData meld)
     {
       var concealedIndex = hand.Base5Hash(suitId);
       return SuitOr(concealedIndex, suitId, meld);
     }
 
-    private static long SuitOr(int concealedIndex, int suitId, MeldScoringData meld)
+    private static long SuitOr(int concealedIndex, int suitId, IMeldScoringData meld)
     {
       var concealed = SuitOrLookup[concealedIndex];
       var melded = meld.MeldLookupValues[suitId];

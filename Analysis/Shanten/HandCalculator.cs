@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Spines.Mahjong.Analysis.Score;
 
 namespace Spines.Mahjong.Analysis.Shanten
 {
@@ -137,6 +138,8 @@ namespace Spines.Mahjong.Analysis.Shanten
       InHandByType[calledTileType.TileTypeId] += 1;
       SuitClassifiers[suitId].SetMelds(_melds[suitId]);
       UpdateValue(suitId);
+
+      _meldScoringData.Chii(lowestTileType);
     }
 
     public void Pon(TileType tileType)
@@ -163,6 +166,8 @@ namespace Spines.Mahjong.Analysis.Shanten
         ArrangementValues[3] = HonorClassifier.Pon(previousTiles);
         JihaiMeldBit += 1 << index;
       }
+
+      _meldScoringData.Pon(tileType);
     }
 
     public void Shouminkan(TileType tileType)
@@ -192,6 +197,8 @@ namespace Spines.Mahjong.Analysis.Shanten
       {
         ArrangementValues[3] = HonorClassifier.Shouminkan();
       }
+
+      _meldScoringData.Shouminkan();
     }
 
     public void Ankan(TileType tileType)
@@ -215,6 +222,8 @@ namespace Spines.Mahjong.Analysis.Shanten
       {
         ArrangementValues[3] = HonorClassifier.Ankan();
       }
+
+      _meldScoringData.Ankan(tileType);
     }
 
     public void Daiminkan(TileType tileType)
@@ -239,6 +248,8 @@ namespace Spines.Mahjong.Analysis.Shanten
       {
         ArrangementValues[3] = HonorClassifier.Daiminkan();
       }
+
+      _meldScoringData.Daiminkan(tileType);
     }
 
     /// <summary>
@@ -432,6 +443,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       hand.HonorClassifier = HonorClassifier.Clone();
       hand.Kokushi = Kokushi.Clone();
       hand._meldCount = _meldCount;
+      hand._meldScoringData = _meldScoringData.Clone();
       return hand;
     }
 
@@ -446,22 +458,13 @@ namespace Spines.Mahjong.Analysis.Shanten
     private protected ProgressiveHonorClassifier HonorClassifier;
     private protected KokushiClassifier Kokushi = KokushiClassifier.Create();
     private int _meldCount;
+    private ProgressiveMeldScoringData _meldScoringData = new();
+
+    internal IMeldScoringData MeldScoringData => _meldScoringData;
 
     internal int Base5Hash(int suitId)
     {
       return Base5Hashes[suitId];
-    }
-
-    internal IEnumerable<int> MeldIds(int suitId)
-    {
-      var t = _melds[suitId];
-      var m = t & 0b111111;
-      while (m != 0)
-      {
-        yield return m - 1;
-        t >>= 6;
-        m = t & 0b111111;
-      }
     }
 
     protected int TilesInHand()
@@ -499,6 +502,8 @@ namespace Spines.Mahjong.Analysis.Shanten
           ArrangementValues[3] = HonorClassifier.Pon(2);
           JihaiMeldBit += 1 << index;
           InHandByType[tileType] += 3;
+
+          _meldScoringData.Pon(TileType.FromTileTypeId(3 * 9 + meldId - 7));
         }
         else
         {
@@ -509,6 +514,8 @@ namespace Spines.Mahjong.Analysis.Shanten
           HonorClassifier.Draw(2, 0);
           ArrangementValues[3] = HonorClassifier.Daiminkan();
           InHandByType[tileType] += 4;
+
+          _meldScoringData.Ankan(TileType.FromTileTypeId(3 * 9 + meldId - 16));
         }
       }
     }
@@ -527,14 +534,20 @@ namespace Spines.Mahjong.Analysis.Shanten
           InHandByType[start + 0] += 1;
           InHandByType[start + 1] += 1;
           InHandByType[start + 2] += 1;
+
+          _meldScoringData.Chii(TileType.FromTileTypeId(suitId * 9 + meldId));
         }
         else if (meldId < 16)
         {
           InHandByType[9 * suitId + meldId - 7] += 3;
+
+          _meldScoringData.Pon(TileType.FromTileTypeId(suitId * 9 + meldId - 7));
         }
         else
         {
           InHandByType[9 * suitId + meldId - 16] += 4;
+
+          _meldScoringData.Ankan(TileType.FromTileTypeId(suitId * 9 + meldId - 16));
         }
       }
 

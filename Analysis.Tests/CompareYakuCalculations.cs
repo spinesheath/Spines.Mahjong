@@ -107,7 +107,7 @@ namespace Spines.Mahjong.Analysis.Tests
               var hand = new HandCalculator(tileTypes, meldIds[0], meldIds[1], meldIds[2], meldIds[3]);
 
               var classicRon = ClassicYakuCalculator.Tsumo(winningTile, roundWind, seatWind, melds, tiles);
-              var ron = YakuCalculator.Tsumo(hand, winningTile, roundWind, seatWind, melds);
+              var ron = YakuCalculator.Tsumo(hand, winningTile, roundWind, seatWind);
 
               if (classicRon != ron)
               {

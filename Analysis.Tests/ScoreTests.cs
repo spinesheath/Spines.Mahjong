@@ -59,7 +59,7 @@ namespace Spines.Mahjong.Analysis.Tests
       var sp = new ShorthandParser(handString);
       var hand = new HandCalculator(sp);
 
-      var yaku = YakuCalculator.Ron(hand, discard, roundWind, seatWind, Melds(sp).ToList());
+      var yaku = YakuCalculator.Ron(hand, discard, roundWind, seatWind);
 
       Assert.Equal(expectedYaku, yaku);
     }
@@ -78,31 +78,7 @@ namespace Spines.Mahjong.Analysis.Tests
 
       Assert.Equal(0, visitor.FailureCount);
     }
-
-    private IEnumerable<State.Meld> Melds(ShorthandParser sp)
-    {
-      foreach (var meld in sp.Melds)
-      {
-        var tiles = meld.Tiles.Select(Tile.FromTileType).ToList();
-
-        if (tiles.Count == 3)
-        {
-          if (tiles.GroupBy(t => t.TileType).Count() == 1)
-          {
-            yield return State.Meld.Pon(tiles, tiles[0]);
-          }
-          else
-          {
-            yield return State.Meld.Chii(tiles, tiles[0]);
-          }
-        }
-        else
-        {
-          yield return State.Meld.Ankan(tiles[0].TileType);
-        }
-      }
-    }
-
+    
     [Fact]
     public void BundlesWithClassicVisitor()
     {
