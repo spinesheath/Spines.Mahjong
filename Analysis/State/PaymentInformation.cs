@@ -6,17 +6,17 @@ namespace Spines.Mahjong.Analysis.State
 {
   public class PaymentInformation
   {
-    public PaymentInformation(int fu, int han, IEnumerable<int> scoreChanges, Yaku yaku)
+    public PaymentInformation(int fu, int score, IEnumerable<int> scoreChanges, Yaku yaku)
     {
       Fu = fu;
-      Han = han;
+      Score = score;
       ScoreChanges = scoreChanges.ToList();
       Yaku = yaku;
     }
 
     public int Fu { get; }
 
-    public int Han { get; }
+    public int Score { get; }
 
     public IReadOnlyList<int> ScoreChanges { get; }
 

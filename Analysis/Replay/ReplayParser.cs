@@ -173,8 +173,8 @@ namespace Spines.Mahjong.Analysis.Replay
             var tenBuffer = new byte[3 * 4];
             file.Read(tenBuffer); // ten
             var fu = BitConverter.ToInt32(tenBuffer, 0);
-            var han = BitConverter.ToInt32(tenBuffer, 4);
-            var yakumanCount = BitConverter.ToInt32(tenBuffer, 8); // limit kind: 1 for mangan, ... 5 for yakuman
+            var score = BitConverter.ToInt32(tenBuffer, 4);
+            var limitKind = BitConverter.ToInt32(tenBuffer, 8); // limit kind: 1 for mangan, ... 5 for yakuman
 
             var yakuLength = file.ReadByte();
             var yakuBuffer = new byte[yakuLength];
@@ -214,7 +214,7 @@ namespace Spines.Mahjong.Analysis.Replay
               scoreChanges[i] = BitConverter.ToInt32(scoreBuffer, i * 8 + 4);
             }
 
-            var payment = new PaymentInformation(fu, han, scoreChanges, yaku);
+            var payment = new PaymentInformation(fu, score, scoreChanges, yaku);
 
             visitor.Ron(who, fromWho, payment);
 
@@ -238,8 +238,8 @@ namespace Spines.Mahjong.Analysis.Replay
             var tenBuffer = new byte[3 * 4];
             file.Read(tenBuffer); // ten
             var fu = BitConverter.ToInt32(tenBuffer, 0);
-            var han = BitConverter.ToInt32(tenBuffer, 4);
-            var yakumanCount = BitConverter.ToInt32(tenBuffer, 8); // limit kind: 1 for mangan, ... 5 for yakuman
+            var score = BitConverter.ToInt32(tenBuffer, 4);
+            var limitKind = BitConverter.ToInt32(tenBuffer, 8); // limit kind: 1 for mangan, ... 5 for yakuman
 
             var yakuLength = file.ReadByte();
             var yakuBuffer = new byte[yakuLength];
@@ -279,7 +279,7 @@ namespace Spines.Mahjong.Analysis.Replay
               scoreChanges[i] = BitConverter.ToInt32(scoreBuffer, i * 8 + 4);
             }
 
-            var payment = new PaymentInformation(fu, han, scoreChanges, yaku);
+            var payment = new PaymentInformation(fu, score, scoreChanges, yaku);
 
             visitor.Tsumo(who, payment);
 
