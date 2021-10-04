@@ -5,7 +5,7 @@ using Spines.Mahjong.Analysis.Score;
 
 namespace Spines.Mahjong.Analysis.Tests
 {
-  internal class ClassicYakuCalculator
+  internal class ClassicScoreCalculator
   {
     private readonly IReadOnlyList<Tile> _concealedTiles;
     private readonly IReadOnlyList<State.Meld> _melds;
@@ -14,7 +14,8 @@ namespace Spines.Mahjong.Analysis.Tests
     private readonly int _seatWind;
     private readonly bool _isRon;
 
-    private readonly Yaku _result;
+    private readonly Yaku _han;
+    private readonly int _fu;
     private readonly bool _isClosed;
     private readonly IReadOnlyList<Arrangement> _arrangements;
     private readonly IReadOnlyList<Tile> _allTiles;
@@ -29,7 +30,7 @@ namespace Spines.Mahjong.Analysis.Tests
       new Dictionary<int, IReadOnlyList<Arrangement>>()
     };
 
-    private ClassicYakuCalculator(IReadOnlyList<Tile> concealedTiles, IReadOnlyList<State.Meld> melds, TileType winningTile, int roundWind, int seatWind, bool isRon)
+    private ClassicScoreCalculator(IReadOnlyList<Tile> concealedTiles, IReadOnlyList<State.Meld> melds, TileType winningTile, int roundWind, int seatWind, bool isRon)
     {
       _concealedTiles = concealedTiles;
       _melds = melds;
@@ -65,7 +66,7 @@ namespace Spines.Mahjong.Analysis.Tests
 
       _arrangements = Arrangements();
 
-      _result = Flags();
+      (_han, _fu) = Flags();
     }
 
     private bool IsClosed()
@@ -392,48 +393,48 @@ namespace Spines.Mahjong.Analysis.Tests
       public List<TileType> Koutsus { get; } = new List<TileType>();
     }
 
-    public static Yaku Ron(TileType winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds, IReadOnlyList<Tile> concealedTiles)
+    public static (Yaku, int) Ron(TileType winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds, IReadOnlyList<Tile> concealedTiles)
     {
-      return new ClassicYakuCalculator(concealedTiles, melds, winningTile, roundWind, seatWind, true)._result;
+      var c = new ClassicScoreCalculator(concealedTiles, melds, winningTile, roundWind, seatWind, true);
+      return (c._han, c._fu);
     }
 
-    public static Yaku Tsumo(TileType winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds, IReadOnlyList<Tile> concealedTiles)
+    public static (Yaku, int) Tsumo(TileType winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds, IReadOnlyList<Tile> concealedTiles)
     {
-      return new ClassicYakuCalculator(concealedTiles, melds, winningTile, roundWind, seatWind, false)._result;
+      var c = new ClassicScoreCalculator(concealedTiles, melds, winningTile, roundWind, seatWind, false);
+      return (c._han, c._fu);
     }
 
-    public static Yaku Chankan(TileType winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds, IReadOnlyList<Tile> concealedTiles)
+    public static (Yaku, int) Chankan(TileType winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds, IReadOnlyList<Tile> concealedTiles)
     {
-      return new ClassicYakuCalculator(concealedTiles, melds, winningTile, roundWind, seatWind, true)._result;
+      var c = new ClassicScoreCalculator(concealedTiles, melds, winningTile, roundWind, seatWind, true);
+      return (c._han, c._fu);
     }
 
-    private Yaku Flags()
+    private (Yaku, int) Flags()
     {
       var bestHan = 0;
-      var results = new List<Yaku>();
+      var bestFu = 0;
+      var results = new HashSet<Yaku>();
       foreach (var arrangement in _arrangements)
       {
-        var yaku = YakuForArrangement(arrangement);
+        var (yaku, fu) = YakuForArrangement(arrangement);
         var han = Han(yaku);
 
-        if (han > bestHan)
+        if (han > bestHan || han == bestHan && fu > bestFu)
         {
           results.Clear();
           bestHan = han;
+          bestFu = fu;
         }
 
-        if (han == bestHan)
+        if (han == bestHan && fu == bestFu)
         {
           results.Add(yaku);
         }
       }
 
-      if (results.Count > 0 && results.Any(r => (r & (Yaku.Toitoihou | Yaku.Sanankou)) != Yaku.None))
-      {
-        results.RemoveAll(r => (r & (Yaku.Iipeikou | Yaku.OpenJunchan)) != Yaku.None && (r & (Yaku.Toitoihou | Yaku.Sanankou)) == Yaku.None);
-      }
-
-      return results.OrderByDescending(x => x).First();
+      return (results.OrderByDescending(x => x).First(), bestFu);
     }
 
     private int Han(Yaku yaku)
@@ -449,7 +450,7 @@ namespace Spines.Mahjong.Analysis.Tests
       return setBits1 + 2 * setBits2 + 4 * setBits4;
     }
 
-    private Yaku YakuForArrangement(Arrangement arrangement)
+    private (Yaku, int) YakuForArrangement(Arrangement arrangement)
     {
       var result = Yaku.None;
 
@@ -502,12 +503,113 @@ namespace Spines.Mahjong.Analysis.Tests
       //{ ScoringFieldYaku.None, Yaku.UraDora },
       //{ ScoringFieldYaku.None, Yaku.AkaDora },
 
+      var fu = Fu(arrangement, result);
+
       if ((result & AllYakuman) != Yaku.None)
       {
-        return result & AllYakuman;
+        return (result & AllYakuman, fu);
       }
       
-      return result;
+      return (result, fu);
+    }
+
+    private int Fu(Arrangement arrangement, Yaku yaku)
+    {
+      if (arrangement.IsKokushi)
+      {
+        return 0;
+      }
+
+      if ((yaku & Yaku.Chiitoitsu) != 0)
+      {
+        return 25;
+      }
+
+      var fu = 20;
+      
+      foreach (var meld in _melds)
+      {
+        var isKyuuhai = meld.LowestTile.TileType.IsKyuuhai;
+        switch (meld.MeldType)
+        {
+          case MeldType.Koutsu:
+            fu += isKyuuhai ? 4 : 2;
+            break;
+          case MeldType.AddedKan:
+          case MeldType.CalledKan:
+            fu += isKyuuhai ? 16 : 8;
+            break;
+          case MeldType.ClosedKan:
+            fu += isKyuuhai ? 32 : 16;
+            break;
+        }
+      }
+
+      foreach (var koutsu in arrangement.Koutsus)
+      {
+        if (!_isRon || koutsu != _winningTile || HasShuntsuWithWinningTile(arrangement))
+        {
+          fu += koutsu.IsKyuuhai ? 8 : 4;
+        }
+        else
+        {
+          fu += koutsu.IsKyuuhai ? 4 : 2;
+        }
+      }
+
+      if (_isClosed && _isRon)
+      {
+        fu += 10;
+      }
+
+      var isPinfu = (yaku & Yaku.Pinfu) != 0;
+      if (!_isRon && !isPinfu)
+      {
+        fu += 2;
+      }
+
+      if (arrangement.Pair!.TileTypeId > 30)
+      {
+        fu += 2;
+      }
+
+      if (arrangement.Pair.TileTypeId == 27 + _roundWind)
+      {
+        fu += 2;
+      }
+
+      if (arrangement.Pair.TileTypeId == 27 + _seatWind)
+      {
+        fu += 2;
+      }
+
+      if (!isPinfu)
+      {
+        if (arrangement.Pair == _winningTile)
+        {
+          fu += 2;
+        }
+        else if (arrangement.Shuntsus.Any(s => s.TileTypeId == _winningTile.TileTypeId - 1))
+        {
+          fu += 2;
+        }
+        else if (arrangement.Shuntsus.Any(s => s.Index == 0 && s.TileTypeId == _winningTile.TileTypeId - 2))
+        {
+          fu += 2;
+        }
+        else if (arrangement.Shuntsus.Any(s => s.Index == 6 && s == _winningTile))
+        {
+          fu += 2;
+        }
+      }
+
+      if (!_isClosed && fu == 20)
+      {
+        return 30;
+      }
+
+      fu += fu % 10 == 0 ? 0 : 10 - fu % 10;
+      return fu;
     }
 
     private Yaku Ryuuiisou()
@@ -662,7 +764,7 @@ namespace Spines.Mahjong.Analysis.Tests
     private Yaku SanankouSuuankou(Arrangement arrangement)
     {
       var ankanCount = _melds.Count(m => m.IsKan && m.CalledTile == null);
-      var considerWinningTile = _isRon && !arrangement.Shuntsus.Any(s => s.Suit == _winningTile.Suit && s.Index <= _winningTile.Index && s.Index + 2 >= _winningTile.Index);
+      var considerWinningTile = _isRon && !HasShuntsuWithWinningTile(arrangement);
       var ankouCount = arrangement.Koutsus.Count(k => !considerWinningTile || k != _winningTile);
 
       var sum = ankanCount + ankouCount;
@@ -677,6 +779,11 @@ namespace Spines.Mahjong.Analysis.Tests
       }
 
       return Yaku.None;
+    }
+
+    private bool HasShuntsuWithWinningTile(Arrangement arrangement)
+    {
+      return arrangement.Shuntsus.Any(s => s.Suit == _winningTile.Suit && s.Index <= _winningTile.Index && s.Index + 2 >= _winningTile.Index);
     }
 
     private Yaku Toitoi(Arrangement arrangement)

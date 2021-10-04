@@ -84,7 +84,7 @@ namespace Spines.Mahjong.Analysis.Tests
     {
       var files = BundlesFolders.SelectMany(Directory.EnumerateFiles);
       var visitor = new ClassicScoreCalculatingVisitor();
-      foreach (var file in files.Take(100))
+      foreach (var file in files)
       {
         using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
         ReplayParser.Parse(fileStream, visitor);

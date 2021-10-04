@@ -33,9 +33,9 @@ namespace Spines.Mahjong.Analysis.Tests
       }
       var winningTile = TileType.FromString(discardString);
 
-      var classicRon = ClassicYakuCalculator.Ron(winningTile, roundWind, seatWind, melds, tiles);
+      var (yaku, fu) = ClassicScoreCalculator.Ron(winningTile, roundWind, seatWind, melds, tiles);
 
-      Assert.Equal(expectedYaku, classicRon);
+      Assert.Equal(expectedYaku, yaku);
     }
   }
 }

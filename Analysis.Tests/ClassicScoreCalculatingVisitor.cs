@@ -2,7 +2,6 @@
 using System.Linq;
 using Spines.Mahjong.Analysis.Replay;
 using Spines.Mahjong.Analysis.Score;
-using Spines.Mahjong.Analysis.Shanten;
 using Spines.Mahjong.Analysis.State;
 
 namespace Spines.Mahjong.Analysis.Tests
@@ -168,13 +167,13 @@ namespace Spines.Mahjong.Analysis.Tests
         var roundWind = _board.RoundWind.Index;
         var seatWind = seat.SeatWind.Index;
         var concealedTilesAndDiscard = seat.ConcealedTiles.Concat(new []{discard}).ToList();
-        var yaku = ClassicYakuCalculator.Ron(discard.TileType, roundWind, seatWind, seat.Melds, concealedTilesAndDiscard);
+        var (yaku, fu) = ClassicScoreCalculator.Ron(discard.TileType, roundWind, seatWind, seat.Melds, concealedTilesAndDiscard);
         if ((payment.Yaku & ExternalYaku) == payment.Yaku && yaku != Yaku.None)
         {
           return;
         }
 
-        if ((yaku & YakuFilter) != (payment.Yaku & YakuFilter))
+        if ((yaku & YakuFilter) != (payment.Yaku & YakuFilter) || fu != payment.Fu)
         {
           FailureCount += 1;
         }
@@ -185,13 +184,13 @@ namespace Spines.Mahjong.Analysis.Tests
         var roundWind = _board.RoundWind.Index;
         var seatWind = seat.SeatWind.Index;
         var concealedTilesAndDiscard = seat.ConcealedTiles.Concat(new[] { discard }).ToList();
-        var yaku = ClassicYakuCalculator.Chankan(discard.TileType, roundWind, seatWind, seat.Melds, concealedTilesAndDiscard);
+        var (yaku, fu) = ClassicScoreCalculator.Chankan(discard.TileType, roundWind, seatWind, seat.Melds, concealedTilesAndDiscard);
         if ((payment.Yaku & ExternalYaku) == payment.Yaku && yaku != Yaku.None)
         {
           return;
         }
 
-        if ((yaku & YakuFilter) != (payment.Yaku & YakuFilter))
+        if ((yaku & YakuFilter) != (payment.Yaku & YakuFilter) || fu != payment.Fu)
         {
           FailureCount += 1;
         }
@@ -206,13 +205,13 @@ namespace Spines.Mahjong.Analysis.Tests
       var draw = seat.CurrentDraw!;
       var roundWind = _board.RoundWind.Index;
       var seatWind = seat.SeatWind.Index;
-      var yaku = ClassicYakuCalculator.Tsumo(draw.TileType, roundWind, seatWind, seat.Melds, seat.ConcealedTiles);
+      var (yaku, fu) = ClassicScoreCalculator.Tsumo(draw.TileType, roundWind, seatWind, seat.Melds, seat.ConcealedTiles);
       if ((payment.Yaku & ExternalYaku) == payment.Yaku && yaku != Yaku.None)
       {
         return;
       }
 
-      if ((yaku & YakuFilter) != (payment.Yaku & YakuFilter))
+      if ((yaku & YakuFilter) != (payment.Yaku & YakuFilter) || fu != payment.Fu)
       {
         FailureCount += 1;
       }

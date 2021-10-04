@@ -279,6 +279,7 @@ namespace Spines.Mahjong.Analysis.Shanten
     /// 34 ints, one per tileType.
     /// -1 if that tileType is not an ukeIre.
     /// 0-4 for the remaining tiles of that tileType if ukeIre.
+    /// TODO it should be possible to exclude certain tile types from checking entirely, like 1z if 111Z has been called already
     /// </summary>
     public int[] GetUkeIreFor13()
     {
