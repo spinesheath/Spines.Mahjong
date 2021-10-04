@@ -1,4 +1,6 @@
-﻿using AnalyzerBuilder.Creators.Scoring;
+﻿using System;
+using System.IO;
+using AnalyzerBuilder.Creators.Scoring;
 
 namespace AnalyzerBuilder
 {
@@ -6,21 +8,13 @@ namespace AnalyzerBuilder
   {
     static void Main(string[] args)
     {
-      //var workingDirectory = @"C:\temp\mahjong\scoring";
-      var workingDirectory = @"C:\Users\Johannes\source\repos\Spines.Mahjong\Analysis\Resources\Scoring\";
-
+      var workingDirectory = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "..", "..", "..", "..", "Analysis", "Resources", "Scoring"));
 
       var a = new SuitScoringInformationCreator(workingDirectory);
       a.CreateLookup();
 
-      var b = new SuitMeldScoringInformationCreator(workingDirectory);
-      b.CreateLookup();
-
       var c = new HonorScoringInformationCreator(workingDirectory);
       c.CreateLookup();
-
-      var d = new HonorMeldScoringInformationCreator(workingDirectory);
-      d.CreateLookup();
     }
   }
 }

@@ -4,7 +4,7 @@ namespace AnalyzerBuilder.Creators.Scoring
 {
   internal class HonorScoringBitField
   {
-    public HonorScoringBitField(ConcealedArrangement arrangement)
+    public HonorScoringBitField(Arrangement arrangement)
     {
       _arrangement = arrangement;
       _isEmpty = arrangement.TileCount == 0;
@@ -37,7 +37,7 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     public long WaitShiftValue { get; private set; }
 
-    private readonly ConcealedArrangement _arrangement;
+    private readonly Arrangement _arrangement;
     private readonly bool _isEmpty;
 
     private void Ryuuiisou(int offset)

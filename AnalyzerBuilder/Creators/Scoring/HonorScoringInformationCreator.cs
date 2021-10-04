@@ -53,7 +53,7 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private readonly string _workingDirectory;
 
-    private static IEnumerable<ConcealedArrangement> CreateAnalyzedWords()
+    private static IEnumerable<Arrangement> CreateAnalyzedWords()
     {
       for (var groupCount = 0; groupCount < 5; groupCount++)
       {
@@ -86,7 +86,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       }
     }
 
-    private static IEnumerable<ConcealedArrangement> EnumerateChiitoiArrangements()
+    private static IEnumerable<Arrangement> EnumerateChiitoiArrangements()
     {
       for (var i = 0; i < (1 << 7); i++)
       {
@@ -107,32 +107,32 @@ namespace AnalyzerBuilder.Creators.Scoring
 
         if (blocks.Count == 1)
         {
-          yield return new ConcealedArrangement(tiles, blocks);
+          yield return new Arrangement(tiles, blocks);
         }
         else
         {
-          yield return new ConcealedArrangement(tiles, Enumerable.Empty<Block>());
+          yield return new Arrangement(tiles, Enumerable.Empty<Block>());
         }
       }
     }
 
-    private static IEnumerable<ConcealedArrangement> EnumerateKokushiArrangements()
+    private static IEnumerable<Arrangement> EnumerateKokushiArrangements()
     {
       var tiles = Enumerable.Repeat(1, 7).ToArray();
-      yield return new ConcealedArrangement(tiles, Enumerable.Empty<Block>());
+      yield return new Arrangement(tiles, Enumerable.Empty<Block>());
       for (var i = 0; i < 7; i++)
       {
         tiles[i] = 2;
-        yield return new ConcealedArrangement(tiles, Enumerable.Empty<Block>());
+        yield return new Arrangement(tiles, Enumerable.Empty<Block>());
         tiles[i] = 1;
       }
     }
 
-    private static IEnumerable<ConcealedArrangement> EnumerateArrangements(int[] tileCounts, Stack<Block> blocks, int remainingBlocks)
+    private static IEnumerable<Arrangement> EnumerateArrangements(int[] tileCounts, Stack<Block> blocks, int remainingBlocks)
     {
       if (remainingBlocks == 0)
       {
-        yield return new ConcealedArrangement(tileCounts, blocks);
+        yield return new Arrangement(tileCounts, blocks);
         yield break;
       }
 

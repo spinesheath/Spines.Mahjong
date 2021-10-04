@@ -6,7 +6,7 @@ namespace AnalyzerBuilder.Creators.Scoring
 {
   internal class SuitScoringBitField
   {
-    public SuitScoringBitField(IEnumerable<ConcealedArrangement> interpretations)
+    public SuitScoringBitField(IEnumerable<Arrangement> interpretations)
     {
       _interpretations = interpretations.ToList();
       _iipeikouCount = CalculateIipeikouCount();
@@ -41,7 +41,7 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private IReadOnlyList<int> TileCounts => _interpretations.First().TileCounts;
     
-    private readonly IReadOnlyList<ConcealedArrangement> _interpretations;
+    private readonly IReadOnlyList<Arrangement> _interpretations;
 
     private readonly int _iipeikouCount;
 
@@ -143,7 +143,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       }
     }
 
-    private static int AnkouCountWithWait(int waitIndex, ConcealedArrangement a)
+    private static int AnkouCountWithWait(int waitIndex, Arrangement a)
     {
       var offWaitAnkou = a.Blocks.Count(b => b.IsKoutsu && b.Index != waitIndex);
       var onWaitAnkou = a.Blocks.Count(b => b.IsKoutsu && b.Index == waitIndex);
@@ -196,7 +196,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       return block.IsShuntsu && (block.Index == waitIndex && block.Index < 6 || block.Index + 2 == waitIndex && block.Index > 0);
     }
 
-    private bool HasIttsuu(ConcealedArrangement arrangement)
+    private bool HasIttsuu(Arrangement arrangement)
     {
       var shuntsus = arrangement.Blocks.Where(b => b.IsShuntsu).ToList();
       return shuntsus.Any(s => s.Index == 0) && shuntsus.Any(s => s.Index == 3) && shuntsus.Any(s => s.Index == 6);
