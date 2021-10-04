@@ -204,7 +204,7 @@ namespace Spines.Mahjong.Analysis.Shanten
         ArrangementValues[3] = HonorClassifier.Shouminkan();
       }
 
-      _scoringData.Shouminkan(suitId, Base5Hashes[suitId]);
+      _scoringData.Shouminkan(tileType, Base5Hashes[suitId]);
     }
 
     public void Ankan(TileType tileType)

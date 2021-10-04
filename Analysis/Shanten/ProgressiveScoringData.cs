@@ -40,6 +40,8 @@ namespace Spines.Mahjong.Analysis.Shanten
 
       HonorSum = HonorSumLookup[0] + _lookupValues[3];
       //HonorSum = 2684354624L;
+
+      Fu = 20;
     }
 
     public void Ankan(TileType tileType, int base5Hash)
@@ -80,7 +82,6 @@ namespace Spines.Mahjong.Analysis.Shanten
         _lookupValues[tileType.SuitId] |= 1L << (index + 13);
       }
 
-
       _baseMaskFilter &= NoAnkanYakuFilter;
       ShiftedAnkanCount += 1L << (BitIndex.Sanankou - 2);
 
@@ -120,10 +121,12 @@ namespace Spines.Mahjong.Analysis.Shanten
       if (tileType.IsKyuuhai)
       {
         _baseMaskFilter &= NoChantaCallsFilter;
+        Fu += 32;
       }
       else
       {
         _baseMaskFilter &= OnlyChantaCallsFilter;
+        Fu += 16;
       }
 
       UpdateSuit(tileType.SuitId, base5Hash);
@@ -188,7 +191,8 @@ namespace Spines.Mahjong.Analysis.Shanten
         BigAndToSumFilter = BigAndToSumFilter,
         SankantsuSuukantsu = SankantsuSuukantsu,
         HonorSum = HonorSum,
-        HonorOr = HonorOr
+        HonorOr = HonorOr,
+        Fu = Fu
       };
 
       Array.Copy(_lookupValues, c._lookupValues, _lookupValues.Length);
@@ -274,10 +278,12 @@ namespace Spines.Mahjong.Analysis.Shanten
       if (tileType.IsKyuuhai)
       {
         _baseMaskFilter &= NoChantaCallsFilter;
+        Fu += 16;
       }
       else
       {
         _baseMaskFilter &= OnlyChantaCallsFilter;
+        Fu += 8;
       }
 
       UpdateSuit(tileType.SuitId, base5Hash);
@@ -369,20 +375,31 @@ namespace Spines.Mahjong.Analysis.Shanten
       if (tileType.IsKyuuhai)
       {
         _baseMaskFilter &= NoChantaCallsFilter;
+        Fu += 4;
       }
       else
       {
         _baseMaskFilter &= OnlyChantaCallsFilter;
+        Fu += 2;
       }
 
       UpdateSuit(tileType.SuitId, base5Hash);
     }
 
-    public void Shouminkan(int suitId, int base5Hash)
+    public void Shouminkan(TileType tileType, int base5Hash)
     {
       SankantsuSuukantsu <<= 1;
 
-      UpdateSuit(suitId, base5Hash);
+      if (tileType.IsKyuuhai)
+      {
+        Fu += 12; // Upgrade from pon to kan
+      }
+      else
+      {
+        Fu += 6; // Upgrade from pon to kan
+      }
+
+      UpdateSuit(tileType.SuitId, base5Hash);
     }
 
     public void Init(int[] base5Hashes)
@@ -412,6 +429,8 @@ namespace Spines.Mahjong.Analysis.Shanten
     public long BigAndToSumFilter { get; private set; }
 
     public long SankantsuSuukantsu { get; private set; }
+
+    public int Fu { get; private set; }
 
     private const long ClosedYakuFilter = ~((1L << BitIndex.ClosedSanshokuDoujun) | (1L << BitIndex.Iipeikou) |
                                             (1L << BitIndex.Chiitoitsu) | (1L << BitIndex.Ryanpeikou) |
