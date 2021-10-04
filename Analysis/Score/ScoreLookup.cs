@@ -63,7 +63,8 @@ namespace Spines.Mahjong.Analysis.Score
 
       var result = 0L;
 
-      result |= waitAndRonShift & WaitAndRonShiftYakuFilter;
+      result |= ((1L << BitIndex.MenzenTsumo) >> ronShiftAmount) & (1L << BitIndex.MenzenTsumo);
+      result |= waitAndRonShift & AnkouYakuFilter;
       result |= sanshoku;
       result |= pinfu;
       result |= bigAnd & BigAndYakuFilter;
@@ -160,10 +161,11 @@ namespace Spines.Mahjong.Analysis.Score
                                        (1L << BitIndex.ChuurenPoutou) | (1L << BitIndex.JunseiChuurenPoutou) |
                                        (1L << BitIndex.Suukantsu) | (1L << BitIndex.Ryuuiisou);
 
-    private const long WaitAndRonShiftYakuFilter = (1L << BitIndex.Sanankou) | (1L << BitIndex.Suuankou) | (1L << BitIndex.SuuankouTanki) | (1L << BitIndex.MenzenTsumo);
     private const long PinfuYakuFilter = 1L << BitIndex.Pinfu;
-    private const long RonShiftSumFilter = (1L << AnkouRonShiftSumFilterIndex) | (1L << (BitIndex.MenzenTsumo - 2));
+
     private const int AnkouRonShiftSumFilterIndex = BitIndex.Sanankou - 2;
+    private const long RonShiftSumFilter = 1L << AnkouRonShiftSumFilterIndex;
+    private const long AnkouYakuFilter = (1L << BitIndex.Sanankou) | (1L << BitIndex.Suuankou) | (1L << BitIndex.SuuankouTanki);
 
     private const long SuitBigSumFilter = (0b11_00000_0101_0000L << 19) |
                                           (1L << (BitIndex.Pinfu - 1)) |

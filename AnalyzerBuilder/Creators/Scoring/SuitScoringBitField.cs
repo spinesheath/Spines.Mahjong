@@ -19,7 +19,6 @@ namespace AnalyzerBuilder.Creators.Scoring
       Pinfu(51);
       Ankou(32);
       HonitsuChinitsu(20);
-      MenzenTsumo(12);
       KokushiMusou();
       Chinroutou(37);
       Chuuren(62);
@@ -101,11 +100,6 @@ namespace AnalyzerBuilder.Creators.Scoring
           }
         }
       }
-    }
-
-    private void MenzenTsumo(int offset)
-    {
-      WaitShiftValue |= 0b111111111_1L << (offset - 2);
     }
 
     private void HonitsuChinitsu(int offset)
