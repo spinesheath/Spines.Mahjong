@@ -9,6 +9,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       _arrangement = arrangement;
       _isEmpty = arrangement.TileCount == 0;
 
+      // Yaku
       Tanyao(29);
       Jikaze(54);
       Bakaze(58);
@@ -28,6 +29,40 @@ namespace AnalyzerBuilder.Creators.Scoring
       Honroutou(26);
       Junchan(49);
       Ryuuiisou(28);
+
+      // Fu
+      SingleWait(10);
+      ValuePair(1);
+    }
+
+    private void ValuePair(int offset)
+    {
+      if (_arrangement.IsStandard)
+      {
+        foreach (var block in _arrangement.Blocks)
+        {
+          if (block.IsPair)
+          {
+            OrValue |= FuValuePairBits[block.Index] << offset;
+          }
+        }
+      }
+    }
+
+    private void SingleWait(int offset)
+    {
+      if (!_arrangement.IsStandard)
+      {
+        return;
+      }
+
+      foreach (var block in _arrangement.Blocks)
+      {
+        if (block.IsPair)
+        {
+          WaitShiftValue |= 1L << (offset + 1 + block.Index);
+        }
+      }
     }
 
     public long OrValue { get; private set; }
@@ -276,6 +311,18 @@ namespace AnalyzerBuilder.Creators.Scoring
       0b100_110_011_001_1L,
       0b001_110_000_111_1L,
       0b000_000_111_111_1L
+    };
+
+    private static readonly long[] FuValuePairBits =
+    {
+      0b000_100_010_101L,
+      0b001_000_100_110L,
+      0b100_000_111_000L,
+      0b101_110_000_000L,
+
+      0b111_111_111_111L,
+      0b111_111_111_111L,
+      0b111_111_111_111L
     };
   }
 }

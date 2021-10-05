@@ -64,13 +64,52 @@ namespace Spines.Mahjong.Analysis.Tests
       Assert.Equal(expectedYaku, yaku);
     }
 
+    [Theory]
+    [InlineData("111222333m11z123M", "1z", Yaku.Sanankou | Yaku.OpenHonitsu)]
+    [InlineData("123678m345p55789s", "1m", Yaku.Pinfu)]
+    [InlineData("123456789m11122p", "1m", Yaku.ClosedIttsuu)]
+    [InlineData("123456789m11122p", "2m", Yaku.ClosedIttsuu)]
+    [InlineData("123456789m11122p", "3m", Yaku.ClosedIttsuu)]
+    public void SingleWaitFu(string handString, string discardString, Yaku expectedYaku)
+    {
+      var discard = TileType.FromString(discardString);
+      var sp = new ShorthandParser(handString);
+      var hand = new HandCalculator(sp);
+
+      var yaku = YakuCalculator.Ron(hand, discard, 0, 0);
+
+      Assert.Equal(expectedYaku, yaku);
+    }
+
+    [Theory]
+    [InlineData("123456789m12344p44z", 0, 0, "2m", Yaku.ClosedIttsuu)]
+    [InlineData("123456789m12344p44z", 0, 1, "2m", Yaku.ClosedIttsuu)]
+    [InlineData("123456789m12344p44z", 0, 2, "2m", Yaku.ClosedIttsuu)]
+    [InlineData("123456789m12344p44z", 0, 3, "2m", Yaku.ClosedIttsuu)]
+    [InlineData("123456789m12344p44z", 1, 1, "2m", Yaku.ClosedIttsuu)]
+    [InlineData("123456789m12344p44z", 1, 2, "2m", Yaku.ClosedIttsuu)]
+    [InlineData("123456789m12344p44z", 1, 3, "2m", Yaku.ClosedIttsuu)]
+    [InlineData("123456789m12344p44z", 2, 2, "2m", Yaku.ClosedIttsuu)]
+    [InlineData("123456789m12344p44z", 2, 3, "2m", Yaku.ClosedIttsuu)]
+    [InlineData("123456789m12344p44z", 3, 3, "2m", Yaku.ClosedIttsuu)]
+    public void ValuePairFu(string handString, int roundWind, int seatWind, string discardString, Yaku expectedYaku)
+    {
+      var discard = TileType.FromString(discardString);
+      var sp = new ShorthandParser(handString);
+      var hand = new HandCalculator(sp);
+
+      var yaku = YakuCalculator.Ron(hand, discard, roundWind, seatWind);
+
+      Assert.Equal(expectedYaku, yaku);
+    }
+
     [Fact]
     public void BundlesWithVisitor()
     {
       var files = BundlesFolders.SelectMany(Directory.EnumerateFiles);
       var visitor = new ScoreCalculatingVisitor();
       //foreach (var file in files.Take(500))
-      foreach (var file in files.Take(100))
+      foreach (var file in files)
       {
         using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
         ReplayParser.Parse(fileStream, visitor);

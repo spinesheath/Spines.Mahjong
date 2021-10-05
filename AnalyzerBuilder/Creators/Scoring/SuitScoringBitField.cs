@@ -11,6 +11,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       _interpretations = interpretations.ToList();
       _iipeikouCount = CalculateIipeikouCount();
 
+      // Yaku
       SanshokuDoujun();
       SanshokuDoukou();
       Tanyao(29);
@@ -28,6 +29,42 @@ namespace AnalyzerBuilder.Creators.Scoring
       Junchan(49);
       Ittsuu(44);
       Ryuuiisou(28);
+
+      // Fu
+      SingleWait(10);
+    }
+
+    private void SingleWait(int offset)
+    {
+      foreach (var arrangement in _interpretations)
+      {
+        if (!arrangement.IsStandard)
+        {
+          continue;
+        }
+
+        foreach (var block in arrangement.Blocks)
+        {
+          if (block.IsPair)
+          {
+            WaitShiftValue |= 1L << (offset + 1 + block.Index);
+          }
+          else if (block.IsShuntsu)
+          {
+            WaitShiftValue |= 1L << (offset + 1 + block.Index + 1);
+              
+            if (block.Index == 0)
+            {
+              WaitShiftValue |= 1L << (offset + 1 + 2);
+            }
+
+            if (block.Index == 6)
+            {
+              WaitShiftValue |= 1L << (offset + 1 + 6);
+            }
+          }
+        }
+      }
     }
 
     public long OrValue { get; private set; }

@@ -15,6 +15,8 @@ namespace Spines.Mahjong.Analysis.Score
       var waitShiftValues = data.WaitShiftValues;
       waitShiftValues[winningTileSuit] >>= winningTileIndex + 1;
 
+      var singleWaitFu = (waitShiftValues[winningTileSuit] >> 9) & 2L;
+
       var suitOr = data.SuitOr;
       var suitsAnd = suitOr[0] & suitOr[1] & suitOr[2];
       var honorOr = data.HonorOr;
@@ -44,9 +46,13 @@ namespace Spines.Mahjong.Analysis.Score
                   bigSum &
                   PinfuYakuFilter;
 
+      // TODO needs to be multiplied by 2 or 4, but careful if value pair is haku hatsu chun
+      var valuePairFu = (honorWindShift & 1L);
+      
       var tankiBit = waitShiftValues[winningTileSuit] & 0b1L;
       var openBit = data.OpenBit;
 
+      // TODO might be able to rework ron shift to not use up so many bits.
       var ronShiftAmount = isRon ? 9 : 0;
       waitShiftValues[winningTileSuit] >>= ronShiftAmount;
 
@@ -54,6 +60,7 @@ namespace Spines.Mahjong.Analysis.Score
                             (waitShiftValues[1] & RonShiftSumFilter) +
                             (waitShiftValues[2] & RonShiftSumFilter) +
                             (waitShiftValues[3] & RonShiftSumFilter);
+
       waitAndRonShift += data.ShiftedAnkanCount;
 
       waitAndRonShift += bigSum & (0b111L << AnkouRonShiftSumFilterIndex);
@@ -111,6 +118,7 @@ namespace Spines.Mahjong.Analysis.Score
 
       result += (result & TankiUpgradeableFilter) * tankiBit;
 
+      // This covers the 22234555m222p222s case where sanankou/sanshoku doukou depend on the wait.
       var w = (suitOr[winningTileSuit] >> 31) & (1L << BitIndex.SanshokuDoukou);
       var d3 = (suitsAnd >> (winningTileIndex + ronShiftAmount)) & w;
       result -= d3 & (result >> (BitIndex.Sanankou - 4));
