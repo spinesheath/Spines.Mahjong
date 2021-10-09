@@ -1,21 +1,24 @@
 ﻿using System;
+using System.Linq;
 using Spines.Mahjong.Analysis.Shanten;
 
 namespace Spines.Mahjong.Analysis.Score
 {
   internal static class ScoreLookup
   {
-    public static long Flags(HandCalculator hand, TileType winningTile, bool isRon, int roundWind, int seatWind)
+    public static (long, int) Flags(HandCalculator hand, TileType winningTile, bool isRon, int roundWind, int seatWind)
     {
       var data = hand.ScoringData;
+      var openBit = data.OpenBit;
+
+      // TODO might be able to rework ron shift to not use up so many bits.
+      var ronShiftAmount = isRon ? 9 : 0;
 
       var winningTileIndex = winningTile.Index;
       var winningTileSuit = winningTile.SuitId;
 
-      var waitShiftValues = data.WaitShiftValues;
+      var waitShiftValues = data.WaitShiftValues.ToArray();
       waitShiftValues[winningTileSuit] >>= winningTileIndex + 1;
-
-      var singleWaitFu = (waitShiftValues[winningTileSuit] >> 9) & 2L;
 
       var suitOr = data.SuitOr;
       var suitsAnd = suitOr[0] & suitOr[1] & suitOr[2];
@@ -39,21 +42,19 @@ namespace Spines.Mahjong.Analysis.Score
        * A flag in BigSum is created by adding 1 for each suit with a pair and a 2 for honors.
        * This will leave a 0 in the second bit in the bad case: 11223399m11p11s44z This 0 is aligned with the pinfu bit index.
        */
-      var honorWindShift = honorOr >> WindShiftHonor(roundWind, seatWind);
+      var windShiftAmount = WindShiftHonor(roundWind, seatWind);
+      var honorWindShift = honorOr >> windShiftAmount;
       var waitAndWindShift = waitShiftValues[0] & waitShiftValues[1] & waitShiftValues[2] & waitShiftValues[3] & honorWindShift;
       var pinfu = waitAndWindShift &
                   (suitOr[winningTileSuit] >> (int) ((winningTileIndex + (suitsAnd & 1)) * (sanshoku >> 2))) &
                   bigSum &
                   PinfuYakuFilter;
 
-      // TODO needs to be multiplied by 2 or 4, but careful if value pair is haku hatsu chun
-      var valuePairFu = (honorWindShift & 1L);
-      
       var tankiBit = waitShiftValues[winningTileSuit] & 0b1L;
-      var openBit = data.OpenBit;
 
-      // TODO might be able to rework ron shift to not use up so many bits.
-      var ronShiftAmount = isRon ? 9 : 0;
+      // get this before ron shifting
+      var singleWaitFu = (waitShiftValues[winningTileSuit] >> 9) & 2L;
+
       waitShiftValues[winningTileSuit] >>= ronShiftAmount;
 
       var waitAndRonShift = (waitShiftValues[0] & RonShiftSumFilter) +
@@ -124,14 +125,77 @@ namespace Spines.Mahjong.Analysis.Score
       result -= d3 & (result >> (BitIndex.Sanankou - 4));
 
       result &= data.FinalMask;
-
+      
       var yakuman = result & YakumanFilter;
       if (yakuman != 0)
       {
-        return yakuman;
+        return (yakuman, 0);
       }
 
-      return result;
+      if ((result & (1L << BitIndex.Chiitoitsu)) != 0)
+      {
+        return (result, 25);
+      }
+
+      var closedRonFu = (int)(1 - openBit) * (10 >> (9 - ronShiftAmount));
+
+      if ((result & PinfuYakuFilter) != 0)
+      {
+        return (result, 20 + closedRonFu);
+      }
+
+      // u-type => 11123444 or 66678999 or neither
+
+      var waitIsOuterTile = (0b100000001 >> winningTile.Index) & 1;
+      const int uTypeFilter = 0b1_100000000_000000000;
+      
+      var ankouFuManzu = (data.WaitShiftValues[0] & (0b111L << 20)) >> 18;
+      var baseAnkouCountManzu = (suitOr[0] & (0b11L << 32)) >> 32;
+      var uTypeBitManzu = (uTypeFilter >> (int)(((data.WaitShiftValues[0] >> 24) & 0b11111) + winningTile.Index)) & ronShiftAmount & 1;
+      var bonusAnkouCountManzu = (waitShiftValues[0] & (1L << 32)) >> 32;
+      var potentialBonusAnkouCountManzu = (data.WaitShiftValues[0] & (1L << 32)) >> 32;
+      var manzuCorrection = (2 * (bonusAnkouCountManzu - potentialBonusAnkouCountManzu - uTypeBitManzu)) << waitIsOuterTile;
+
+      var ankouFuPinzu = (data.WaitShiftValues[1] & (0b111L << 20)) >> 18;
+      var baseAnkouCountPinzu = (suitOr[1] & (0b11L << 32)) >> 32;
+      var uTypeBitPinzu = (uTypeFilter >> (int)(((data.WaitShiftValues[1] >> 24) & 0b11111) + winningTile.Index)) & ronShiftAmount & 1;
+      var bonusAnkouCountPinzu = (waitShiftValues[1] & (1L << 32)) >> 32;
+      var potentialBonusAnkouCountPinzu = (data.WaitShiftValues[1] & (1L << 32)) >> 32;
+      var pinzuCorrection = (2 * (bonusAnkouCountPinzu - potentialBonusAnkouCountPinzu - uTypeBitPinzu)) << waitIsOuterTile;
+
+      var ankouFuSouzu = (data.WaitShiftValues[2] & (0b111L << 20)) >> 18;
+      var baseAnkouCountSouzu = (suitOr[2] & (0b11L << 32)) >> 32;
+      var uTypeBitSouzu = (uTypeFilter >> (int)(((data.WaitShiftValues[2] >> 24) & 0b11111) + winningTile.Index)) & ronShiftAmount & 1;
+      var bonusAnkouCountSouzu = (waitShiftValues[2] & (1L << 32)) >> 32;
+      var potentialBonusAnkouCountSouzu = (data.WaitShiftValues[2] & (1L << 32)) >> 32;
+      var souzuCorrection = (2 * (bonusAnkouCountSouzu - potentialBonusAnkouCountSouzu - uTypeBitSouzu)) << waitIsOuterTile;
+
+      var ankouFuJihai = (data.WaitShiftValues[3] & (0b111L << 20)) >> 17;
+      var bonusAnkouCountJihai = (waitShiftValues[3] & (1L << 32)) >> 32;
+      var potentialBonusAnkouCountJihai = (data.WaitShiftValues[3] & (1L << 32)) >> 32;
+      var jihaiCorrection = 4 * (bonusAnkouCountJihai - potentialBonusAnkouCountJihai);
+
+      
+
+      var ankouFuCorrection = manzuCorrection + pinzuCorrection + souzuCorrection + jihaiCorrection;
+
+      var ankouFu = ankouFuManzu + ankouFuPinzu + ankouFuSouzu + ankouFuJihai + ankouFuCorrection;
+      
+      var tsumoFu = 2 >> ronShiftAmount;
+
+      // TODO this can be calculated once together with windShiftAmount and used over many hands
+      // doubleValueWindBit is 1 iff seat and round wind are the same
+      var doubleValueWindBit = System.Runtime.Intrinsics.X86.Popcnt.PopCount((uint)windShiftAmount) & 1L;
+      // lowest bit of honorOr is 1 iff there is a wind pair
+      var valueWindAdjuster = 1 + (honorOr & doubleValueWindBit);
+      var valuePairFu = (honorWindShift & 1L) << (int)valueWindAdjuster;
+
+      var fu = data.Fu + closedRonFu + (int)singleWaitFu + tsumoFu + (int)valuePairFu + (int)ankouFu;
+
+      var r = fu % 10;
+      fu += (r == 0 && fu != 20) ? 0 : 10 - r;
+
+      return (result, fu);
     }
 
     private const int EliminationDelta = 4;

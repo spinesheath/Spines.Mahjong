@@ -13,9 +13,9 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.Hatsu | 
       Yaku.Chun | 
       Yaku.BakazeTon | 
-      Yaku.JikazeNan | 
-      Yaku.JikazeShaa | 
-      Yaku.JikazePei | 
+      Yaku.BakazeNan | 
+      Yaku.BakazeShaa | 
+      Yaku.BakazePei | 
       Yaku.JikazeTon | 
       Yaku.JikazeNan | 
       Yaku.JikazeShaa | 
@@ -73,6 +73,24 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.RinshanKaihou |
       Yaku.HouteiRaoyui |
       Yaku.HaiteiRaoyue;
+
+    private const Yaku YakumanFilter =
+      Yaku.Daisangen |
+      Yaku.Shousuushii |
+      Yaku.Daisuushii |
+      Yaku.Suuankou |
+      Yaku.SuuankouTanki |
+      Yaku.KokushiMusou |
+      Yaku.KokushiMusouJuusanMen |
+      Yaku.Tsuuiisou |
+      Yaku.Chinroutou |
+      Yaku.Suukantsu |
+      Yaku.Ryuuiisou |
+      Yaku.ChuurenPoutou |
+      Yaku.Renhou |
+      Yaku.Chiihou |
+      Yaku.Tenhou |
+      Yaku.JunseiChuurenPoutou;
 
     public ScoreCalculatingVisitor()
     {
@@ -138,9 +156,9 @@ namespace Spines.Mahjong.Analysis.Tests
             var h = (HandCalculator) hand.WithTile(draw);
             var roundWind = _board.RoundWind.Index;
             var seatWind = seat.SeatWind.Index;
-            var tsumo = YakuCalculator.Tsumo(h, draw, roundWind, seatWind);
-            var ron = YakuCalculator.Ron(h, draw, roundWind, seatWind);
-            WeirdYakuCollector ^= tsumo | ron;
+            var (tsumoYaku, tsumoFu) = YakuCalculator.Tsumo(h, draw, roundWind, seatWind);
+            var (ronYaku, runFu) = YakuCalculator.Ron(h, draw, roundWind, seatWind);
+            WeirdYakuCollector ^= tsumoYaku | ronYaku;
           }
         }
       }
@@ -185,6 +203,11 @@ namespace Spines.Mahjong.Analysis.Tests
 
     public void Ron(int who, int fromWho, PaymentInformation payment)
     {
+      if ((payment.Yaku & ExternalYaku & YakumanFilter) != 0)
+      {
+        return;
+      }
+
       CalculationCount += 1;
 
       var seat = _board.Seats[who];
@@ -194,13 +217,14 @@ namespace Spines.Mahjong.Analysis.Tests
         var hand = (HandCalculator)seat.Hand.WithTile(discard);
         var roundWind = _board.RoundWind.Index;
         var seatWind = seat.SeatWind.Index;
-        var yaku = YakuCalculator.Ron(hand, discard, roundWind, seatWind);
-        if ((payment.Yaku & ExternalYaku) == payment.Yaku && yaku != Yaku.None)
+        var (yaku, fu) = YakuCalculator.Ron(hand, discard, roundWind, seatWind);
+
+        if (yaku != (payment.Yaku & YakuFilter))
         {
-          return;
+          FailureCount += 1;
         }
 
-        if ((yaku & YakuFilter) != (payment.Yaku & YakuFilter))
+        if ((yaku & YakumanFilter) == 0 && fu != payment.Fu)
         {
           FailureCount += 1;
         }
@@ -211,13 +235,14 @@ namespace Spines.Mahjong.Analysis.Tests
         var hand = (HandCalculator)seat.Hand.WithTile(discard);
         var roundWind = _board.RoundWind.Index;
         var seatWind = seat.SeatWind.Index;
-        var yaku = YakuCalculator.Chankan(hand, discard, roundWind, seatWind);
-        if ((payment.Yaku & ExternalYaku) == payment.Yaku && yaku != Yaku.None)
+        var (yaku, fu) = YakuCalculator.Chankan(hand, discard, roundWind, seatWind);
+
+        if (yaku != (payment.Yaku & YakuFilter))
         {
-          return;
+          FailureCount += 1;
         }
 
-        if ((yaku & YakuFilter) != (payment.Yaku & YakuFilter))
+        if ((yaku & YakumanFilter) == 0 && fu != payment.Fu)
         {
           FailureCount += 1;
         }
@@ -226,6 +251,11 @@ namespace Spines.Mahjong.Analysis.Tests
 
     public void Tsumo(int who, PaymentInformation payment)
     {
+      if ((payment.Yaku & ExternalYaku & YakumanFilter) != 0)
+      {
+        return;
+      }
+
       CalculationCount += 1;
 
       var seat = _board.Seats[who];
@@ -233,13 +263,14 @@ namespace Spines.Mahjong.Analysis.Tests
       var draw = seat.CurrentDraw!.TileType;
       var roundWind = _board.RoundWind.Index;
       var seatWind = seat.SeatWind.Index;
-      var yaku = YakuCalculator.Tsumo(hand, draw, roundWind, seatWind);
-      if ((payment.Yaku & ExternalYaku) == payment.Yaku && yaku != Yaku.None)
+      var (yaku, fu) = YakuCalculator.Tsumo(hand, draw, roundWind, seatWind);
+
+      if (yaku != (payment.Yaku & YakuFilter))
       {
-        return;
+        FailureCount += 1;
       }
 
-      if ((yaku & YakuFilter) != (payment.Yaku & YakuFilter))
+      if ((yaku & YakumanFilter) == 0 && fu != payment.Fu)
       {
         FailureCount += 1;
       }

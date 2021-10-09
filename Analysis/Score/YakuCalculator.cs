@@ -6,24 +6,28 @@ namespace Spines.Mahjong.Analysis.Score
 {
   public static class YakuCalculator
   {
-    private static ScoringFieldYaku CalculateInternal(HandCalculator hand, TileType winningTile, bool isRon, int roundWind, int seatWind)
+    private static (ScoringFieldYaku, int) CalculateInternal(HandCalculator hand, TileType winningTile, bool isRon, int roundWind, int seatWind)
     {
-      return (ScoringFieldYaku) ScoreLookup.Flags(hand, winningTile, isRon, roundWind, seatWind);
+      var (yaku, fu) = ScoreLookup.Flags(hand, winningTile, isRon, roundWind, seatWind);
+      return ((ScoringFieldYaku)yaku, fu);
     }
 
-    public static Yaku Ron(HandCalculator hand, TileType winningTile, int roundWind, int seatWind)
+    public static (Yaku, int) Ron(HandCalculator hand, TileType winningTile, int roundWind, int seatWind)
     {
-      return MapFlags(CalculateInternal(hand, winningTile, true, roundWind, seatWind));
+      var (yaku, fu) = CalculateInternal(hand, winningTile, true, roundWind, seatWind);
+      return (MapFlags(yaku), fu);
     }
 
-    public static Yaku Tsumo(HandCalculator hand, TileType winningTile, int roundWind, int seatWind)
+    public static (Yaku, int) Tsumo(HandCalculator hand, TileType winningTile, int roundWind, int seatWind)
     {
-      return MapFlags(CalculateInternal(hand, winningTile, false, roundWind, seatWind));
+      var (yaku, fu) = CalculateInternal(hand, winningTile, false, roundWind, seatWind);
+      return (MapFlags(yaku), fu);
     }
 
-    public static Yaku Chankan(HandCalculator hand, TileType winningTile, int roundWind, int seatWind)
+    public static (Yaku, int) Chankan(HandCalculator hand, TileType winningTile, int roundWind, int seatWind)
     {
-      return MapFlags(CalculateInternal(hand, winningTile, true, roundWind, seatWind));
+      var (yaku, fu) = CalculateInternal(hand, winningTile, true, roundWind, seatWind);
+      return (MapFlags(yaku), fu);
     }
 
     private static Yaku MapFlags(ScoringFieldYaku flags)

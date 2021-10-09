@@ -1,15 +1,10 @@
-﻿using System.Collections.Generic;
-using Spines.Mahjong.Analysis.Shanten;
-
-namespace Spines.Mahjong.Analysis.Score
+﻿namespace Spines.Mahjong.Analysis.Score
 {
   internal interface IScoringData
   {
     long BigAndToSumFilter { get; }
 
     long FinalMask { get; }
-
-    IReadOnlyList<long> MeldLookupValues { get; }
 
     long OpenBit { get; }
 
@@ -24,5 +19,7 @@ namespace Spines.Mahjong.Analysis.Score
     long HonorOr { get; }
 
     long HonorSum { get; }
+
+    int Fu { get; }
   }
 }

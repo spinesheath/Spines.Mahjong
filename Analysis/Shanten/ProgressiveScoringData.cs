@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Spines.Mahjong.Analysis.Resources;
 using Spines.Mahjong.Analysis.Score;
 
@@ -35,7 +34,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       SuitOr = new[] {suitOr0, suitOr0, suitOr0, 0L};
       //SuitOr = new[] {4609997310233935872L, 4609997310233935872L, 4609997310233935872L, 0L};
       
-      HonorOr = HonorOrLookup[0] | _lookupValues[3];
+      HonorOr = HonorOrLookup[0] | (_lookupValues[3] & ~0b1_111_111_111_111L);
       //HonorOr = -4901605103171010560L;
 
       HonorSum = HonorSumLookup[0] + _lookupValues[3];
@@ -420,8 +419,6 @@ namespace Spines.Mahjong.Analysis.Shanten
 
     public long FinalMask => _baseMask & _baseMaskFilter;
 
-    public IReadOnlyList<long> MeldLookupValues => _lookupValues;
-
     public long OpenBit { get; private set; }
 
     public long ShiftedAnkanCount { get; private set; }
@@ -488,7 +485,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       if (suitId == 3)
       {
         WaitShiftValues[3] = HonorWaitShiftLookup[base5Hash];
-        HonorOr = HonorOrLookup[base5Hash] | _lookupValues[3];
+        HonorOr = HonorOrLookup[base5Hash] | (_lookupValues[3] & ~0b1_111_111_111_111L);
         HonorSum = HonorSumLookup[base5Hash] + _lookupValues[3];
       }
       else

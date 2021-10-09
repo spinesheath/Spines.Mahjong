@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using Spines.Mahjong.Analysis.Replay;
 using Spines.Mahjong.Analysis.Score;
@@ -59,7 +58,7 @@ namespace Spines.Mahjong.Analysis.Tests
       var sp = new ShorthandParser(handString);
       var hand = new HandCalculator(sp);
 
-      var yaku = YakuCalculator.Ron(hand, discard, roundWind, seatWind);
+      var (yaku, fu) = YakuCalculator.Ron(hand, discard, roundWind, seatWind);
 
       Assert.Equal(expectedYaku, yaku);
     }
@@ -76,7 +75,7 @@ namespace Spines.Mahjong.Analysis.Tests
       var sp = new ShorthandParser(handString);
       var hand = new HandCalculator(sp);
 
-      var yaku = YakuCalculator.Ron(hand, discard, 0, 0);
+      var (yaku, fu) = YakuCalculator.Ron(hand, discard, 0, 0);
 
       Assert.Equal(expectedYaku, yaku);
     }
@@ -98,9 +97,56 @@ namespace Spines.Mahjong.Analysis.Tests
       var sp = new ShorthandParser(handString);
       var hand = new HandCalculator(sp);
 
-      var yaku = YakuCalculator.Ron(hand, discard, roundWind, seatWind);
+      var (yaku, fu) = YakuCalculator.Ron(hand, discard, roundWind, seatWind);
 
       Assert.Equal(expectedYaku, yaku);
+    }
+
+    [Theory]
+    [InlineData("999m456p234789s44z", 0, 2, "3s", 40)]
+    [InlineData("23477788m222z555M", 0, 1, "4m", 40)]
+    [InlineData("23445688m456s777Z", 0, 0, "4s", 30)]
+    [InlineData("345p22456s111z345M", 0, 3, "6s", 30)]
+    [InlineData("111m55p678s789M333Z", 1, 2, "1m", 30)]
+    [InlineData("234456p33377s555z", 1, 3, "5z", 40)]
+    [InlineData("123778899p11234s", 1, 1, "1s", 40)]
+    [InlineData("678m44678s 567P 234P", 0, 3, "8s", 30)]
+    [InlineData("44m234p567s222777z", 0, 1, "7z", 50)]
+    [InlineData("77788999s 789M 222Z", 0, 1, "9s", 40)]
+    [InlineData("12333345666p 999M", 1, 2, "6p", 30)]
+    [InlineData("45666678999m 333P", 0, 3, "8m", 30)]
+    [InlineData("11123444m 456S 111Z", 0, 0, "1m", 30)]
+    [InlineData("22266678999p 345P", 0, 2, "6p", 40)]
+    [InlineData("33345678999s 777Z", 0, 1, "9s", 30)]
+    [InlineData("33344455577m567s", 0, 3, "4m", 40)]
+    public void TotalFuRon(string handString, int roundWind, int seatWind, string discardString, int expectedFu)
+    {
+      var discard = TileType.FromString(discardString);
+      var sp = new ShorthandParser(handString);
+      var hand = new HandCalculator(sp);
+
+      var (yaku, fu) = YakuCalculator.Ron(hand, discard, roundWind, seatWind);
+
+      Assert.Equal(expectedFu, fu);
+    }
+
+    [Theory]
+    [InlineData("88m456789p123456s", 0, 1, "4s", 20)]
+    [InlineData("678m11555p234s555z", 1, 0, "5p", 40)]
+    [InlineData("22456m 999P 234S 222Z", 1, 1, "6m", 30)]
+    [InlineData("335599m5566p88s33z", 0, 1, "3m", 25)]
+    [InlineData("123m22p222678999s", 0, 0, "2s", 40)]
+    [InlineData("12355m555567s 777Z", 0, 3, "3m", 40)]
+    [InlineData("567p11123444555s", 1, 3, "1s", 40)]
+    public void TotalFuTsumo(string handString, int roundWind, int seatWind, string drawString, int expectedFu)
+    {
+      var draw = TileType.FromString(drawString);
+      var sp = new ShorthandParser(handString);
+      var hand = new HandCalculator(sp);
+
+      var (yaku, fu) = YakuCalculator.Tsumo(hand, draw, roundWind, seatWind);
+
+      Assert.Equal(expectedFu, fu);
     }
 
     [Fact]

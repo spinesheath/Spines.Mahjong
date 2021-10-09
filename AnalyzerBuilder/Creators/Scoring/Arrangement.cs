@@ -43,6 +43,11 @@ namespace AnalyzerBuilder.Creators.Scoring
       return Blocks.Any(b => b.IsShuntsu && b.Index == index);
     }
 
+    public bool ContainsPair(int index)
+    {
+      return Blocks.Any(b => b.IsPair && b.Index == index);
+    }
+
     public override string ToString()
     {
       var sb = new StringBuilder();

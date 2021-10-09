@@ -32,13 +32,75 @@ namespace AnalyzerBuilder.Creators.Scoring
 
       // Fu
       SingleWait(10);
+      AnkouFu(20);
+    }
+
+    private void AnkouFu(int offset)
+    {
+      var value = 0;
+      foreach (var arrangement in _interpretations)
+      {
+        var koutsus = arrangement.Blocks.Where(b => b.IsKoutsu).ToList();
+        var localValue = koutsus.Count + koutsus.Count(k => k.IsJunchanBlock);
+        value = Math.Max(value, localValue);
+      }
+      
+      WaitShiftValue |= (long)value << offset;
+
+      // 11123444 and 11123456777 shapes (guaranteed ankou, but lower value if wait on 1)
+      var hasUType1 = false;
+      var hasUType9 = false;
+      foreach (var arrangement in _interpretations)
+      {
+        if (arrangement.ContainsKoutsu(0) && arrangement.ContainsShuntsu(1))
+        {
+          if (arrangement.ContainsPair(3))
+          {
+            hasUType1 = true;
+          }
+
+          if (arrangement.ContainsShuntsu(4) && arrangement.ContainsPair(6))
+          {
+            hasUType1 = true;
+          }
+        }
+        else if (arrangement.ContainsKoutsu(8) && arrangement.ContainsShuntsu(5))
+        {
+          if (arrangement.ContainsPair(5))
+          {
+            hasUType9 = true;
+          }
+
+          if (arrangement.ContainsShuntsu(2) && arrangement.ContainsPair(2))
+          {
+            hasUType9 = true;
+          }
+        }
+      }
+
+      if (hasUType1)
+      {
+        WaitShiftValue |= 18L << 24;
+      }
+
+      if (hasUType9)
+      {
+        WaitShiftValue |= 9L << 24;
+      }
     }
 
     private void SingleWait(int offset)
     {
+      var hasPossibleOutsideKoutsu = _interpretations.Any(a => a.Blocks.Any(b => b.IsKoutsu && b.IsJunchanBlock));
+      
       foreach (var arrangement in _interpretations)
       {
         if (!arrangement.IsStandard)
+        {
+          continue;
+        }
+
+        if (hasPossibleOutsideKoutsu && arrangement.Blocks.All(b => !b.IsKoutsu || !b.IsJunchanBlock))
         {
           continue;
         }

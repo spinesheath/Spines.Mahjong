@@ -32,7 +32,14 @@ namespace AnalyzerBuilder.Creators.Scoring
 
       // Fu
       SingleWait(10);
-      ValuePair(1);
+      ValuePair(0);
+      AnkouFu(20);
+    }
+
+    private void AnkouFu(int offset)
+    {
+      var count = _arrangement.Blocks.Count(b => b.IsKoutsu);
+      WaitShiftValue += count << offset;
     }
 
     private void ValuePair(int offset)
@@ -43,6 +50,8 @@ namespace AnalyzerBuilder.Creators.Scoring
         {
           if (block.IsPair)
           {
+            // Uses the wind shift which is (orValue >> ((1 << seatWind) | (1 << roundWind)))
+            // The lowest bit is used to indicate wind or dragon pair
             OrValue |= FuValuePairBits[block.Index] << offset;
           }
         }
@@ -315,14 +324,14 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private static readonly long[] FuValuePairBits =
     {
-      0b000_100_010_101L,
-      0b001_000_100_110L,
-      0b100_000_111_000L,
-      0b101_110_000_000L,
+      0b000_100_010_101_1L,
+      0b001_000_100_110_1L,
+      0b100_000_111_000_1L,
+      0b101_110_000_000_1L,
 
-      0b111_111_111_111L,
-      0b111_111_111_111L,
-      0b111_111_111_111L
+      0b111_111_111_111_0L,
+      0b111_111_111_111_0L,
+      0b111_111_111_111_0L
     };
   }
 }
