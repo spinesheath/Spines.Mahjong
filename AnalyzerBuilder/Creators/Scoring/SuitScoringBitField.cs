@@ -47,11 +47,20 @@ namespace AnalyzerBuilder.Creators.Scoring
       
       WaitShiftValue |= (long)value << offset;
 
-      // 11123444 and 11123456777 shapes (guaranteed ankou, but lower value if wait on 1)
+      // u-type = 11123444 and 11123456777 shapes (guaranteed ankou, but lower value if wait on 1)
       var hasUType1 = false;
       var hasUType9 = false;
+      var hasSquareType = false;
       foreach (var arrangement in _interpretations)
       {
+        for (var i = 0; i < 7; i++)
+        {
+          if (arrangement.ContainsKoutsu(i) && arrangement.ContainsKoutsu(i + 1) && arrangement.ContainsKoutsu(i + 2))
+          {
+            hasSquareType = true;
+          }
+        }
+
         if (arrangement.ContainsKoutsu(0) && arrangement.ContainsShuntsu(1))
         {
           if (arrangement.ContainsPair(3))
@@ -86,6 +95,11 @@ namespace AnalyzerBuilder.Creators.Scoring
       if (hasUType9)
       {
         WaitShiftValue |= 9L << 24;
+      }
+
+      if (hasSquareType)
+      {
+        WaitShiftValue |= 1L << 29;
       }
     }
 

@@ -146,40 +146,39 @@ namespace Spines.Mahjong.Analysis.Score
 
       // u-type => 11123444 or 66678999 or neither
 
-      var waitIsOuterTile = (0b100000001 >> winningTile.Index) & 1;
+      var waitIsJihai = (0b1000 >> winningTileSuit) & 1;
+      var waitIsOuterTile = (0b100000001 >> winningTile.Index) & (1 - waitIsJihai);
       const int uTypeFilter = 0b1_100000000_000000000;
-      
+      const int uTypeSanshokuFilter = 0b10_001_000_000_000_000_000_000_000;
+
+      var waitShiftSuitSum = data.WaitShiftValues[0] + data.WaitShiftValues[1] + data.WaitShiftValues[2];
+      var squareType = (waitShiftSuitSum >> 29) & 1;
+      var uType = (waitShiftSuitSum >> 24) & 0b11111;
+      var uTypeBit = (uTypeFilter >> (int)(uType + winningTileIndex)) & ronShiftAmount & 1;
+
+      var uTypeSanshokuAnkouCorrection = uTypeSanshokuFilter >> (int)(uType + suitsAnd) & 0b100;
+
       var ankouFuManzu = (data.WaitShiftValues[0] & (0b111L << 20)) >> 18;
-      var baseAnkouCountManzu = (suitOr[0] & (0b11L << 32)) >> 32;
-      var uTypeBitManzu = (uTypeFilter >> (int)(((data.WaitShiftValues[0] >> 24) & 0b11111) + winningTile.Index)) & ronShiftAmount & 1;
-      var bonusAnkouCountManzu = (waitShiftValues[0] & (1L << 32)) >> 32;
-      var potentialBonusAnkouCountManzu = (data.WaitShiftValues[0] & (1L << 32)) >> 32;
-      var manzuCorrection = (2 * (bonusAnkouCountManzu - potentialBonusAnkouCountManzu - uTypeBitManzu)) << waitIsOuterTile;
-
       var ankouFuPinzu = (data.WaitShiftValues[1] & (0b111L << 20)) >> 18;
-      var baseAnkouCountPinzu = (suitOr[1] & (0b11L << 32)) >> 32;
-      var uTypeBitPinzu = (uTypeFilter >> (int)(((data.WaitShiftValues[1] >> 24) & 0b11111) + winningTile.Index)) & ronShiftAmount & 1;
-      var bonusAnkouCountPinzu = (waitShiftValues[1] & (1L << 32)) >> 32;
-      var potentialBonusAnkouCountPinzu = (data.WaitShiftValues[1] & (1L << 32)) >> 32;
-      var pinzuCorrection = (2 * (bonusAnkouCountPinzu - potentialBonusAnkouCountPinzu - uTypeBitPinzu)) << waitIsOuterTile;
-
       var ankouFuSouzu = (data.WaitShiftValues[2] & (0b111L << 20)) >> 18;
-      var baseAnkouCountSouzu = (suitOr[2] & (0b11L << 32)) >> 32;
-      var uTypeBitSouzu = (uTypeFilter >> (int)(((data.WaitShiftValues[2] >> 24) & 0b11111) + winningTile.Index)) & ronShiftAmount & 1;
-      var bonusAnkouCountSouzu = (waitShiftValues[2] & (1L << 32)) >> 32;
-      var potentialBonusAnkouCountSouzu = (data.WaitShiftValues[2] & (1L << 32)) >> 32;
-      var souzuCorrection = (2 * (bonusAnkouCountSouzu - potentialBonusAnkouCountSouzu - uTypeBitSouzu)) << waitIsOuterTile;
-
       var ankouFuJihai = (data.WaitShiftValues[3] & (0b111L << 20)) >> 17;
-      var bonusAnkouCountJihai = (waitShiftValues[3] & (1L << 32)) >> 32;
-      var potentialBonusAnkouCountJihai = (data.WaitShiftValues[3] & (1L << 32)) >> 32;
-      var jihaiCorrection = 4 * (bonusAnkouCountJihai - potentialBonusAnkouCountJihai);
 
+      var bonusAnkouCountWinningSuit = (waitShiftValues[winningTileSuit] & (1L << 32)) >> 32;
+      var potentialBonusAnkouCountWinningSuit = (data.WaitShiftValues[winningTileSuit] & (1L << 32)) >> 32;
+      var ankouFuCorrection = (2 * (bonusAnkouCountWinningSuit - potentialBonusAnkouCountWinningSuit - uTypeBit)) << waitIsOuterTile;
+      ankouFuCorrection += ankouFuCorrection * waitIsJihai;
+
+      var removeAnkouFu = squareType & (result >> BitIndex.Iipeikou);
+
+      const int squareTypeSingleWaitMask = 0b011000110;
+      var squareTypeSingleWait = (data.WaitShiftValues[winningTileSuit] >> 29) & 
+                                 (squareTypeSingleWaitMask >> winningTileIndex) & 
+                                 (result >> BitIndex.Iipeikou) &
+                                 (1 - (result >> BitIndex.ClosedTanyao)) &
+                                 1;
+      var squareTypeSingleWaitFu = (int)squareTypeSingleWait * 2;
       
-
-      var ankouFuCorrection = manzuCorrection + pinzuCorrection + souzuCorrection + jihaiCorrection;
-
-      var ankouFu = ankouFuManzu + ankouFuPinzu + ankouFuSouzu + ankouFuJihai + ankouFuCorrection;
+      var ankouFu = (1 - removeAnkouFu) * (ankouFuManzu + ankouFuPinzu + ankouFuSouzu + ankouFuJihai + ankouFuCorrection - uTypeSanshokuAnkouCorrection);
       
       var tsumoFu = 2 >> ronShiftAmount;
 
@@ -190,7 +189,7 @@ namespace Spines.Mahjong.Analysis.Score
       var valueWindAdjuster = 1 + (honorOr & doubleValueWindBit);
       var valuePairFu = (honorWindShift & 1L) << (int)valueWindAdjuster;
 
-      var fu = data.Fu + closedRonFu + (int)singleWaitFu + tsumoFu + (int)valuePairFu + (int)ankouFu;
+      var fu = data.Fu + closedRonFu + (int)singleWaitFu + tsumoFu + (int)valuePairFu + (int)ankouFu + squareTypeSingleWaitFu;
 
       var r = fu % 10;
       fu += (r == 0 && fu != 20) ? 0 : 10 - r;
