@@ -121,6 +121,13 @@ namespace Spines.Mahjong.Analysis.Tests
     [InlineData("33344455577m567s", 0, 3, "4m", 40)]
     [InlineData("234m77p111222333s", 1, 3, "3s", 40)]
     [InlineData("22233344477s 234M", 2, 1, "3s", 30)]
+    [InlineData("44789p123456789s", 1, 2, "2s", 40)]
+    [InlineData("111m33999s 444Z777Z", 1, 2, "1m", 40)]
+    [InlineData("123p11123444s111z", 0, 1, "1z", 50)]
+    [InlineData("789p111222333s44z", 0, 3, "4z", 40)]
+    [InlineData("99m112233p123s222z", 0, 1, "2z", 40)]
+    [InlineData("11789m778899p111z", 0, 3, "1z", 40)]
+    [InlineData("234m11123444p234s", 1, 2, "1p", 40)]
     public void TotalFuRon(string handString, int roundWind, int seatWind, string discardString, int expectedFu)
     {
       var discard = TileType.FromString(discardString);
@@ -141,6 +148,10 @@ namespace Spines.Mahjong.Analysis.Tests
     [InlineData("12355m555567s 777Z", 0, 3, "3m", 40)]
     [InlineData("567p11123444555s", 1, 3, "1s", 40)]
     [InlineData("789m66678999p789s", 0, 3, "7m", 30)]
+    [InlineData("222333444789p77z", 1, 0, "7p", 40)]
+    [InlineData("666m789p66678999s", 0, 3, "6m", 40)]
+    [InlineData("123m123p11123444s", 0, 0, "2p", 30)]
+    [InlineData("66678999m 789P 789S", 1, 2, "6m", 30)]
     public void TotalFuTsumo(string handString, int roundWind, int seatWind, string drawString, int expectedFu)
     {
       var draw = TileType.FromString(drawString);

@@ -1057,7 +1057,10 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.KokushiMusou |
       Yaku.KokushiMusouJuusanMen |
       Yaku.Tsuuiisou |
-      Yaku.Daisangen;
+      Yaku.Daisangen |
+      Yaku.Suukantsu |
+      Yaku.Renhou |
+      Yaku.Tenhou;
 
     private static readonly Yaku HanMask1 =
       Yaku.MenzenTsumo |

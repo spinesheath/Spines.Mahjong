@@ -37,20 +37,11 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void AnkouFu(int offset)
     {
-      var value = 0;
-      foreach (var arrangement in _interpretations)
-      {
-        var koutsus = arrangement.Blocks.Where(b => b.IsKoutsu).ToList();
-        var localValue = koutsus.Count + koutsus.Count(k => k.IsJunchanBlock);
-        value = Math.Max(value, localValue);
-      }
-      
-      WaitShiftValue |= (long)value << offset;
-
       // u-type = 11123444 and 11123456777 shapes (guaranteed ankou, but lower value if wait on 1)
       var hasUType1 = false;
       var hasUType9 = false;
       var hasSquareType = false;
+      var squareTypeIndex = 0L;
       foreach (var arrangement in _interpretations)
       {
         for (var i = 0; i < 7; i++)
@@ -58,6 +49,7 @@ namespace AnalyzerBuilder.Creators.Scoring
           if (arrangement.ContainsKoutsu(i) && arrangement.ContainsKoutsu(i + 1) && arrangement.ContainsKoutsu(i + 2))
           {
             hasSquareType = true;
+            squareTypeIndex = i;
           }
         }
 
@@ -99,8 +91,19 @@ namespace AnalyzerBuilder.Creators.Scoring
 
       if (hasSquareType)
       {
-        WaitShiftValue |= 1L << 29;
+        WaitShiftValue |= 1L << 61;
+        WaitShiftValue |= squareTypeIndex << 29;
       }
+
+      var value = 0;
+      foreach (var arrangement in _interpretations)
+      {
+        var koutsus = arrangement.Blocks.Where(b => b.IsKoutsu).ToList();
+        var localValue = koutsus.Count + koutsus.Count(k => k.IsJunchanBlock);
+        value = Math.Max(value, localValue);
+      }
+
+      WaitShiftValue |= (long)value << offset;
     }
 
     private void SingleWait(int offset)

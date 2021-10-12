@@ -98,7 +98,7 @@ namespace Spines.Mahjong.Analysis.Score
         result &= ~((1L << BitIndex.ClosedChanta) | (1L << BitIndex.Iipeikou));
       }
 
-      var iipeikouBit = (result >> BitIndex.Iipeikou) & 1L;
+      var openIipeikouBit = (result >> BitIndex.Iipeikou) & 1L;
       var sanankouBit = (result >> BitIndex.Sanankou) & 1L;
 
       result += (result & OpenBitFilter) * openBit;
@@ -108,12 +108,13 @@ namespace Spines.Mahjong.Analysis.Score
       var openJunchanBit = (result >> BitIndex.OpenJunchan) & 1L;
       var toitoiBit = (result >> BitIndex.Toitoi) & 1L;
 
-      var x = iipeikouBit & (closedChantaBit | closedJunchanBit);
+      var x = openIipeikouBit & (closedChantaBit | closedJunchanBit);
       var y = (sanankouBit ^ x) & sanankouBit;
-      var z = iipeikouBit & (sanankouBit | toitoiBit) & openJunchanBit;
-      result -= (result & (1L << BitIndex.Sanankou)) * x * (1 - toitoiBit);
-      // (iipeikouBit << BitIndex.OpenChanta) means 111222333 shape and chanta, here excluded in case of sanankou
-      result -= (result & ((1L << BitIndex.Pinfu) | (1L << BitIndex.Iipeikou) | (iipeikouBit << BitIndex.OpenChanta))) * y;
+      var z = openIipeikouBit & (sanankouBit | toitoiBit) & openJunchanBit;
+      var removeSanankou = x * (1 - toitoiBit);
+      result -= (result & (1L << BitIndex.Sanankou)) * removeSanankou;
+      // (openIipeikouBit << BitIndex.OpenChanta) means 111222333 shape and chanta, here excluded in case of sanankou
+      result -= (result & ((1L << BitIndex.Pinfu) | (1L << BitIndex.Iipeikou) | (openIipeikouBit << BitIndex.OpenChanta))) * y;
       result -= (result & (1L << BitIndex.OpenJunchan)) * z;
       result -= (result & ((1L << BitIndex.Iipeikou) | (1L << BitIndex.ClosedJunchan))) * (toitoiBit & (1 - openBit));
 
@@ -146,39 +147,50 @@ namespace Spines.Mahjong.Analysis.Score
 
       // u-type => 11123444 or 66678999 or neither
 
+      var iipeikouAtBit0 = result >> BitIndex.Iipeikou;
+
       var waitIsJihai = (0b1000 >> winningTileSuit) & 1;
-      var waitIsOuterTile = (0b100000001 >> winningTile.Index) & (1 - waitIsJihai);
+      var waitIsNotJihai = 1 - waitIsJihai;
+      var waitIsOuterTile = (0b100000001 >> winningTileIndex) & waitIsNotJihai;
       const int uTypeFilter = 0b1_100000000_000000000;
-      const int uTypeSanshokuFilter = 0b10_001_000_000_000_000_000_000_000;
+      const int uTypeSanshokuFilter = 0b1_001_000_000_000_000_000_000_000;
+      
+      var waitShiftSuitOr = data.WaitShiftValues[0] | data.WaitShiftValues[1] | data.WaitShiftValues[2];
+      var squareType = (data.WaitShiftValues[winningTileSuit] >> 61) & 1;
+      var squareTypeIndex = (data.WaitShiftValues[winningTileSuit] >> 29) & 0b111;
+      var singleWaitSquareCorrection = ((squareType & ~iipeikouAtBit0) << (int) (winningTileIndex - squareTypeIndex)) & 2;
 
-      var waitShiftSuitSum = data.WaitShiftValues[0] + data.WaitShiftValues[1] + data.WaitShiftValues[2];
-      var squareType = (waitShiftSuitSum >> 29) & 1;
-      var uType = (waitShiftSuitSum >> 24) & 0b11111;
+      // TODO here we need general u type
+      // TODO also require sanshoku doujun
+      var anySuitUType = (waitShiftSuitOr >> 24) & 0b11111;
+      // & result here is for ensuring open/closed sanshoku doujun, which happens to be at 0b100 and 0b1000
+      var uTypeSanshokuAnkouCorrection = uTypeSanshokuFilter >> (int)(anySuitUType + suitsAnd) & 0b100 & (result | (result >> 1));
+
+      // TODO here we need suit specific u type
+      var uType = (data.WaitShiftValues[winningTileSuit] >> 24) & 0b11111;
       var uTypeBit = (uTypeFilter >> (int)(uType + winningTileIndex)) & ronShiftAmount & 1;
+      var bonusAnkouCountWinningSuit = (waitShiftValues[winningTileSuit] & (1L << 32)) >> 32;
+      var potentialBonusAnkouCountWinningSuit = (data.WaitShiftValues[winningTileSuit] & (1L << 32)) >> 32;
+      var ankouFuCorrection = (2 * (potentialBonusAnkouCountWinningSuit + uTypeBit - bonusAnkouCountWinningSuit)) << waitIsOuterTile;
+      ankouFuCorrection |= uTypeSanshokuAnkouCorrection;
+      ankouFuCorrection += ankouFuCorrection * waitIsJihai;
 
-      var uTypeSanshokuAnkouCorrection = uTypeSanshokuFilter >> (int)(uType + suitsAnd) & 0b100;
+      var anySuitSquareType = (waitShiftSuitOr >> 61) & 1;
+      var removeAnkouFu = (squareType & iipeikouAtBit0) | (removeSanankou & anySuitSquareType);
+
+      const int squareTypeSingleWaitMask = 0b011000110;
+      var squareTypeSingleWait = squareType & 
+                                 (squareTypeSingleWaitMask >> winningTileIndex) & 
+                                 iipeikouAtBit0 &
+                                 (1 - (result >> BitIndex.ClosedTanyao));
+      var squareTypeSingleWaitFu = (int)squareTypeSingleWait * 2;
 
       var ankouFuManzu = (data.WaitShiftValues[0] & (0b111L << 20)) >> 18;
       var ankouFuPinzu = (data.WaitShiftValues[1] & (0b111L << 20)) >> 18;
       var ankouFuSouzu = (data.WaitShiftValues[2] & (0b111L << 20)) >> 18;
       var ankouFuJihai = (data.WaitShiftValues[3] & (0b111L << 20)) >> 17;
 
-      var bonusAnkouCountWinningSuit = (waitShiftValues[winningTileSuit] & (1L << 32)) >> 32;
-      var potentialBonusAnkouCountWinningSuit = (data.WaitShiftValues[winningTileSuit] & (1L << 32)) >> 32;
-      var ankouFuCorrection = (2 * (bonusAnkouCountWinningSuit - potentialBonusAnkouCountWinningSuit - uTypeBit)) << waitIsOuterTile;
-      ankouFuCorrection += ankouFuCorrection * waitIsJihai;
-
-      var removeAnkouFu = squareType & (result >> BitIndex.Iipeikou);
-
-      const int squareTypeSingleWaitMask = 0b011000110;
-      var squareTypeSingleWait = (data.WaitShiftValues[winningTileSuit] >> 29) & 
-                                 (squareTypeSingleWaitMask >> winningTileIndex) & 
-                                 (result >> BitIndex.Iipeikou) &
-                                 (1 - (result >> BitIndex.ClosedTanyao)) &
-                                 1;
-      var squareTypeSingleWaitFu = (int)squareTypeSingleWait * 2;
-      
-      var ankouFu = (1 - removeAnkouFu) * (ankouFuManzu + ankouFuPinzu + ankouFuSouzu + ankouFuJihai + ankouFuCorrection - uTypeSanshokuAnkouCorrection);
+      var ankouFu = (1 - removeAnkouFu) * (ankouFuManzu + ankouFuPinzu + ankouFuSouzu + ankouFuJihai - ankouFuCorrection);
       
       var tsumoFu = 2 >> ronShiftAmount;
 
@@ -189,12 +201,13 @@ namespace Spines.Mahjong.Analysis.Score
       var valueWindAdjuster = 1 + (honorOr & doubleValueWindBit);
       var valuePairFu = (honorWindShift & 1L) << (int)valueWindAdjuster;
 
-      var fu = data.Fu + closedRonFu + (int)singleWaitFu + tsumoFu + (int)valuePairFu + (int)ankouFu + squareTypeSingleWaitFu;
+      var fu = data.Fu + closedRonFu + (int)singleWaitFu + tsumoFu + (int)valuePairFu + (int)ankouFu 
+               + squareTypeSingleWaitFu - (int)singleWaitSquareCorrection;
 
       var r = fu % 10;
-      fu += (r == 0 && fu != 20) ? 0 : 10 - r;
+      var rounding = (r == 0 && fu != 20) ? 0 : 10 - r;
 
-      return (result, fu);
+      return (result, fu + rounding);
     }
 
     private const int EliminationDelta = 4;

@@ -113,7 +113,12 @@ namespace Spines.Mahjong.Analysis.Tests
               {
               }
 
+              if (classicFu != fu)
+              {
+              }
+
               Assert.Equal(classicYaku, yaku);
+              Assert.Equal(classicFu, fu);
             }
           }
         }
