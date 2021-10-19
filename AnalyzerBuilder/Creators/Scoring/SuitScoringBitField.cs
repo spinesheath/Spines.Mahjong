@@ -31,68 +31,27 @@ namespace AnalyzerBuilder.Creators.Scoring
       Ryuuiisou(28);
 
       // Fu
+      ClassifyShape();
       SingleWait(10);
       AnkouFu(20);
     }
 
     private void AnkouFu(int offset)
     {
-      // u-type = 11123444 and 11123456777 shapes (guaranteed ankou, but lower value if wait on 1)
-      var hasUType1 = false;
-      var hasUType9 = false;
-      var hasSquareType = false;
-      var squareTypeIndex = 0L;
-      foreach (var arrangement in _interpretations)
-      {
-        for (var i = 0; i < 7; i++)
-        {
-          if (arrangement.ContainsKoutsu(i) && arrangement.ContainsKoutsu(i + 1) && arrangement.ContainsKoutsu(i + 2))
-          {
-            hasSquareType = true;
-            squareTypeIndex = i;
-          }
-        }
-
-        if (arrangement.ContainsKoutsu(0) && arrangement.ContainsShuntsu(1))
-        {
-          if (arrangement.ContainsPair(3))
-          {
-            hasUType1 = true;
-          }
-
-          if (arrangement.ContainsShuntsu(4) && arrangement.ContainsPair(6))
-          {
-            hasUType1 = true;
-          }
-        }
-        else if (arrangement.ContainsKoutsu(8) && arrangement.ContainsShuntsu(5))
-        {
-          if (arrangement.ContainsPair(5))
-          {
-            hasUType9 = true;
-          }
-
-          if (arrangement.ContainsShuntsu(2) && arrangement.ContainsPair(2))
-          {
-            hasUType9 = true;
-          }
-        }
-      }
-
-      if (hasUType1)
+      if (_hasUType1)
       {
         WaitShiftValue |= 18L << 24;
       }
 
-      if (hasUType9)
+      if (_hasUType9)
       {
         WaitShiftValue |= 9L << 24;
       }
 
-      if (hasSquareType)
+      if (_hasSquareType)
       {
         WaitShiftValue |= 1L << 61;
-        WaitShiftValue |= squareTypeIndex << 29;
+        WaitShiftValue |= _squareTypeIndex << 29;
       }
 
       var value = 0;
@@ -104,6 +63,51 @@ namespace AnalyzerBuilder.Creators.Scoring
       }
 
       WaitShiftValue |= (long)value << offset;
+    }
+
+    private void ClassifyShape()
+    {
+      // u-type = 11123444 and 11123456777 shapes (guaranteed ankou, but lower value if wait on 1)
+      _hasUType1 = false;
+      _hasUType9 = false;
+      _hasSquareType = false;
+      _squareTypeIndex = 0L;
+      foreach (var arrangement in _interpretations)
+      {
+        for (var i = 0; i < 7; i++)
+        {
+          if (arrangement.ContainsKoutsu(i) && arrangement.ContainsKoutsu(i + 1) && arrangement.ContainsKoutsu(i + 2))
+          {
+            _hasSquareType = true;
+            _squareTypeIndex = i;
+          }
+        }
+
+        if (arrangement.ContainsKoutsu(0) && arrangement.ContainsShuntsu(1))
+        {
+          if (arrangement.ContainsPair(3))
+          {
+            _hasUType1 = true;
+          }
+
+          if (arrangement.ContainsShuntsu(4) && arrangement.ContainsPair(6))
+          {
+            _hasUType1 = true;
+          }
+        }
+        else if (arrangement.ContainsKoutsu(8) && arrangement.ContainsShuntsu(5))
+        {
+          if (arrangement.ContainsPair(5))
+          {
+            _hasUType9 = true;
+          }
+
+          if (arrangement.ContainsShuntsu(2) && arrangement.ContainsPair(2))
+          {
+            _hasUType9 = true;
+          }
+        }
+      }
     }
 
     private void SingleWait(int offset)
@@ -122,15 +126,33 @@ namespace AnalyzerBuilder.Creators.Scoring
           continue;
         }
 
+        // TODO maybe better to exclude U-types from single wait and ankou fu calculations and treat them separately
+
+        var indexesToIgnore = new List<int>();
+        // special treatment for 11123444999 and 11166678999 to avoid getting single wait fu and ankou fu for the same tile
+        if (_hasUType1 && arrangement.ContainsKoutsu(8))
+        {
+          indexesToIgnore.Add(0);
+          indexesToIgnore.Add(1);
+        }
+        else if (_hasUType9 && arrangement.ContainsKoutsu(0))
+        {
+          indexesToIgnore.Add(7);
+          indexesToIgnore.Add(8);
+        }
+
         foreach (var block in arrangement.Blocks)
         {
-          if (block.IsPair)
+          if (block.IsPair && !indexesToIgnore.Contains(block.Index))
           {
             WaitShiftValue |= 1L << (offset + 1 + block.Index);
           }
           else if (block.IsShuntsu)
           {
-            WaitShiftValue |= 1L << (offset + 1 + block.Index + 1);
+            if (!indexesToIgnore.Contains(block.Index + 1))
+            {
+              WaitShiftValue |= 1L << (offset + 1 + block.Index + 1);
+            }
               
             if (block.Index == 0)
             {
@@ -159,6 +181,10 @@ namespace AnalyzerBuilder.Creators.Scoring
     private readonly IReadOnlyList<Arrangement> _interpretations;
 
     private readonly int _iipeikouCount;
+    private bool _hasUType1;
+    private bool _hasUType9;
+    private bool _hasSquareType;
+    private long _squareTypeIndex;
 
     private void Ryuuiisou(int offset)
     {

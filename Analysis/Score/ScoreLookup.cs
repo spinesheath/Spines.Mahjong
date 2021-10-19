@@ -153,7 +153,7 @@ namespace Spines.Mahjong.Analysis.Score
       var waitIsNotJihai = 1 - waitIsJihai;
       var waitIsOuterTile = (0b100000001 >> winningTileIndex) & waitIsNotJihai;
       const int uTypeFilter = 0b1_100000000_000000000;
-      const int uTypeSanshokuFilter = 0b1_001_000_000_000_000_000_000_000;
+      const long uTypeSanshokuFilter = 0b100_000_001_001_000_000_000_000_000_000_000L;
       
       var waitShiftSuitOr = data.WaitShiftValues[0] | data.WaitShiftValues[1] | data.WaitShiftValues[2];
       var squareType = (data.WaitShiftValues[winningTileSuit] >> 61) & 1;
@@ -163,8 +163,8 @@ namespace Spines.Mahjong.Analysis.Score
       // TODO here we need general u type
       // TODO also require sanshoku doujun
       var anySuitUType = (waitShiftSuitOr >> 24) & 0b11111;
-      // & result here is for ensuring open/closed sanshoku doujun, which happens to be at 0b100 and 0b1000
-      var uTypeSanshokuAnkouCorrection = uTypeSanshokuFilter >> (int)(anySuitUType + suitsAnd) & 0b100 & (result | (result >> 1));
+      // & result here is for ensuring sanshoku, which happens to be at 0b100 and 0b1000
+      var uTypeSanshokuAnkouCorrection = uTypeSanshokuFilter >> (int)(anySuitUType + suitsAnd) & 0b100 & (result | (result >> 1) | (result >> 2));
 
       // TODO here we need suit specific u type
       var uType = (data.WaitShiftValues[winningTileSuit] >> 24) & 0b11111;

@@ -152,6 +152,9 @@ namespace Spines.Mahjong.Analysis.Tests
     [InlineData("666m789p66678999s", 0, 3, "6m", 40)]
     [InlineData("123m123p11123444s", 0, 0, "2p", 30)]
     [InlineData("66678999m 789P 789S", 1, 2, "6m", 30)]
+    [InlineData("11123444999m 222P", 0, 0, "1m", 40)]
+    [InlineData("11123444999m 222P", 0, 0, "2m", 40)]
+    [InlineData("11123444m 444P 444S", 0, 0, "4m", 30)]
     public void TotalFuTsumo(string handString, int roundWind, int seatWind, string drawString, int expectedFu)
     {
       var draw = TileType.FromString(drawString);

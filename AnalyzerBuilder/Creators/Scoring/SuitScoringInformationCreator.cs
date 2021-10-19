@@ -24,6 +24,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       {
         var index = group.Key;
         var field = new SuitScoringBitField(group);
+        var uType = new UTypeFuCreator(group);
 
         Debug.Assert(orLookup[index] == 0 || orLookup[index] == field.OrValue);
         orLookup[index] = field.OrValue;
