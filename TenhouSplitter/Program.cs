@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using Newtonsoft.Json;
 using Spines.Mahjong.Analysis.Replay;
@@ -13,7 +14,7 @@ namespace TenhouSplitter
 {
   class Program
   {
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
       if (args.Length != 1)
       {
@@ -22,26 +23,19 @@ namespace TenhouSplitter
         return;
       }
 
-      var sourceFile = args[0];
+      var source = args[0];
+      var xml = await ReplayLoader.Load(source);
 
-      if (!File.Exists(sourceFile))
+      if (xml == null)
       {
-        Console.WriteLine("source file does not exist");
+        Console.WriteLine("could not find replay");
         Console.ReadKey();
-        return;
       }
 
-      var tempDir = Path.GetTempPath();
-      var targetFileName = Path.Combine(tempDir, "tenhousplitter_4CA6FAB8732343429A43026F88FCE9B5.txt");
-
-      var xml = XElement.Load(sourceFile);
-      var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(sourceFile);
+      var targetFileName = Path.Combine(Path.GetTempPath(), "tenhousplitter_4CA6FAB8732343429A43026F88FCE9B5.txt");
 
       using (var targetFile = File.CreateText(targetFileName))
       {
-        targetFile.WriteLine($"http://tenhou.net/0/?log={fileNameWithoutExtension!.Substring(0, 31)}&tw=0");
-        targetFile.WriteLine();
-
         Split(xml, targetFile);
       }
 
@@ -115,6 +109,7 @@ namespace TenhouSplitter
             var roundWithinWind = previousRound % 4;
             targetFile.WriteLine($"{roundWind}{roundWithinWind}-{repetition}: Draw");
             targetFile.WriteLine(JsonConvert.SerializeObject(root));
+            targetFile.WriteLine();
             break;
           }
           case "AGARI":
