@@ -13,38 +13,29 @@ namespace TenhouSplitter
 {
   class Program
   {
-    private static string _sourceFile;
-    private static string _targetDirectory;
-
     static void Main(string[] args)
     {
-      if (args.Length != 2)
+      if (args.Length != 1)
       {
-        Console.WriteLine("args: <source file> <target directory>");
+        Console.WriteLine("invalid arguments: source file or tenhou replay id");
         Console.ReadKey();
         return;
       }
 
-      _sourceFile = args[0];
-      _targetDirectory = args[1];
+      var sourceFile = args[0];
 
-      if (!File.Exists(_sourceFile))
+      if (!File.Exists(sourceFile))
       {
         Console.WriteLine("source file does not exist");
         Console.ReadKey();
         return;
       }
 
-      if (!Directory.Exists(_targetDirectory))
-      {
-        Console.WriteLine("target directory does not exist");
-        Console.ReadKey();
-        return;
-      }
-      
-      var xml = XElement.Load(_sourceFile);
-      var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(_sourceFile);
-      var targetFileName = Path.Combine(_targetDirectory, fileNameWithoutExtension + ".split.txt");
+      var tempDir = Path.GetTempPath();
+      var targetFileName = Path.Combine(tempDir, "tenhousplitter_4CA6FAB8732343429A43026F88FCE9B5.txt");
+
+      var xml = XElement.Load(sourceFile);
+      var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(sourceFile);
 
       using (var targetFile = File.CreateText(targetFileName))
       {
