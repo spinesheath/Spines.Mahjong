@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReplayBundleCreator", "Repl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MemoryProfilingRig", "MemoryProfilingRig\MemoryProfilingRig.csproj", "{157FF3E0-8FBD-45B0-A322-4EFE7E16F6F8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnalyzerBuilder", "AnalyzerBuilder\AnalyzerBuilder.csproj", "{1B10422E-0A51-4731-88BF-A42FAC37B023}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnalyzerBuilder", "AnalyzerBuilder\AnalyzerBuilder.csproj", "{1B10422E-0A51-4731-88BF-A42FAC37B023}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenhouSplitter", "TenhouSplitter\TenhouSplitter.csproj", "{1575A2A9-6C9E-4350-AEAB-F1C4C709AD26}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{1B10422E-0A51-4731-88BF-A42FAC37B023}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B10422E-0A51-4731-88BF-A42FAC37B023}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1B10422E-0A51-4731-88BF-A42FAC37B023}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1575A2A9-6C9E-4350-AEAB-F1C4C709AD26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1575A2A9-6C9E-4350-AEAB-F1C4C709AD26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1575A2A9-6C9E-4350-AEAB-F1C4C709AD26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1575A2A9-6C9E-4350-AEAB-F1C4C709AD26}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
