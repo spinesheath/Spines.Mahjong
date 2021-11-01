@@ -6,9 +6,9 @@ namespace AnalyzerBuilder.Creators.Scoring
 {
   internal class SuitScoringBitField
   {
-    public SuitScoringBitField(IEnumerable<Arrangement> interpretations)
+    public SuitScoringBitField(ArrangementGroup arrangements)
     {
-      _interpretations = interpretations.ToList();
+      _arrangementGroup = arrangements;
       _iipeikouCount = CalculateIipeikouCount();
 
       // Yaku
@@ -31,31 +31,32 @@ namespace AnalyzerBuilder.Creators.Scoring
       Ryuuiisou(28);
 
       // Fu
-      ClassifyShape();
       SingleWait(10);
       AnkouFu(20);
     }
-
+    
     private void AnkouFu(int offset)
     {
-      if (_hasUType1)
+      // TODO if uType, no ankouFu?
+
+      if (_arrangementGroup.HasUType1)
       {
         WaitShiftValue |= 18L << 24;
       }
 
-      if (_hasUType9)
+      if (_arrangementGroup.HasUType9)
       {
         WaitShiftValue |= 9L << 24;
       }
 
-      if (_hasSquareType)
+      if (_arrangementGroup.HasSquareType)
       {
         WaitShiftValue |= 1L << 61;
-        WaitShiftValue |= _squareTypeIndex << 29;
+        WaitShiftValue |= _arrangementGroup.SquareTypeIndex << 29;
       }
 
       var value = 0;
-      foreach (var arrangement in _interpretations)
+      foreach (var arrangement in Interpretations)
       {
         var koutsus = arrangement.Blocks.Where(b => b.IsKoutsu).ToList();
         var localValue = koutsus.Count + koutsus.Count(k => k.IsJunchanBlock);
@@ -65,103 +66,49 @@ namespace AnalyzerBuilder.Creators.Scoring
       WaitShiftValue |= (long)value << offset;
     }
 
-    private void ClassifyShape()
-    {
-      // u-type = 11123444 and 11123456777 shapes (guaranteed ankou, but lower value if wait on 1)
-      _hasUType1 = false;
-      _hasUType9 = false;
-      _hasSquareType = false;
-      _squareTypeIndex = 0L;
-      foreach (var arrangement in _interpretations)
-      {
-        for (var i = 0; i < 7; i++)
-        {
-          if (arrangement.ContainsKoutsu(i) && arrangement.ContainsKoutsu(i + 1) && arrangement.ContainsKoutsu(i + 2))
-          {
-            _hasSquareType = true;
-            _squareTypeIndex = i;
-          }
-        }
-
-        if (arrangement.ContainsKoutsu(0) && arrangement.ContainsShuntsu(1))
-        {
-          if (arrangement.ContainsPair(3))
-          {
-            _hasUType1 = true;
-          }
-
-          if (arrangement.ContainsShuntsu(4) && arrangement.ContainsPair(6))
-          {
-            _hasUType1 = true;
-          }
-        }
-        else if (arrangement.ContainsKoutsu(8) && arrangement.ContainsShuntsu(5))
-        {
-          if (arrangement.ContainsPair(5))
-          {
-            _hasUType9 = true;
-          }
-
-          if (arrangement.ContainsShuntsu(2) && arrangement.ContainsPair(2))
-          {
-            _hasUType9 = true;
-          }
-        }
-      }
-    }
-
     private void SingleWait(int offset)
     {
-      var hasPossibleOutsideKoutsu = _interpretations.Any(a => a.Blocks.Any(b => b.IsKoutsu && b.IsJunchanBlock));
-      
-      foreach (var arrangement in _interpretations)
+      if (_arrangementGroup.HasUType)
       {
-        if (!arrangement.IsStandard)
-        {
-          continue;
-        }
+        WaitShiftValue |= 1L << 24;
 
-        if (hasPossibleOutsideKoutsu && arrangement.Blocks.All(b => !b.IsKoutsu || !b.IsJunchanBlock))
+        WaitShiftValue |= (long)_arrangementGroup.UTypeId << offset;
+      }
+      else
+      {
+        var hasPossibleOutsideKoutsu = Interpretations.Any(a => a.Blocks.Any(b => b.IsKoutsu && b.IsJunchanBlock));
+      
+        foreach (var arrangement in Interpretations)
         {
-          continue;
-        }
-
-        // TODO maybe better to exclude U-types from single wait and ankou fu calculations and treat them separately
-
-        var indexesToIgnore = new List<int>();
-        // special treatment for 11123444999 and 11166678999 to avoid getting single wait fu and ankou fu for the same tile
-        if (_hasUType1 && arrangement.ContainsKoutsu(8))
-        {
-          indexesToIgnore.Add(0);
-          indexesToIgnore.Add(1);
-        }
-        else if (_hasUType9 && arrangement.ContainsKoutsu(0))
-        {
-          indexesToIgnore.Add(7);
-          indexesToIgnore.Add(8);
-        }
-
-        foreach (var block in arrangement.Blocks)
-        {
-          if (block.IsPair && !indexesToIgnore.Contains(block.Index))
+          if (!arrangement.IsStandard)
           {
-            WaitShiftValue |= 1L << (offset + 1 + block.Index);
+            continue;
           }
-          else if (block.IsShuntsu)
+
+          if (hasPossibleOutsideKoutsu && arrangement.Blocks.All(b => !b.IsKoutsu || !b.IsJunchanBlock))
           {
-            if (!indexesToIgnore.Contains(block.Index + 1))
+            continue;
+          }
+
+          foreach (var block in arrangement.Blocks)
+          {
+            if (block.IsPair)
+            {
+              WaitShiftValue |= 1L << (offset + 1 + block.Index);
+            }
+            else if (block.IsShuntsu)
             {
               WaitShiftValue |= 1L << (offset + 1 + block.Index + 1);
-            }
-              
-            if (block.Index == 0)
-            {
-              WaitShiftValue |= 1L << (offset + 1 + 2);
-            }
 
-            if (block.Index == 6)
-            {
-              WaitShiftValue |= 1L << (offset + 1 + 6);
+              if (block.Index == 0)
+              {
+                WaitShiftValue |= 1L << (offset + 1 + 2);
+              }
+
+              if (block.Index == 6)
+              {
+                WaitShiftValue |= 1L << (offset + 1 + 6);
+              }
             }
           }
         }
@@ -174,21 +121,19 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     public long WaitShiftValue { get; private set; }
 
-    private int TileCount => _interpretations.First().TileCount;
+    private int TileCount => _arrangementGroup.TileCount;
 
-    private IReadOnlyList<int> TileCounts => _interpretations.First().TileCounts;
-    
-    private readonly IReadOnlyList<Arrangement> _interpretations;
+    private IReadOnlyList<int> TileCounts => _arrangementGroup.TileCounts;
+
+    private readonly ArrangementGroup _arrangementGroup;
+
+    private IEnumerable<Arrangement> Interpretations => _arrangementGroup.Arrangements;
 
     private readonly int _iipeikouCount;
-    private bool _hasUType1;
-    private bool _hasUType9;
-    private bool _hasSquareType;
-    private long _squareTypeIndex;
 
     private void Ryuuiisou(int offset)
     {
-      foreach (var arrangement in _interpretations.Where(a => a.IsStandard))
+      foreach (var arrangement in Interpretations.Where(a => a.IsStandard))
       {
         if (arrangement.TileCount == 0)
         {
@@ -204,7 +149,7 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Ittsuu(int offset)
     {
-      foreach (var arrangement in _interpretations.Where(a => a.IsStandard))
+      foreach (var arrangement in Interpretations.Where(a => a.IsStandard))
       {
         for (var i = 0; i < 3; i++)
         {
@@ -218,7 +163,7 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Junchan(int offset)
     {
-      if (_interpretations.Any(a => a.IsStandard && a.Blocks.All(b => b.IsJunchanBlock)))
+      if (Interpretations.Any(a => a.IsStandard && a.Blocks.All(b => b.IsJunchanBlock)))
       {
         OrValue |= 0b1L << offset;
       }
@@ -226,7 +171,7 @@ namespace AnalyzerBuilder.Creators.Scoring
     
     private void KokushiMusou()
     {
-      foreach (var arrangement in _interpretations)
+      foreach (var arrangement in Interpretations)
       {
         if (!arrangement.IsStandard && TileCounts.Any(c => c == 1))
         {
@@ -259,7 +204,7 @@ namespace AnalyzerBuilder.Creators.Scoring
         return;
       }
 
-      var countsWithWait = Enumerable.Range(0, 9).Select(i => _interpretations.Max(a => AnkouCountWithWait(i, a))).ToList();
+      var countsWithWait = Enumerable.Range(0, 9).Select(i => Interpretations.Max(a => AnkouCountWithWait(i, a))).ToList();
       var minCountWithWait = countsWithWait.Min();
       var maxCountWithWait = countsWithWait.Max();
 
@@ -271,7 +216,7 @@ namespace AnalyzerBuilder.Creators.Scoring
         WaitShiftValue |= (long)(countsWithWait[i] - minCountWithWait) << (10 + i + offset);
       }
 
-      var tankiArrangement = _interpretations.FirstOrDefault(i => i.IsStandard && i.Blocks.All(b => b.IsKoutsu || b.IsPair) && i.Blocks.Any(b => b.IsPair));
+      var tankiArrangement = Interpretations.FirstOrDefault(i => i.IsStandard && i.Blocks.All(b => b.IsKoutsu || b.IsPair) && i.Blocks.Any(b => b.IsPair));
       if (tankiArrangement != null)
       {
         var pairIndex = tankiArrangement.Blocks.First(b => b.IsPair).Index;
@@ -290,9 +235,9 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Pinfu(int offset)
     {
-      var ittsuu = _interpretations.Any(HasIttsuu);
+      var ittsuu = Interpretations.Any(HasIttsuu);
 
-      var pinfuArrangements = _interpretations.Where(a => a.IsStandard && a.Blocks.All(b => b.IsShuntsu || b.IsPair)).ToList();
+      var pinfuArrangements = Interpretations.Where(a => a.IsStandard && a.Blocks.All(b => b.IsShuntsu || b.IsPair)).ToList();
       if (pinfuArrangements.Any())
       {
         if (TileCount % 3 == 2)
@@ -353,7 +298,7 @@ namespace AnalyzerBuilder.Creators.Scoring
     private int CalculateIipeikouCount()
     {
       var bestCount = 0;
-      foreach (var arrangement in _interpretations)
+      foreach (var arrangement in Interpretations)
       {
         var identicalShuntsuGroupings = arrangement.Blocks.Where(b => b.IsShuntsu).GroupBy(b => b.Index).Where(g => g.Count() > 1);
         var currentCount = identicalShuntsuGroupings.Select(g => g.Count() / 2).Sum();
@@ -465,7 +410,7 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Toitoi(int offset)
     {
-      if (_interpretations.Any(a => a.IsStandard && a.Blocks.All(b => b.IsKoutsu || b.IsPair)))
+      if (Interpretations.Any(a => a.IsStandard && a.Blocks.All(b => b.IsKoutsu || b.IsPair)))
       {
         OrValue |= 0b1L << offset;
       }
@@ -473,7 +418,7 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Chanta(int offset)
     {
-      if (_interpretations.Any(g => g.IsStandard && g.Blocks.All(b => b.IsJunchanBlock)))
+      if (Interpretations.Any(g => g.IsStandard && g.Blocks.All(b => b.IsJunchanBlock)))
       {
         OrValue |= 0b1L << offset;
       }
@@ -483,7 +428,7 @@ namespace AnalyzerBuilder.Creators.Scoring
     {
       for (var i = 0; i < 9; i++)
       {
-        if (_interpretations.Any(a => a.ContainsKoutsu(i)))
+        if (Interpretations.Any(a => a.ContainsKoutsu(i)))
         {
           var shift = i + 7;
           OrValue |= shift + 2L;
@@ -507,7 +452,7 @@ namespace AnalyzerBuilder.Creators.Scoring
     {
       for (var i = 0; i < 7; i++)
       {
-        if (_interpretations.Any(a => a.ContainsShuntsu(i)))
+        if (Interpretations.Any(a => a.ContainsShuntsu(i)))
         {
           var shift = i;
           OrValue |= shift + 4L;

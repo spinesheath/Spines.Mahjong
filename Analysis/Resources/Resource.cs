@@ -24,7 +24,7 @@ namespace Spines.Mahjong.Analysis.Resources
         stream = assembly.GetManifestResourceStream(fullResourceName);
         if (stream == null)
         {
-          throw new FileNotFoundException("Arrangement classifier transition resource is missing.");
+          throw new FileNotFoundException($"Resource is missing: {resourceName}");
         }
         
         using var reader = new StreamReader(stream);
@@ -47,7 +47,22 @@ namespace Spines.Mahjong.Analysis.Resources
       using var stream = assembly.GetManifestResourceStream(fullResourceName);
       if (stream == null)
       {
-        throw new FileNotFoundException("Arrangement lookup resource is missing.");
+        throw new FileNotFoundException($"Resource is missing: {resourceName}");
+      }
+
+      var data = new byte[stream.Length];
+      stream.Read(data);
+      return data;
+    }
+
+    public static byte[] Lookup(string category, string resourceName)
+    {
+      var fullResourceName = "Spines.Mahjong.Analysis.Resources." + category + "." + resourceName;
+      var assembly = Assembly.GetExecutingAssembly();
+      using var stream = assembly.GetManifestResourceStream(fullResourceName);
+      if (stream == null)
+      {
+        throw new FileNotFoundException($"Resource is missing: {category}/{resourceName}");
       }
 
       var data = new byte[stream.Length];
@@ -62,7 +77,7 @@ namespace Spines.Mahjong.Analysis.Resources
       using var stream = assembly.GetManifestResourceStream(fullResourceName);
       if (stream == null)
       {
-        throw new FileNotFoundException("Arrangement lookup resource is missing.");
+        throw new FileNotFoundException($"Resource is missing: {category}/{resourceName}");
       }
 
       using var reader = new BinaryReader(stream);

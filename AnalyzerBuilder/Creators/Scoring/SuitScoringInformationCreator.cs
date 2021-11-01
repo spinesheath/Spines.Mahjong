@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -18,13 +19,30 @@ namespace AnalyzerBuilder.Creators.Scoring
       var orLookup = new long[maxLookupIndex];
       var waitShiftLookup = new long[maxLookupIndex];
 
+      var uTypeLookup = new Dictionary<int, Tuple<List<int>, int>>();
+
       var language = CreateAnalyzedWords();
       var groupedByHash = language.GroupBy(w => w.Base5Hash);
       foreach (var group in groupedByHash)
       {
+        var arrangementGroup = new ArrangementGroup(group);
+
         var index = group.Key;
-        var field = new SuitScoringBitField(group);
-        var uType = new UTypeFuCreator(group);
+        var field = new SuitScoringBitField(arrangementGroup);
+        var uType = new UTypeFuCreator(arrangementGroup);
+
+        foreach (var pair in uType.KeyToFu)
+        {
+          if (uTypeLookup.TryGetValue(pair.Key, out var value))
+          {
+            Debug.Assert(pair.Value == value.Item2);
+            value.Item1.Add(index);
+          }
+          else
+          {
+            uTypeLookup.Add(pair.Key, Tuple.Create(new List<int>{index}, pair.Value));
+          }
+        }
 
         Debug.Assert(orLookup[index] == 0 || orLookup[index] == field.OrValue);
         orLookup[index] = field.OrValue;
@@ -33,8 +51,26 @@ namespace AnalyzerBuilder.Creators.Scoring
         waitShiftLookup[index] = field.WaitShiftValue;
       }
 
+      var uTypeArray = new byte[uTypeLookup.Keys.Max() + 1];
+      foreach (var t in uTypeLookup)
+      {
+        uTypeArray[t.Key] = (byte)t.Value.Item2;
+      }
+
       Write("SuitOrLookup.dat", orLookup);
       Write("SuitWaitShiftLookup.dat", waitShiftLookup);
+      Write("UTypeFuLookup.dat", uTypeArray);
+    }
+
+    private void Write(string filename, byte[] data)
+    {
+      var path = Path.Combine(_workingDirectory, filename);
+      using var fileStream = File.Create(path);
+      using var writer = new BinaryWriter(fileStream);
+      for (var i = 0; i < data.Length; i++)
+      {
+        writer.Write(data[i]);
+      }
     }
 
     private void Write(string filename, long[] data)

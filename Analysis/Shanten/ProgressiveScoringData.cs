@@ -14,6 +14,8 @@ namespace Spines.Mahjong.Analysis.Shanten
 
       SuitOrLookup = Resource.LongLookup("Scoring", "SuitOrLookup.dat");
       SuitWaitShiftLookup = Resource.LongLookup("Scoring", "SuitWaitShiftLookup.dat");
+
+      UTypeFuLookup = Resource.Lookup("Scoring", "UTypeFuLookup.dat");
     }
 
     public ProgressiveScoringData()
@@ -28,17 +30,13 @@ namespace Spines.Mahjong.Analysis.Shanten
       
       var suitWaitShift0 = SuitWaitShiftLookup[0];
       WaitShiftValues = new[] {suitWaitShift0, suitWaitShift0, suitWaitShift0, HonorWaitShiftLookup[0]};
-      //WaitShiftValues = new[] {2251799814732800L, 2251799814732800L, 2251799814732800L, 2251799814732800L};
       
       var suitOr0 = SuitOrLookup[0];
       SuitOr = new[] {suitOr0, suitOr0, suitOr0, 0L};
-      //SuitOr = new[] {4609997310233935872L, 4609997310233935872L, 4609997310233935872L, 0L};
       
       HonorOr = HonorOrLookup[0] | (_lookupValues[3] & ~0b1_111_111_111_111L);
-      //HonorOr = -4901605103171010560L;
 
       HonorSum = HonorSumLookup[0] + _lookupValues[3];
-      //HonorSum = 2684354624L;
 
       Fu = 20;
     }
@@ -409,6 +407,8 @@ namespace Spines.Mahjong.Analysis.Shanten
       UpdateSuit(3, base5Hashes[3]);
     }
 
+    public byte[] UTypeFu => UTypeFuLookup;
+
     public long[] WaitShiftValues { get; }
 
     public long[] SuitOr { get; }
@@ -474,6 +474,7 @@ namespace Spines.Mahjong.Analysis.Shanten
     private static readonly long[] HonorWaitShiftLookup;
     private static readonly long[] SuitOrLookup;
     private static readonly long[] SuitWaitShiftLookup;
+    private static readonly byte[] UTypeFuLookup;
 
     private readonly long[] _lookupValues = new long[4];
 

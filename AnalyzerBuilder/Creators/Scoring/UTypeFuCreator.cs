@@ -6,77 +6,31 @@ namespace AnalyzerBuilder.Creators.Scoring
 {
   internal class UTypeFuCreator
   {
-    public UTypeFuCreator(IEnumerable<Arrangement> arrangements)
+    public UTypeFuCreator(ArrangementGroup arrangements)
     {
-      var arrangementsList = arrangements.ToList();
+      // TODO ankouFu from extra group?
 
-      var uTypeIndex = -1;
-      var wideUTypeIndex = -1;
-      var base5Hash = 0;
-      var tileCount = 0;
-      var tileCounts = new int[9];
-      var iipeikouIndex = -1;
-      foreach (var arrangement in arrangementsList)
-      {
-        base5Hash = arrangement.Base5Hash;
-        tileCount = arrangement.TileCount;
-        tileCounts = arrangement.TileCounts.ToArray();
-        for (var i = 0; i < 6; i++)
-        {
-          if (arrangement.ContainsKoutsu(i) && arrangement.ContainsShuntsu(i + 1))
-          {
-            if (arrangement.ContainsPair(i + 3))
-            {
-              uTypeIndex = i;
-            }
-
-            if (arrangement.ContainsShuntsu(i + 4) && arrangement.ContainsPair(i + 6))
-            {
-              wideUTypeIndex = i;
-            }
-          }
-
-          if (arrangement.Blocks.Count(b => b.IsShuntsu && b.Index == i) == 2)
-          {
-            iipeikouIndex = i;
-          }
-        }
-      }
-
-      if (tileCount == 14)
+      // Fu does not matter for chinitsu
+      if (arrangements.TileCount == 14)
       {
         return;
       }
 
-      HasUType = uTypeIndex >= 0 || wideUTypeIndex >= 0;
-      if (!HasUType)
+      HasUType = arrangements.HasUType;
+      if (!arrangements.HasUType)
       {
         return;
       }
 
-      var uTypeId = 0;
-      if (wideUTypeIndex >= 0)
-      {
-        uTypeId = 98 + wideUTypeIndex;
-      }
-      else if (tileCount == 8)
-      {
-        uTypeId = uTypeIndex;
-      }
-      else
-      {
-        // find extra block
-      }
-
-      var results = new Dictionary<int, int>();
-
-      var constraints = CreateConstraints(uTypeIndex, tileCounts);
+      var uTypeId = arrangements.UTypeId;
+      
+      var constraints = CreateConstraints(arrangements.UTypeIndex, arrangements.TileCounts);
 
       foreach (var constraint in constraints)
       {
         var bestFu = 0;
 
-        foreach (var arrangement in arrangementsList)
+        foreach (var arrangement in arrangements.Arrangements)
         {
           if (constraint.DoujunIndex >= 0 && !arrangement.ContainsShuntsu(constraint.DoujunIndex))
           {
@@ -88,7 +42,7 @@ namespace AnalyzerBuilder.Creators.Scoring
             continue;
           }
 
-          if (iipeikouIndex >= 0 && !constraint.Open && arrangement.Blocks.Count(b => b.IsShuntsu && b.Index == iipeikouIndex) != 2)
+          if (arrangements.IipeikouIndex >= 0 && !constraint.Open && arrangement.Blocks.Count(b => b.IsShuntsu && b.Index == arrangements.IipeikouIndex) != 2)
           {
             continue;
           }
@@ -130,10 +84,11 @@ namespace AnalyzerBuilder.Creators.Scoring
           bestFu = Math.Max(bestFu, fu);
         }
 
-        
+        var patternAndConstraintId = constraint.Key + (uTypeId << 13);
+        KeyToFu.Add(patternAndConstraintId, bestFu);
       }
 
-      // wrongly calculated single wait fu
+      // TODO wrongly calculated single wait fu
       //foreach (var block in arrangement.Blocks)
       //{
       //  if (block.IsPair)
@@ -156,6 +111,8 @@ namespace AnalyzerBuilder.Creators.Scoring
       //  }
       //}
     }
+
+    public Dictionary<int, int> KeyToFu = new Dictionary<int, int>();
 
     private bool HasShuntsuWithWinningTile(Arrangement arrangement, int winningIndex)
     {

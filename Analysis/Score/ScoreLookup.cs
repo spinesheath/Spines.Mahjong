@@ -30,7 +30,8 @@ namespace Spines.Mahjong.Analysis.Score
                    (suitOr[2] & SuitBigSumFilter) +
                    (honorOr & HonorBigSumFilter);
 
-      var sanshoku = (suitsAnd >> (int) suitsAnd) & SanshokuYakuFilter;
+      var sanshokuShift = (int) suitsAnd & 0b111111;
+      var sanshoku = (suitsAnd >> sanshokuShift) & SanshokuYakuFilter;
 
       /*
        * Pinfu
@@ -54,7 +55,7 @@ namespace Spines.Mahjong.Analysis.Score
 
       // get this before ron shifting
       var singleWaitFu = (waitShiftValues[winningTileSuit] >> 9) & 2L;
-
+      
       waitShiftValues[winningTileSuit] >>= ronShiftAmount;
 
       var waitAndRonShift = (waitShiftValues[0] & RonShiftSumFilter) +
@@ -162,7 +163,20 @@ namespace Spines.Mahjong.Analysis.Score
 
       // TODO here we need general u type
       // TODO also require sanshoku doujun
-      var anySuitUType = (waitShiftSuitOr >> 24) & 0b11111;
+      var anySuitUType = (waitShiftSuitOr >> 24) & 0b1;
+
+      // TODO this needs to be done for all 3 suits?
+      if ((data.WaitShiftValues[winningTileSuit] & (1L << 24)) != 0)
+      {
+        var uTypeKey = winningTileIndex + 1;
+        uTypeKey |= (~ronShiftAmount & 1) << 4; // tsumo
+        uTypeKey |= (int)openBit << 5;
+        uTypeKey |= sanshokuShift << 6;
+        uTypeKey += (int)((data.WaitShiftValues[winningTileSuit] & 0b1111111111L << 10) << 3);
+
+        var uTypeFu = data.UTypeFu[uTypeKey];
+      }
+
       // & result here is for ensuring sanshoku, which happens to be at 0b100 and 0b1000
       var uTypeSanshokuAnkouCorrection = uTypeSanshokuFilter >> (int)(anySuitUType + suitsAnd) & 0b100 & (result | (result >> 1) | (result >> 2));
 

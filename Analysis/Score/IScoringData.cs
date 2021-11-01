@@ -6,20 +6,22 @@
 
     long FinalMask { get; }
 
+    int Fu { get; }
+
+    long HonorOr { get; }
+
+    long HonorSum { get; }
+
     long OpenBit { get; }
 
     long SankantsuSuukantsu { get; }
 
     long ShiftedAnkanCount { get; }
 
-    long[] WaitShiftValues { get; }
-    
     long[] SuitOr { get; }
 
-    long HonorOr { get; }
+    byte[] UTypeFu { get; }
 
-    long HonorSum { get; }
-
-    int Fu { get; }
+    long[] WaitShiftValues { get; }
   }
 }

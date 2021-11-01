@@ -9,6 +9,7 @@ namespace Spines.Mahjong.Analysis.Shanten
 {
   /// <summary>
   /// Maintains tile counts and calculates the Shanten of a hand.
+  /// TODO can potentially improve performance by rolling back in case of tsumogiri?
   /// </summary>
   public class HandCalculator : IHandCalculator
   {
