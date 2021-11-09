@@ -441,7 +441,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       Array.Copy(ConcealedTiles, hand.ConcealedTiles, ConcealedTiles.Length);
       Array.Copy(InHandByType, hand.InHandByType, InHandByType.Length);
       Array.Copy(_melds, hand._melds, _melds.Length);
-      JihaiMeldBit = hand.JihaiMeldBit;
+      hand.JihaiMeldBit = JihaiMeldBit;
       for (var i = 0; i < SuitClassifiers.Length; ++i)
       {
         hand.SuitClassifiers[i] = SuitClassifiers[i].Clone();
