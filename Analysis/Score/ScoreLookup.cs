@@ -30,7 +30,7 @@ namespace Spines.Mahjong.Analysis.Score
                    (suitOr[2] & SuitBigSumFilter) +
                    (honorOr & HonorBigSumFilter);
 
-      var sanshokuShift = (int) suitsAnd & 0b111111;
+      var sanshokuShift = (int) suitsAnd & 0b11111;
       var sanshoku = (suitsAnd >> sanshokuShift) & SanshokuYakuFilter;
 
       /*
@@ -47,14 +47,16 @@ namespace Spines.Mahjong.Analysis.Score
       var honorWindShift = honorOr >> windShiftAmount;
       var waitAndWindShift = waitShiftValues[0] & waitShiftValues[1] & waitShiftValues[2] & waitShiftValues[3] & honorWindShift;
       var pinfu = waitAndWindShift &
-                  (suitOr[winningTileSuit] >> (int) ((winningTileIndex + (suitsAnd & 1)) * (sanshoku >> 2))) &
+                  // TODO suitsAnd + 1 should instead be handled in bitField preparation
+                  (suitOr[winningTileSuit] >> (int) ((winningTileIndex + ((suitsAnd + 1) & 1)) * (sanshoku >> 6))) &
                   bigSum &
                   PinfuYakuFilter;
 
       var tankiBit = waitShiftValues[winningTileSuit] & 0b1L;
 
       // get this before ron shifting
-      var singleWaitFu = (waitShiftValues[winningTileSuit] >> 9) & 2L;
+      // TODO get rid of this conditional
+      var singleWaitFuJihai = winningTileSuit == 3 ? (waitShiftValues[winningTileSuit] >> 9) & 2L : 0;
       
       waitShiftValues[winningTileSuit] >>= ronShiftAmount;
 
@@ -102,6 +104,9 @@ namespace Spines.Mahjong.Analysis.Score
       var openIipeikouBit = (result >> BitIndex.Iipeikou) & 1L;
       var sanankouBit = (result >> BitIndex.Sanankou) & 1L;
 
+      // get this before shifting to open ssk
+      var sanshokuFuMultipler = (int) ((result >> BitIndex.SanshokuDoukou) + (result >> BitIndex.ClosedSanshokuDoujun) & 1);
+
       result += (result & OpenBitFilter) * openBit;
 
       var closedChantaBit = (result >> BitIndex.ClosedChanta) & 1L;
@@ -122,9 +127,9 @@ namespace Spines.Mahjong.Analysis.Score
       result += (result & TankiUpgradeableFilter) * tankiBit;
 
       // This covers the 22234555m222p222s case where sanankou/sanshoku doukou depend on the wait.
-      var w = (suitOr[winningTileSuit] >> 31) & (1L << BitIndex.SanshokuDoukou);
-      var d3 = (suitsAnd >> (winningTileIndex + ronShiftAmount)) & w;
-      result -= d3 & (result >> (BitIndex.Sanankou - 4));
+      var sanankouAndDoukou = (suitOr[winningTileSuit] >> (BitIndex.Sanankou - BitIndex.SanshokuDoukou + 1)) & (1L << BitIndex.SanshokuDoukou);
+      var waitPreventsDoukou = (suitsAnd >> (winningTileIndex + ronShiftAmount - 9)) & sanankouAndDoukou;
+      result -= waitPreventsDoukou & (result >> (BitIndex.Sanankou - BitIndex.SanshokuDoukou));
 
       result &= data.FinalMask;
       
@@ -146,66 +151,23 @@ namespace Spines.Mahjong.Analysis.Score
         return (result, 20 + closedRonFu);
       }
 
-      // u-type => 11123444 or 66678999 or neither
+      var footprintKey = (sanshokuShift + 1) * 40 * sanshokuFuMultipler;
+      footprintKey |= ~ronShiftAmount & 1; // tsumo
+      footprintKey |= (int)openBit << 1;
 
-      var iipeikouAtBit0 = result >> BitIndex.Iipeikou;
+      var keys = new[] {footprintKey, footprintKey, footprintKey, 0};
+      keys[winningTileSuit] += (winningTileIndex + 1) * 4;
 
-      var waitIsJihai = (0b1000 >> winningTileSuit) & 1;
-      var waitIsNotJihai = 1 - waitIsJihai;
-      var waitIsOuterTile = (0b100000001 >> winningTileIndex) & waitIsNotJihai;
-      const int uTypeFilter = 0b1_100000000_000000000;
-      const long uTypeSanshokuFilter = 0b100_000_001_001_000_000_000_000_000_000_000L;
+      var fuM = data.FuFootprint(0, keys[0]);
+      var fuP = data.FuFootprint(1, keys[1]);
+      var fuS = data.FuFootprint(2, keys[2]);
       
-      var waitShiftSuitOr = data.WaitShiftValues[0] | data.WaitShiftValues[1] | data.WaitShiftValues[2];
-      var squareType = (data.WaitShiftValues[winningTileSuit] >> 61) & 1;
-      var squareTypeIndex = (data.WaitShiftValues[winningTileSuit] >> 29) & 0b111;
-      var singleWaitSquareCorrection = ((squareType & ~iipeikouAtBit0) << (int) (winningTileIndex - squareTypeIndex)) & 2;
+      // TODO jihai single wait and ankou fu the same way as suits, maybe with value wind info instead of ssk, incorporating valuePairFu
+      var bonusAnkouCountWinningSuit = (waitShiftValues[winningTileSuit] >> 32) & 1L;
+      var potentialBonusAnkouCountWinningSuit = (data.WaitShiftValues[winningTileSuit] >> 32) & 1L;
+      var ankouFuCorrection = (potentialBonusAnkouCountWinningSuit - bonusAnkouCountWinningSuit) * ((0b100000 >> winningTileSuit) & 0b100);
+      var ankouFuJihai = ((data.WaitShiftValues[3] >> 17) & (0b111L << 3)) - ankouFuCorrection;
 
-      // TODO here we need general u type
-      // TODO also require sanshoku doujun
-      var anySuitUType = (waitShiftSuitOr >> 24) & 0b1;
-
-      // TODO this needs to be done for all 3 suits?
-      if ((data.WaitShiftValues[winningTileSuit] & (1L << 24)) != 0)
-      {
-        var uTypeKey = winningTileIndex + 1;
-        uTypeKey |= (~ronShiftAmount & 1) << 4; // tsumo
-        uTypeKey |= (int)openBit << 5;
-        uTypeKey |= sanshokuShift << 6;
-        uTypeKey += (int)((data.WaitShiftValues[winningTileSuit] & 0b1111111111L << 10) << 3);
-
-        var uTypeFu = data.UTypeFu[uTypeKey];
-      }
-
-      // & result here is for ensuring sanshoku, which happens to be at 0b100 and 0b1000
-      var uTypeSanshokuAnkouCorrection = uTypeSanshokuFilter >> (int)(anySuitUType + suitsAnd) & 0b100 & (result | (result >> 1) | (result >> 2));
-
-      // TODO here we need suit specific u type
-      var uType = (data.WaitShiftValues[winningTileSuit] >> 24) & 0b11111;
-      var uTypeBit = (uTypeFilter >> (int)(uType + winningTileIndex)) & ronShiftAmount & 1;
-      var bonusAnkouCountWinningSuit = (waitShiftValues[winningTileSuit] & (1L << 32)) >> 32;
-      var potentialBonusAnkouCountWinningSuit = (data.WaitShiftValues[winningTileSuit] & (1L << 32)) >> 32;
-      var ankouFuCorrection = (2 * (potentialBonusAnkouCountWinningSuit + uTypeBit - bonusAnkouCountWinningSuit)) << waitIsOuterTile;
-      ankouFuCorrection |= uTypeSanshokuAnkouCorrection;
-      ankouFuCorrection += ankouFuCorrection * waitIsJihai;
-
-      var anySuitSquareType = (waitShiftSuitOr >> 61) & 1;
-      var removeAnkouFu = (squareType & iipeikouAtBit0) | (removeSanankou & anySuitSquareType);
-
-      const int squareTypeSingleWaitMask = 0b011000110;
-      var squareTypeSingleWait = squareType & 
-                                 (squareTypeSingleWaitMask >> winningTileIndex) & 
-                                 iipeikouAtBit0 &
-                                 (1 - (result >> BitIndex.ClosedTanyao));
-      var squareTypeSingleWaitFu = (int)squareTypeSingleWait * 2;
-
-      var ankouFuManzu = (data.WaitShiftValues[0] & (0b111L << 20)) >> 18;
-      var ankouFuPinzu = (data.WaitShiftValues[1] & (0b111L << 20)) >> 18;
-      var ankouFuSouzu = (data.WaitShiftValues[2] & (0b111L << 20)) >> 18;
-      var ankouFuJihai = (data.WaitShiftValues[3] & (0b111L << 20)) >> 17;
-
-      var ankouFu = (1 - removeAnkouFu) * (ankouFuManzu + ankouFuPinzu + ankouFuSouzu + ankouFuJihai - ankouFuCorrection);
-      
       var tsumoFu = 2 >> ronShiftAmount;
 
       // TODO this can be calculated once together with windShiftAmount and used over many hands
@@ -215,8 +177,7 @@ namespace Spines.Mahjong.Analysis.Score
       var valueWindAdjuster = 1 + (honorOr & doubleValueWindBit);
       var valuePairFu = (honorWindShift & 1L) << (int)valueWindAdjuster;
 
-      var fu = data.Fu + closedRonFu + (int)singleWaitFu + tsumoFu + (int)valuePairFu + (int)ankouFu 
-               + squareTypeSingleWaitFu - (int)singleWaitSquareCorrection;
+      var fu = data.Fu + closedRonFu + tsumoFu + (int) valuePairFu + fuM + fuP + fuS + (int)ankouFuJihai + (int)singleWaitFuJihai;
 
       var r = fu % 10;
       var rounding = (r == 0 && fu != 20) ? 0 : 10 - r;

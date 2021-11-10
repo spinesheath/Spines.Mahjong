@@ -157,7 +157,7 @@ namespace Spines.Mahjong.Analysis.Tests
             var roundWind = _board.RoundWind.Index;
             var seatWind = seat.SeatWind.Index;
             var (tsumoYaku, tsumoFu) = YakuCalculator.Tsumo(h, draw, roundWind, seatWind);
-            var (ronYaku, runFu) = YakuCalculator.Ron(h, draw, roundWind, seatWind);
+            var (ronYaku, ronFu) = YakuCalculator.Ron(h, draw, roundWind, seatWind);
             WeirdYakuCollector ^= tsumoYaku | ronYaku;
           }
         }

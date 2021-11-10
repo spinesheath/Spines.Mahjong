@@ -14,9 +14,9 @@
     <None Remove="Resources\Scoring\HonorOrLookup.dat" />
     <None Remove="Resources\Scoring\HonorSumLookup.dat" />
     <None Remove="Resources\Scoring\HonorWaitShiftLookup.dat" />
+    <None Remove="Resources\Scoring\SuitFu.dat" />
     <None Remove="Resources\Scoring\SuitOrLookup.dat" />
     <None Remove="Resources\Scoring\SuitWaitShiftLookup.dat" />
-    <None Remove="Resources\Scoring\UTypeFuLookup.dat" />
     <None Remove="Resources\suitArrangementsBase5NoMelds.dat" />
     <None Remove="Resources\SuitFirstPhase.txt" />
     <None Remove="Resources\SuitSecondPhase0.txt" />
@@ -34,7 +34,7 @@
     <EmbeddedResource Include="Resources\Scoring\HonorWaitShiftLookup.dat" />
     <EmbeddedResource Include="Resources\Scoring\SuitOrLookup.dat" />
     <EmbeddedResource Include="Resources\Scoring\SuitWaitShiftLookup.dat" />
-    <EmbeddedResource Include="Resources\Scoring\UTypeFuLookup.dat" />
+    <EmbeddedResource Include="Resources\Scoring\SuitFu.dat" />
     <EmbeddedResource Include="Resources\suitArrangementsBase5NoMelds.dat" />
     <EmbeddedResource Include="Resources\SuitFirstPhase.txt" />
     <EmbeddedResource Include="Resources\SuitSecondPhase0.txt" />

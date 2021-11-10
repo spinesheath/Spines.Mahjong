@@ -20,8 +20,8 @@
 
     long[] SuitOr { get; }
 
-    byte[] UTypeFu { get; }
-
     long[] WaitShiftValues { get; }
+
+    int FuFootprint(int suitId, int index);
   }
 }

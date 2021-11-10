@@ -22,7 +22,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       Chiitoitsu(40);
       HonitsuChinitsu(20);
       KokushiMusou();
-      Tsuuiisou(2);
+      Tsuuiisou(1);
       Chinroutou(37);
       Chanta(27);
       Toitoi(31);

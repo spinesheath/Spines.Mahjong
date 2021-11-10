@@ -6,7 +6,7 @@ namespace AnalyzerBuilder.Creators.Scoring
 {
   internal class SuitScoringBitField
   {
-    public SuitScoringBitField(ArrangementGroup arrangements)
+    public SuitScoringBitField(ArrangementGroup arrangements, int fuFootprintIndex)
     {
       _arrangementGroup = arrangements;
       _iipeikouCount = CalculateIipeikouCount();
@@ -31,88 +31,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       Ryuuiisou(28);
 
       // Fu
-      SingleWait(10);
-      AnkouFu(20);
-    }
-    
-    private void AnkouFu(int offset)
-    {
-      // TODO if uType, no ankouFu?
-
-      if (_arrangementGroup.HasUType1)
-      {
-        WaitShiftValue |= 18L << 24;
-      }
-
-      if (_arrangementGroup.HasUType9)
-      {
-        WaitShiftValue |= 9L << 24;
-      }
-
-      if (_arrangementGroup.HasSquareType)
-      {
-        WaitShiftValue |= 1L << 61;
-        WaitShiftValue |= _arrangementGroup.SquareTypeIndex << 29;
-      }
-
-      var value = 0;
-      foreach (var arrangement in Interpretations)
-      {
-        var koutsus = arrangement.Blocks.Where(b => b.IsKoutsu).ToList();
-        var localValue = koutsus.Count + koutsus.Count(k => k.IsJunchanBlock);
-        value = Math.Max(value, localValue);
-      }
-
-      WaitShiftValue |= (long)value << offset;
-    }
-
-    private void SingleWait(int offset)
-    {
-      if (_arrangementGroup.HasUType)
-      {
-        WaitShiftValue |= 1L << 24;
-
-        WaitShiftValue |= (long)_arrangementGroup.UTypeId << offset;
-      }
-      else
-      {
-        var hasPossibleOutsideKoutsu = Interpretations.Any(a => a.Blocks.Any(b => b.IsKoutsu && b.IsJunchanBlock));
-      
-        foreach (var arrangement in Interpretations)
-        {
-          if (!arrangement.IsStandard)
-          {
-            continue;
-          }
-
-          if (hasPossibleOutsideKoutsu && arrangement.Blocks.All(b => !b.IsKoutsu || !b.IsJunchanBlock))
-          {
-            continue;
-          }
-
-          foreach (var block in arrangement.Blocks)
-          {
-            if (block.IsPair)
-            {
-              WaitShiftValue |= 1L << (offset + 1 + block.Index);
-            }
-            else if (block.IsShuntsu)
-            {
-              WaitShiftValue |= 1L << (offset + 1 + block.Index + 1);
-
-              if (block.Index == 0)
-              {
-                WaitShiftValue |= 1L << (offset + 1 + 2);
-              }
-
-              if (block.Index == 6)
-              {
-                WaitShiftValue |= 1L << (offset + 1 + 6);
-              }
-            }
-          }
-        }
-      }
+      WaitShiftValue |= (long)fuFootprintIndex << 10;
     }
 
     public long OrValue { get; private set; }
@@ -264,6 +183,7 @@ namespace AnalyzerBuilder.Creators.Scoring
         {
           OrValue |= 0b1L << offset;
           var depth = TileCounts.TakeWhile(c => c == 0).Count();
+          // TODO this does not work anymore with the new sanshoku doujun position, probably the index is 1 off, so odd and even are switched?
           // This block is shifted by the sanshoku shift value's first bit, then by the index of the wait.
           // The sanshoku part moves the 10101 shape depending on whether it's 223344+55 or 22+334455.
           // The flag has two 0's and is placed carefully to align it properly after the sanshoku shift.
@@ -430,9 +350,9 @@ namespace AnalyzerBuilder.Creators.Scoring
       {
         if (Interpretations.Any(a => a.ContainsKoutsu(i)))
         {
-          var shift = i + 7;
-          OrValue |= shift + 2L;
-          OrValue |= 0b1L << (shift + 6);
+          var shift = i;
+          OrValue |= shift + 0L;
+          OrValue |= 0b1L << (shift + 5);
         }
       }
 
@@ -455,8 +375,8 @@ namespace AnalyzerBuilder.Creators.Scoring
         if (Interpretations.Any(a => a.ContainsShuntsu(i)))
         {
           var shift = i;
-          OrValue |= shift + 4L;
-          OrValue |= 0b1L << (shift + 6);
+          OrValue |= shift + 9L;
+          OrValue |= 0b1L << (shift + 15);
         }
       }
     }

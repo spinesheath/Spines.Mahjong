@@ -19,47 +19,42 @@ namespace AnalyzerBuilder.Creators.Scoring
       var orLookup = new long[maxLookupIndex];
       var waitShiftLookup = new long[maxLookupIndex];
 
-      var uTypeLookup = new Dictionary<int, Tuple<List<int>, int>>();
-
       var language = CreateAnalyzedWords();
       var groupedByHash = language.GroupBy(w => w.Base5Hash);
-      foreach (var group in groupedByHash)
+      var arrangementGroups = groupedByHash.Select(g => new ArrangementGroup(g)).ToList();
+
+      var comparer = new FuConstraintFootprintComparer();
+      var footprints = new Dictionary<byte[], int>(comparer);
+
+      foreach (var arrangementGroup in arrangementGroups)
       {
-        var arrangementGroup = new ArrangementGroup(group);
+        var uType = new FuFootprintCreator(arrangementGroup);
 
-        var index = group.Key;
-        var field = new SuitScoringBitField(arrangementGroup);
-        var uType = new UTypeFuCreator(arrangementGroup);
-
-        foreach (var pair in uType.KeyToFu)
+        if (!footprints.TryGetValue(uType.Footprint, out var footprintIndex))
         {
-          if (uTypeLookup.TryGetValue(pair.Key, out var value))
-          {
-            Debug.Assert(pair.Value == value.Item2);
-            value.Item1.Add(index);
-          }
-          else
-          {
-            uTypeLookup.Add(pair.Key, Tuple.Create(new List<int>{index}, pair.Value));
-          }
+          footprintIndex = footprints.Count;
+          footprints.Add(uType.Footprint, footprintIndex);
         }
+        
+        var base5Hash = arrangementGroup.Base5Hash;
+        var field = new SuitScoringBitField(arrangementGroup, footprintIndex);
 
-        Debug.Assert(orLookup[index] == 0 || orLookup[index] == field.OrValue);
-        orLookup[index] = field.OrValue;
+        Debug.Assert(orLookup[base5Hash] == 0 || orLookup[base5Hash] == field.OrValue);
+        orLookup[base5Hash] = field.OrValue;
 
-        Debug.Assert(waitShiftLookup[index] == 0 || waitShiftLookup[index] == field.WaitShiftValue);
-        waitShiftLookup[index] = field.WaitShiftValue;
+        Debug.Assert(waitShiftLookup[base5Hash] == 0 || waitShiftLookup[base5Hash] == field.WaitShiftValue);
+        waitShiftLookup[base5Hash] = field.WaitShiftValue;
       }
 
-      var uTypeArray = new byte[uTypeLookup.Keys.Max() + 1];
-      foreach (var t in uTypeLookup)
+      var allFootprints = new byte[footprints.Count * 680];
+      foreach (var (footprint, index) in footprints)
       {
-        uTypeArray[t.Key] = (byte)t.Value.Item2;
+        Array.Copy(footprint, 0, allFootprints, index * footprint.Length, footprint.Length);
       }
 
       Write("SuitOrLookup.dat", orLookup);
       Write("SuitWaitShiftLookup.dat", waitShiftLookup);
-      Write("UTypeFuLookup.dat", uTypeArray);
+      Write("SuitFu.dat", allFootprints);
     }
 
     private void Write(string filename, byte[] data)

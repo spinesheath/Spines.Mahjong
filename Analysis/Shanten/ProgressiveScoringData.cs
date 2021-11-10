@@ -15,7 +15,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       SuitOrLookup = Resource.LongLookup("Scoring", "SuitOrLookup.dat");
       SuitWaitShiftLookup = Resource.LongLookup("Scoring", "SuitWaitShiftLookup.dat");
 
-      UTypeFuLookup = Resource.Lookup("Scoring", "UTypeFuLookup.dat");
+      FuFootprintsLookup = Resource.Lookup("Scoring", "SuitFu.dat");
     }
 
     public ProgressiveScoringData()
@@ -75,8 +75,8 @@ namespace Spines.Mahjong.Analysis.Shanten
       else
       {
         _lookupValues[tileType.SuitId] |= 0b101000L << SuitHonitsuOffset;
-        _lookupValues[tileType.SuitId] |= index + 9L;
-        _lookupValues[tileType.SuitId] |= 1L << (index + 13);
+        _lookupValues[tileType.SuitId] |= index + 0L;
+        _lookupValues[tileType.SuitId] |= 1L << (index + 5);
       }
 
       _baseMaskFilter &= NoAnkanYakuFilter;
@@ -141,8 +141,8 @@ namespace Spines.Mahjong.Analysis.Shanten
         _lookupValues[tileType.SuitId] |= 1L << (SuitIttsuuOffset + index / 3);
       }
 
-      _lookupValues[tileType.SuitId] |= index + 4L;
-      _lookupValues[tileType.SuitId] |= 1L << (index + 6);
+      _lookupValues[tileType.SuitId] |= index + 9L;
+      _lookupValues[tileType.SuitId] |= 1L << (index + 15);
 
 
       _baseMask = ClosedYakuFilter;
@@ -232,8 +232,8 @@ namespace Spines.Mahjong.Analysis.Shanten
       else
       {
         _lookupValues[tileType.SuitId] |= 0b101000L << SuitHonitsuOffset;
-        _lookupValues[tileType.SuitId] |= index + 9L;
-        _lookupValues[tileType.SuitId] |= 1L << (index + 13);
+        _lookupValues[tileType.SuitId] |= index + 0L;
+        _lookupValues[tileType.SuitId] |= 1L << (index + 5);
       }
 
       _baseMask = ClosedYakuFilter;
@@ -330,8 +330,8 @@ namespace Spines.Mahjong.Analysis.Shanten
       else
       {
         _lookupValues[tileType.SuitId] |= 0b101000L << SuitHonitsuOffset;
-        _lookupValues[tileType.SuitId] |= index + 9L;
-        _lookupValues[tileType.SuitId] |= 1L << (index + 13);
+        _lookupValues[tileType.SuitId] |= index + 0L;
+        _lookupValues[tileType.SuitId] |= 1L << (index + 5);
       }
 
 
@@ -407,7 +407,13 @@ namespace Spines.Mahjong.Analysis.Shanten
       UpdateSuit(3, base5Hashes[3]);
     }
 
-    public byte[] UTypeFu => UTypeFuLookup;
+    public int FuFootprint(int suitId, int index)
+    {
+      var footprint = new byte[680];
+      Array.Copy(FuFootprintsLookup, _fuFootprintOffsets[suitId], footprint, 0, footprint.Length);
+
+      return FuFootprintsLookup[_fuFootprintOffsets[suitId] + index];
+    }
 
     public long[] WaitShiftValues { get; }
 
@@ -456,7 +462,7 @@ namespace Spines.Mahjong.Analysis.Shanten
 
     private const long NoAnkanYakuFilter = ~(1L << BitIndex.Pinfu);
     private const int SuitHonitsuOffset = 20;
-    private const int HonorTsuuiisouOffset = 2;
+    private const int HonorTsuuiisouOffset = BitIndex.Tsuuiisou - 3;
     private const int HonorChantaOffset = 27;
     private const int HonorJikazeOffset = 54;
     private const int HonorBakazeOffset = 58;
@@ -474,12 +480,14 @@ namespace Spines.Mahjong.Analysis.Shanten
     private static readonly long[] HonorWaitShiftLookup;
     private static readonly long[] SuitOrLookup;
     private static readonly long[] SuitWaitShiftLookup;
-    private static readonly byte[] UTypeFuLookup;
+    private static readonly byte[] FuFootprintsLookup;
 
     private readonly long[] _lookupValues = new long[4];
 
     private long _baseMask;
     private long _baseMaskFilter;
+
+    private readonly int[] _fuFootprintOffsets = new int[3];
 
     private void UpdateSuit(int suitId, int base5Hash)
     {
@@ -494,6 +502,7 @@ namespace Spines.Mahjong.Analysis.Shanten
         WaitShiftValues[suitId] = SuitWaitShiftLookup[base5Hash];
         var suitOr = SuitOrLookup[base5Hash] | _lookupValues[suitId];
         SuitOr[suitId] = suitOr + (1L << (BitIndex.ClosedIttsuu - 3));
+        _fuFootprintOffsets[suitId] = (int)((WaitShiftValues[suitId] >> 10) & 0b1111111111111L) * 680;
       }
     }
   }

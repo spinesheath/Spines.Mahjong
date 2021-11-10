@@ -25,6 +25,7 @@ namespace AnalyzerBuilder.Creators.Scoring
 
       foreach (var arrangement in Arrangements)
       {
+        Base5Hash = arrangement.Base5Hash;
         TileCount = arrangement.TileCount;
         TileCounts = arrangement.TileCounts.ToArray();
         for (var i = 0; i < 6; i++)

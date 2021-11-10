@@ -10,6 +10,19 @@ namespace Spines.Mahjong.Analysis.Tests
   public class ScoreTests
   {
     [Theory]
+    [InlineData("56788m456p567s 7777P", 0, 3, "5m", Yaku.MenzenTsumo | Yaku.ClosedTanyao)]
+    public void SomeHandByTsumo(string handString, int roundWind, int seatWind, string discardString, Yaku expectedYaku)
+    {
+      var discard = TileType.FromString(discardString);
+      var sp = new ShorthandParser(handString);
+      var hand = new HandCalculator(sp);
+
+      var (yaku, fu) = YakuCalculator.Tsumo(hand, discard, roundWind, seatWind);
+
+      Assert.Equal(expectedYaku, yaku);
+    }
+
+    [Theory]
     [InlineData("789p111222333s44z", 0, 3, "4z", Yaku.Iipeikou | Yaku.ClosedChanta)]
     [InlineData("111m111789p999s44z", 0, 3, "4z", Yaku.ClosedChanta | Yaku.Sanankou)]
     [InlineData("111m111999s44z789P", 0, 3, "4z", Yaku.OpenChanta | Yaku.Sanankou)]
@@ -51,6 +64,9 @@ namespace Spines.Mahjong.Analysis.Tests
     [InlineData("11m111Z222Z333Z444Z", 0, 0, "1m", Yaku.Daisuushii)]
     [InlineData("111m11333444z222Z", 0, 0, "1m", Yaku.Shousuushii)]
     [InlineData("111222333m11z123M", 0, 0, "1z", Yaku.Sanankou | Yaku.OpenHonitsu)]
+    [InlineData("11122266z333Z555Z", 0, 0, "1z", Yaku.Tsuuiisou)]
+    [InlineData("234m23455p234789s", 0, 0, "4p", Yaku.Pinfu | Yaku.ClosedSanshokuDoujun)]
+    [InlineData("66778899m678p678s", 0, 0, "6m", Yaku.Pinfu | Yaku.ClosedSanshokuDoujun | Yaku.Iipeikou)]
 
     public void SomeHandByRon(string handString, int roundWind, int seatWind, string discardString, Yaku expectedYaku)
     {
@@ -171,7 +187,6 @@ namespace Spines.Mahjong.Analysis.Tests
     {
       var files = BundlesFolders.SelectMany(Directory.EnumerateFiles);
       var visitor = new ScoreCalculatingVisitor();
-      //foreach (var file in files.Take(500))
       foreach (var file in files)
       {
         using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);

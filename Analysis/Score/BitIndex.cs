@@ -2,9 +2,9 @@
 {
   internal static class BitIndex
   {
-    public const int ClosedSanshokuDoujun = 2;
-    public const int OpenSanshokuDoujun = 3;
-    public const int SanshokuDoukou = 4;
+    public const int ClosedSanshokuDoujun = 6;
+    public const int OpenSanshokuDoujun = 7;
+    public const int SanshokuDoukou = 5;
     public const int Shousangen = 53;
     public const int Daisangen = 8;
     public const int Pinfu = 51;
@@ -34,10 +34,10 @@
     public const int OpenHonitsu = 21;
     public const int ClosedChinitsu = 22;
     public const int OpenChinitsu = 23;
-    public const int MenzenTsumo = 12;
+    public const int MenzenTsumo = 52;
     public const int KokushiMusou = 0;
     public const int KokushiMusouJuusanmen = 1;
-    public const int Tsuuiisou = 5;
+    public const int Tsuuiisou = 4;
     public const int Chinroutou = 37;
     public const int ChuurenPoutou = 62;
     public const int JunseiChuurenPoutou = 63;
@@ -48,8 +48,8 @@
     public const int OpenJunchan = 50;
     public const int ClosedIttsuu = 47;
     public const int OpenIttsuu = 48;
-    public const int Sankantsu = 6;
-    public const int Suukantsu = 7;
+    public const int Sankantsu = 24;
+    public const int Suukantsu = 25;
     public const int Ryuuiisou = 32;
   }
 }
