@@ -152,7 +152,7 @@ namespace Spines.Mahjong.Analysis.Score
       }
 
       var footprintKey = (sanshokuShift + 1) * 40 * sanshokuFuMultipler;
-      footprintKey |= ~ronShiftAmount & 1; // tsumo
+      footprintKey |= ronShiftAmount & 1; // ronShiftAmount is either 0 or 0b1001u
       footprintKey |= (int)openBit << 1;
 
       var keys = new[] {footprintKey, footprintKey, footprintKey, 0};

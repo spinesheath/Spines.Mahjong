@@ -202,7 +202,7 @@ namespace AnalyzerBuilder.Creators.Scoring
         Id += winningIndex + 1;
 
         Id <<= 2;
-        if (tsumo)
+        if (!tsumo)
         {
           Id |= 1;
         }
