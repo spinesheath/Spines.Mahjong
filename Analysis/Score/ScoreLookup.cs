@@ -151,7 +151,8 @@ namespace Spines.Mahjong.Analysis.Score
         return (result, 20 + closedRonFu);
       }
 
-      var squareTypeToShuntsu = ((ryuuiisouSum & ~result) >> BitIndex.Sanankou) & 1L;
+      // TODO sanankou OR toitoi both prevent this
+      var squareTypeToShuntsu = ((ryuuiisouSum & ~result) >> BitIndex.Sanankou) & (1 - toitoiBit);
 
       var footprintKey = (sanshokuShift + 1) * 40 * sanshokuFuMultiplier;
       footprintKey += (int)squareTypeToShuntsu * 40;
