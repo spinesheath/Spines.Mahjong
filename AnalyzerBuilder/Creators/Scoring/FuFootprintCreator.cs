@@ -8,6 +8,8 @@ namespace AnalyzerBuilder.Creators.Scoring
   {
     public FuFootprintCreator(ArrangementGroup arrangements)
     {
+      // TODO exclude nonstandard hands
+
       // Fu does not matter for chinitsu
       if (arrangements.TileCount == 14)
       {
@@ -24,23 +26,7 @@ namespace AnalyzerBuilder.Creators.Scoring
 
         foreach (var arrangement in arrangements.Arrangements)
         {
-          if (constraint.DoujunIndex >= 0 && !arrangement.ContainsShuntsu(constraint.DoujunIndex))
-          {
-            continue;
-          }
-
-          if (constraint.DoukouIndex >= 0 && !arrangement.ContainsKoutsu(constraint.DoukouIndex))
-          {
-            continue;
-          }
-
-          var hasIipeikou = arrangement.Blocks.Where(b => b.IsShuntsu).GroupBy(s => s.Index).Any(g => g.Count() >= 2);
-          if (arrangements.HasIipeikou && !constraint.Open && !hasIipeikou)
-          {
-            continue;
-          }
-
-          if (constraint.SquareIsNotSanankou && arrangement.Blocks.Count(b => b.IsKoutsu) >= 3)
+          if (!Matches(arrangements, arrangement, constraint))
           {
             continue;
           }
@@ -91,6 +77,40 @@ namespace AnalyzerBuilder.Creators.Scoring
       }
     }
 
+    private static bool Matches(ArrangementGroup arrangements, Arrangement arrangement, FuConstraint constraint)
+    {
+      if (constraint.DoujunIndex >= 0 && !arrangement.ContainsShuntsu(constraint.DoujunIndex))
+      {
+        // open hands with less than 6 tiles in the arrangement can use a meld to get sanshoku
+        if (arrangements.TileCount > 5 || !constraint.Open)
+        {
+          return false;
+        }
+      }
+
+      if (constraint.DoukouIndex >= 0 && !arrangement.ContainsKoutsu(constraint.DoukouIndex))
+      {
+        // hands with less than 6 tiles in the arrangement can use a meld to get sanshoku. If closed must be ankan
+        if (arrangements.TileCount > 5)
+        {
+          return false;
+        }
+      }
+
+      var hasIipeikou = arrangement.Blocks.Where(b => b.IsShuntsu).GroupBy(s => s.Index).Any(g => g.Count() >= 2);
+      if (arrangements.HasIipeikou && !constraint.Open && !hasIipeikou)
+      {
+        return false;
+      }
+
+      if (constraint.SquareIsNotSanankou && arrangement.Blocks.Count(b => b.IsKoutsu) >= 3)
+      {
+        return false;
+      }
+
+      return true;
+    }
+
     public byte[] Footprint { get; } = new byte[680];
 
     private bool HasShuntsuWithWinningTile(Arrangement arrangement, int winningIndex)
@@ -105,39 +125,9 @@ namespace AnalyzerBuilder.Creators.Scoring
       
       var constraints = new List<FuConstraint>();
 
-      AddConstraints(constraints, false, -1, -1, -1);
-      
-      if (uTypeIndex >= 0)
+      for (var winningIndex = -1; winningIndex < 9; winningIndex++)
       {
-        AddConstraints(constraints, false, -1, uTypeIndex, -1);
-        AddConstraints(constraints, false, -1, uTypeIndex + 1, -1);
-        AddConstraints(constraints, false, -1, -1, uTypeIndex);
-        AddConstraints(constraints, false, -1, -1, uTypeIndex + 3);
-      }
-      else if (arrangementGroup.TileCount < 9)
-      {
-        var shuntsus = arrangementGroup.Arrangements.SelectMany(a => a.Blocks.Where(b => b.IsShuntsu));
-        var doujunIndexes = shuntsus.Select(s => s.Index).Distinct();
-        foreach (var doujunIndex in doujunIndexes)
-        {
-          AddConstraints(constraints, false, -1, doujunIndex, -1);
-        }
-
-        var koustsus = arrangementGroup.Arrangements.SelectMany(a => a.Blocks.Where(b => b.IsKoutsu));
-        var doukouIndexes = koustsus.Select(s => s.Index).Distinct();
-        foreach (var doukouIndex in doukouIndexes)
-        {
-          AddConstraints(constraints, false, -1, -1, doukouIndex);
-        }
-      }
-      else if (arrangementGroup.HasSquareType)
-      {
-        AddConstraints(constraints, true, -1, -1, -1);
-      }
-
-      for (var winningIndex = 0; winningIndex < 9; winningIndex++)
-      {
-        if (tileCounts[winningIndex] > 0)
+        if (winningIndex == -1 || tileCounts[winningIndex] > 0)
         {
           AddConstraints(constraints, false, winningIndex, -1, -1);
 
@@ -147,6 +137,23 @@ namespace AnalyzerBuilder.Creators.Scoring
             AddConstraints(constraints, false, winningIndex, uTypeIndex + 1, -1);
             AddConstraints(constraints, false, winningIndex, -1, uTypeIndex);
             AddConstraints(constraints, false, winningIndex, -1, uTypeIndex + 3);
+          }
+          else if (arrangementGroup.TileCount < 6)
+          {
+            // doujun with meld
+            for (var i = 0; i < 7; i++)
+            {
+              AddConstraints(constraints, false, winningIndex, i, -1);
+            }
+
+            // doukou with meld
+            for (var i = 0; i < 9; i++)
+            {
+              if (tileCounts[i] < 2)
+              {
+                AddConstraints(constraints, false, winningIndex, -1, i);
+              }
+            }
           }
           else if (arrangementGroup.TileCount < 9)
           {
