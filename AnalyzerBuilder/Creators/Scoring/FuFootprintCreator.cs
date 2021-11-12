@@ -34,7 +34,8 @@ namespace AnalyzerBuilder.Creators.Scoring
             continue;
           }
 
-          if (arrangements.IipeikouIndex >= 0 && !constraint.Open && arrangement.Blocks.Count(b => b.IsShuntsu && b.Index == arrangements.IipeikouIndex) != 2)
+          var hasIipeikou = arrangement.Blocks.Where(b => b.IsShuntsu).GroupBy(s => s.Index).Any(g => g.Count() >= 2);
+          if (arrangements.HasIipeikou && !constraint.Open && !hasIipeikou)
           {
             continue;
           }

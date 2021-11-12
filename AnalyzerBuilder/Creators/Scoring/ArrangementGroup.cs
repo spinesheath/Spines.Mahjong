@@ -20,7 +20,6 @@ namespace AnalyzerBuilder.Creators.Scoring
       Base5Hash = 0;
       TileCount = 0;
       TileCounts = new int[9];
-      IipeikouIndex = -1;
 
       foreach (var arrangement in Arrangements)
       {
@@ -47,7 +46,7 @@ namespace AnalyzerBuilder.Creators.Scoring
         {
           if (arrangement.Blocks.Count(b => b.IsShuntsu && b.Index == i) == 2)
           {
-            IipeikouIndex = i;
+            HasIipeikou = true;
           }
         }
       }
@@ -81,7 +80,7 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     public bool HasUType { get; }
 
-    public int IipeikouIndex { get; }
+    public bool HasIipeikou { get; }
 
     public int TileCount { get; }
 
