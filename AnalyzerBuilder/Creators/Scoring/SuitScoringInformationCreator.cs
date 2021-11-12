@@ -28,12 +28,12 @@ namespace AnalyzerBuilder.Creators.Scoring
 
       foreach (var arrangementGroup in arrangementGroups)
       {
-        var uType = new FuFootprintCreator(arrangementGroup);
+        var footprintCreator = new FuFootprintCreator(arrangementGroup);
 
-        if (!footprints.TryGetValue(uType.Footprint, out var footprintIndex))
+        if (!footprints.TryGetValue(footprintCreator.Footprint, out var footprintIndex))
         {
           footprintIndex = footprints.Count;
-          footprints.Add(uType.Footprint, footprintIndex);
+          footprints.Add(footprintCreator.Footprint, footprintIndex);
         }
         
         var base5Hash = arrangementGroup.Base5Hash;

@@ -4,8 +4,6 @@ using System.Linq;
 
 namespace AnalyzerBuilder.Creators.Scoring
 {
-  // TODO 111222333 can be iipeikou instead of sanankou from either ron or junchan. Add this information into the ID.
-  // But since this shape requires 3 groups, it can not overlap with ssk, so maybe its possible to use the same bits for this information
   internal class FuFootprintCreator
   {
     public FuFootprintCreator(ArrangementGroup arrangements)
