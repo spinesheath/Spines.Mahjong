@@ -96,11 +96,14 @@ namespace AnalyzerBuilder.Creators.Scoring
           return false;
         }
       }
-
+      
       var hasIipeikou = arrangement.Blocks.Where(b => b.IsShuntsu).GroupBy(s => s.Index).Any(g => g.Count() >= 2);
       if (arrangements.HasIipeikou && !constraint.Open && !hasIipeikou)
       {
-        return false;
+        if (arrangements.HasSquareType && constraint.SquareIsNotSanankou)
+        {
+          return false;
+        }
       }
 
       if (constraint.SquareIsNotSanankou && arrangement.Blocks.Count(b => b.IsKoutsu) >= 3)
