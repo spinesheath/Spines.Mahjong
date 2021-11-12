@@ -41,6 +41,11 @@ namespace AnalyzerBuilder.Creators.Scoring
             continue;
           }
 
+          if (constraint.SquareIsNotSanankou && arrangement.Blocks.Count(b => b.IsKoutsu) >= 3)
+          {
+            continue;
+          }
+
           var winningIndex = constraint.WinningIndex;
           var pairIndex = arrangement.Blocks.FirstOrDefault(b => b.IsPair)?.Index;
           var shuntsus = arrangement.Blocks.Where(b => b.IsShuntsu).ToList();
@@ -101,14 +106,14 @@ namespace AnalyzerBuilder.Creators.Scoring
       
       var constraints = new List<FuConstraint>();
 
-      AddConstraints(constraints, -1, -1, -1);
+      AddConstraints(constraints, false, -1, -1, -1);
       
       if (uTypeIndex >= 0)
       {
-        AddConstraints(constraints, -1, uTypeIndex, -1);
-        AddConstraints(constraints, -1, uTypeIndex + 1, -1);
-        AddConstraints(constraints, -1, -1, uTypeIndex);
-        AddConstraints(constraints, -1, -1, uTypeIndex + 3);
+        AddConstraints(constraints, false, -1, uTypeIndex, -1);
+        AddConstraints(constraints, false, -1, uTypeIndex + 1, -1);
+        AddConstraints(constraints, false, -1, -1, uTypeIndex);
+        AddConstraints(constraints, false, -1, -1, uTypeIndex + 3);
       }
       else if (arrangementGroup.TileCount < 9)
       {
@@ -116,29 +121,33 @@ namespace AnalyzerBuilder.Creators.Scoring
         var doujunIndexes = shuntsus.Select(s => s.Index).Distinct();
         foreach (var doujunIndex in doujunIndexes)
         {
-          AddConstraints(constraints, -1, doujunIndex, -1);
+          AddConstraints(constraints, false, -1, doujunIndex, -1);
         }
 
         var koustsus = arrangementGroup.Arrangements.SelectMany(a => a.Blocks.Where(b => b.IsKoutsu));
         var doukouIndexes = koustsus.Select(s => s.Index).Distinct();
         foreach (var doukouIndex in doukouIndexes)
         {
-          AddConstraints(constraints, -1, -1, doukouIndex);
+          AddConstraints(constraints, false, -1, -1, doukouIndex);
         }
+      }
+      else if (arrangementGroup.HasSquareType)
+      {
+        AddConstraints(constraints, true, -1, -1, -1);
       }
 
       for (var winningIndex = 0; winningIndex < 9; winningIndex++)
       {
         if (tileCounts[winningIndex] > 0)
         {
-          AddConstraints(constraints, winningIndex, -1, -1);
+          AddConstraints(constraints, false, winningIndex, -1, -1);
 
           if (uTypeIndex >= 0)
           {
-            AddConstraints(constraints, winningIndex, uTypeIndex, -1);
-            AddConstraints(constraints, winningIndex, uTypeIndex + 1, -1);
-            AddConstraints(constraints, winningIndex, -1, uTypeIndex);
-            AddConstraints(constraints, winningIndex, -1, uTypeIndex + 3);
+            AddConstraints(constraints, false, winningIndex, uTypeIndex, -1);
+            AddConstraints(constraints, false, winningIndex, uTypeIndex + 1, -1);
+            AddConstraints(constraints, false, winningIndex, -1, uTypeIndex);
+            AddConstraints(constraints, false, winningIndex, -1, uTypeIndex + 3);
           }
           else if (arrangementGroup.TileCount < 9)
           {
@@ -146,15 +155,19 @@ namespace AnalyzerBuilder.Creators.Scoring
             var doujunIndexes = shuntsus.Select(s => s.Index).Distinct();
             foreach (var doujunIndex in doujunIndexes)
             {
-              AddConstraints(constraints, winningIndex, doujunIndex, -1);
+              AddConstraints(constraints, false, winningIndex, doujunIndex, -1);
             }
 
             var koustsus = arrangementGroup.Arrangements.SelectMany(a => a.Blocks.Where(b => b.IsKoutsu));
             var doukouIndexes = koustsus.Select(s => s.Index).Distinct();
             foreach (var doukouIndex in doukouIndexes)
             {
-              AddConstraints(constraints, winningIndex, -1, doukouIndex);
+              AddConstraints(constraints, false, winningIndex, -1, doukouIndex);
             }
+          }
+          else if (arrangementGroup.HasSquareType)
+          {
+            AddConstraints(constraints, true, winningIndex, -1, -1);
           }
         }
       }
@@ -162,12 +175,12 @@ namespace AnalyzerBuilder.Creators.Scoring
       return constraints;
     }
 
-    private static void AddConstraints(List<FuConstraint> constraints, int winningIndex, int doujunIndex, int doukouIndex)
+    private static void AddConstraints(List<FuConstraint> constraints, bool squareIsNotSanankou, int winningIndex, int doujunIndex, int doukouIndex)
     {
-      constraints.Add(new FuConstraint(false, false, winningIndex, doujunIndex, doukouIndex));
-      constraints.Add(new FuConstraint(false, true, winningIndex, doujunIndex, doukouIndex));
-      constraints.Add(new FuConstraint(true, false, winningIndex, doujunIndex, doukouIndex));
-      constraints.Add(new FuConstraint(true, true, winningIndex, doujunIndex, doukouIndex));
+      constraints.Add(new FuConstraint(false, false, squareIsNotSanankou, winningIndex, doujunIndex, doukouIndex));
+      constraints.Add(new FuConstraint(false, true, squareIsNotSanankou, winningIndex, doujunIndex, doukouIndex));
+      constraints.Add(new FuConstraint(true, false, squareIsNotSanankou, winningIndex, doujunIndex, doukouIndex));
+      constraints.Add(new FuConstraint(true, true, squareIsNotSanankou, winningIndex, doujunIndex, doukouIndex));
     }
 
     private class FuConstraint
@@ -182,12 +195,18 @@ namespace AnalyzerBuilder.Creators.Scoring
 
       public int DoukouIndex { get; }
 
+      /// <summary>
+      /// True if 111222333 shape that is forced to not be interpreted as sanankou.
+      /// </summary>
+      public bool SquareIsNotSanankou { get; }
+
       public int Id { get; }
 
-      public FuConstraint(bool open, bool tsumo, int winningIndex, int doujunIndex, int doukouIndex)
+      public FuConstraint(bool open, bool tsumo, bool squareIsNotSanankou, int winningIndex, int doujunIndex, int doukouIndex)
       {
         Open = open;
         Tsumo = tsumo;
+        SquareIsNotSanankou = squareIsNotSanankou;
         WinningIndex = winningIndex;
         DoujunIndex = doujunIndex;
         DoukouIndex = doukouIndex;
@@ -196,6 +215,11 @@ namespace AnalyzerBuilder.Creators.Scoring
         if (doujunIndex >= 0)
         {
           Id += doujunIndex + 10;
+        }
+
+        if (squareIsNotSanankou)
+        {
+          Id += 1;
         }
 
         Id *= 10;

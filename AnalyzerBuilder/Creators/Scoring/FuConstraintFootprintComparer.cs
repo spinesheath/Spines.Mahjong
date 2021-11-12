@@ -1,15 +1,21 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace AnalyzerBuilder.Creators.Scoring
 {
   internal class FuConstraintFootprintComparer : IEqualityComparer<byte[]>
   {
-    public bool Equals(byte[] x, byte[] y)
+    public bool Equals([AllowNull] byte[] x, [AllowNull] byte[] y)
     {
       if (x == y)
       {
         return true;
+      }
+
+      if (x == null || y == null)
+      {
+        return false;
       }
 
       if (x.Length != y.Length)

@@ -32,6 +32,10 @@ namespace AnalyzerBuilder.Creators.Scoring
 
       // Fu
       WaitShiftValue |= (long)fuFootprintIndex << 10;
+      if (arrangements.HasSquareType)
+      {
+        OrValue |= 1L << 34;
+      }
     }
 
     public long OrValue { get; private set; }

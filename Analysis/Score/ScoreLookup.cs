@@ -105,7 +105,7 @@ namespace Spines.Mahjong.Analysis.Score
       var sanankouBit = (result >> BitIndex.Sanankou) & 1L;
 
       // get this before shifting to open ssk
-      var sanshokuFuMultipler = (int) ((result >> BitIndex.SanshokuDoukou) + (result >> BitIndex.ClosedSanshokuDoujun) & 1);
+      var sanshokuFuMultiplier = (int) ((result >> BitIndex.SanshokuDoukou) + (result >> BitIndex.ClosedSanshokuDoujun) & 1);
 
       result += (result & OpenBitFilter) * openBit;
 
@@ -151,8 +151,11 @@ namespace Spines.Mahjong.Analysis.Score
         return (result, 20 + closedRonFu);
       }
 
-      var footprintKey = (sanshokuShift + 1) * 40 * sanshokuFuMultipler;
-      footprintKey |= ronShiftAmount & 1; // ronShiftAmount is either 0 or 0b1001u
+      var squareTypeToShuntsu = ((ryuuiisouSum & ~result) >> BitIndex.Sanankou) & 1L;
+
+      var footprintKey = (sanshokuShift + 1) * 40 * sanshokuFuMultiplier;
+      footprintKey += (int)squareTypeToShuntsu * 40;
+      footprintKey |= ronShiftAmount & 1; // ronShiftAmount is either 0 or 0b1001
       footprintKey |= (int)openBit << 1;
 
       var keys = new[] {footprintKey, footprintKey, footprintKey, 0};
@@ -243,8 +246,9 @@ namespace Spines.Mahjong.Analysis.Score
                                        (1L << BitIndex.ClosedTanyao) | (1L << BitIndex.ClosedChanta) | (1L << BitIndex.ClosedJunchan) |
                                        (1L << BitIndex.ClosedIttsuu);
 
-    private const long RyuuiisouSumFilter01 = 1L << (BitIndex.Ryuuiisou - 4);
-    private const long RyuuiisouSumFilter2 = 1L << (BitIndex.Ryuuiisou - 2);
+    // Sanankou bit index added here for square type, since it does not interfere with ryuuiisou
+    private const long RyuuiisouSumFilter01 = (1L << (BitIndex.Ryuuiisou - 4)) | (1L << BitIndex.Sanankou);
+    private const long RyuuiisouSumFilter2 = (1L << (BitIndex.Ryuuiisou - 2)) | (1L << BitIndex.Sanankou);
 
     private static int WindShiftHonor(int roundWind, int seatWind)
     {
