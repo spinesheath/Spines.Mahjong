@@ -138,24 +138,22 @@ namespace AnalyzerBuilder.Creators.Scoring
             AddConstraints(constraints, false, winningIndex, -1, uTypeIndex);
             AddConstraints(constraints, false, winningIndex, -1, uTypeIndex + 3);
           }
-          else if (arrangementGroup.TileCount < 6)
+          else if (arrangementGroup.TileCount < 6) // melds can be used for sanshoku here
           {
-            // doujun with meld
             for (var i = 0; i < 7; i++)
             {
               AddConstraints(constraints, false, winningIndex, i, -1);
             }
 
-            // doukou with meld
             for (var i = 0; i < 9; i++)
             {
-              if (tileCounts[i] < 2)
+              if (tileCounts[i] < 2 || arrangementGroup.Arrangements.Any(a => a.ContainsKoutsu(i)))
               {
                 AddConstraints(constraints, false, winningIndex, -1, i);
               }
             }
           }
-          else if (arrangementGroup.TileCount < 9)
+          else if (arrangementGroup.TileCount < 9) // melds can't be used for sanshoku here
           {
             var shuntsus = arrangementGroup.Arrangements.SelectMany(a => a.Blocks.Where(b => b.IsShuntsu));
             var doujunIndexes = shuntsus.Select(s => s.Index).Distinct();
