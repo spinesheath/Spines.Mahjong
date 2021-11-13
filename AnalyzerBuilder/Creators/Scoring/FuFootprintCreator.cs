@@ -100,7 +100,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       var hasIipeikou = arrangement.Blocks.Where(b => b.IsShuntsu).GroupBy(s => s.Index).Any(g => g.Count() >= 2);
       if (arrangements.HasIipeikou && !constraint.Open && !hasIipeikou)
       {
-        if (arrangements.HasSquareType && constraint.SquareIsNotSanankou)
+        if (!arrangements.HasSquareType || constraint.SquareIsNotSanankou)
         {
           return false;
         }

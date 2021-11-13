@@ -101,6 +101,8 @@ namespace Spines.Mahjong.Analysis.Tests
             
             foreach (var tile in tiles.GroupBy(t => t.TileType))
             {
+              // TODO ron and offset winds (2 vs 4 fu for value pair - or maybe dragons are enough for that?)
+
               var winningTile = tile.Key;
               var roundWind = 0;
               var seatWind = 0;
