@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using Spines.Mahjong.Analysis.Replay;
 using Spines.Mahjong.Analysis.State;
@@ -7,8 +8,6 @@ namespace Spines.Mahjong.Analysis.Tests
 {
   internal class DebugVisitor : IReplayVisitor
   {
-    private readonly StringBuilder _sb = new StringBuilder();
-
     public void Discard(int seatIndex, Tile tile)
     {
       _sb.AppendLine($"Discard {seatIndex}: {tile}");
@@ -61,7 +60,7 @@ namespace Spines.Mahjong.Analysis.Tests
 
     public void End()
     {
-      _sb.AppendLine($"End");
+      _sb.AppendLine("End");
     }
 
     public void EndMatch()
@@ -86,7 +85,7 @@ namespace Spines.Mahjong.Analysis.Tests
 
     public void Nuki(int who, Tile tile)
     {
-      throw new System.NotImplementedException();
+      throw new NotImplementedException();
     }
 
     public void PayRiichi(int who)
@@ -96,7 +95,7 @@ namespace Spines.Mahjong.Analysis.Tests
 
     public void Ryuukyoku(RyuukyokuType ryuukyokuType, int honba, int riichiSticks, IReadOnlyList<int> scores, IReadOnlyList<int> scoreChanges)
     {
-      _sb.AppendLine($"Ryuukyoku");
+      _sb.AppendLine("Ryuukyoku");
     }
 
     public void Scores(IEnumerable<int> scores)
@@ -113,5 +112,7 @@ namespace Spines.Mahjong.Analysis.Tests
     {
       _sb.AppendLine($"GameType {flags}");
     }
+
+    private readonly StringBuilder _sb = new StringBuilder();
   }
 }

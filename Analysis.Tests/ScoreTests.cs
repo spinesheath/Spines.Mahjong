@@ -9,15 +9,47 @@ namespace Spines.Mahjong.Analysis.Tests
 {
   public class ScoreTests
   {
+    [Fact]
+    public void BundlesWithClassicVisitor()
+    {
+      var files = BundlesFolders.SelectMany(Directory.EnumerateFiles);
+      var visitor = new ClassicScoreCalculatingVisitor();
+      foreach (var file in files)
+      {
+        using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
+        ReplayParser.Parse(fileStream, visitor);
+      }
+
+      Assert.Equal(0, visitor.FailureCount);
+    }
+
+    [Fact]
+    public void BundlesWithVisitor()
+    {
+      var files = BundlesFolders.SelectMany(Directory.EnumerateFiles);
+      var visitor = new ScoreCalculatingVisitor();
+      foreach (var file in files)
+      {
+        using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
+        ReplayParser.Parse(fileStream, visitor);
+      }
+
+      Assert.Equal(0, visitor.FailureCount);
+    }
+
     [Theory]
-    [InlineData("56788m456p567s 7777P", 0, 3, "5m", Yaku.MenzenTsumo | Yaku.ClosedTanyao)]
-    public void SomeHandByTsumo(string handString, int roundWind, int seatWind, string discardString, Yaku expectedYaku)
+    [InlineData("111222333m11z123M", "1z", Yaku.Sanankou | Yaku.OpenHonitsu)]
+    [InlineData("123678m345p55789s", "1m", Yaku.Pinfu)]
+    [InlineData("123456789m11122p", "1m", Yaku.ClosedIttsuu)]
+    [InlineData("123456789m11122p", "2m", Yaku.ClosedIttsuu)]
+    [InlineData("123456789m11122p", "3m", Yaku.ClosedIttsuu)]
+    public void SingleWaitFu(string handString, string discardString, Yaku expectedYaku)
     {
       var discard = TileType.FromString(discardString);
       var sp = new ShorthandParser(handString);
       var hand = new HandCalculator(sp);
 
-      var (yaku, fu) = YakuCalculator.Tsumo(hand, discard, roundWind, seatWind);
+      var (yaku, fu) = YakuCalculator.Ron(hand, discard, 0, 0);
 
       Assert.Equal(expectedYaku, yaku);
     }
@@ -67,7 +99,6 @@ namespace Spines.Mahjong.Analysis.Tests
     [InlineData("11122266z333Z555Z", 0, 0, "1z", Yaku.Tsuuiisou)]
     [InlineData("234m23455p234789s", 0, 0, "4p", Yaku.Pinfu | Yaku.ClosedSanshokuDoujun)]
     [InlineData("66778899m678p678s", 0, 0, "6m", Yaku.Pinfu | Yaku.ClosedSanshokuDoujun | Yaku.Iipeikou)]
-
     public void SomeHandByRon(string handString, int roundWind, int seatWind, string discardString, Yaku expectedYaku)
     {
       var discard = TileType.FromString(discardString);
@@ -80,40 +111,14 @@ namespace Spines.Mahjong.Analysis.Tests
     }
 
     [Theory]
-    [InlineData("111222333m11z123M", "1z", Yaku.Sanankou | Yaku.OpenHonitsu)]
-    [InlineData("123678m345p55789s", "1m", Yaku.Pinfu)]
-    [InlineData("123456789m11122p", "1m", Yaku.ClosedIttsuu)]
-    [InlineData("123456789m11122p", "2m", Yaku.ClosedIttsuu)]
-    [InlineData("123456789m11122p", "3m", Yaku.ClosedIttsuu)]
-    public void SingleWaitFu(string handString, string discardString, Yaku expectedYaku)
+    [InlineData("56788m456p567s 7777P", 0, 3, "5m", Yaku.MenzenTsumo | Yaku.ClosedTanyao)]
+    public void SomeHandByTsumo(string handString, int roundWind, int seatWind, string discardString, Yaku expectedYaku)
     {
       var discard = TileType.FromString(discardString);
       var sp = new ShorthandParser(handString);
       var hand = new HandCalculator(sp);
 
-      var (yaku, fu) = YakuCalculator.Ron(hand, discard, 0, 0);
-
-      Assert.Equal(expectedYaku, yaku);
-    }
-
-    [Theory]
-    [InlineData("123456789m12344p44z", 0, 0, "2m", Yaku.ClosedIttsuu)]
-    [InlineData("123456789m12344p44z", 0, 1, "2m", Yaku.ClosedIttsuu)]
-    [InlineData("123456789m12344p44z", 0, 2, "2m", Yaku.ClosedIttsuu)]
-    [InlineData("123456789m12344p44z", 0, 3, "2m", Yaku.ClosedIttsuu)]
-    [InlineData("123456789m12344p44z", 1, 1, "2m", Yaku.ClosedIttsuu)]
-    [InlineData("123456789m12344p44z", 1, 2, "2m", Yaku.ClosedIttsuu)]
-    [InlineData("123456789m12344p44z", 1, 3, "2m", Yaku.ClosedIttsuu)]
-    [InlineData("123456789m12344p44z", 2, 2, "2m", Yaku.ClosedIttsuu)]
-    [InlineData("123456789m12344p44z", 2, 3, "2m", Yaku.ClosedIttsuu)]
-    [InlineData("123456789m12344p44z", 3, 3, "2m", Yaku.ClosedIttsuu)]
-    public void ValuePairFu(string handString, int roundWind, int seatWind, string discardString, Yaku expectedYaku)
-    {
-      var discard = TileType.FromString(discardString);
-      var sp = new ShorthandParser(handString);
-      var hand = new HandCalculator(sp);
-
-      var (yaku, fu) = YakuCalculator.Ron(hand, discard, roundWind, seatWind);
+      var (yaku, fu) = YakuCalculator.Tsumo(hand, discard, roundWind, seatWind);
 
       Assert.Equal(expectedYaku, yaku);
     }
@@ -191,35 +196,29 @@ namespace Spines.Mahjong.Analysis.Tests
       Assert.Equal(expectedFu, fu);
     }
 
-    [Fact]
-    public void BundlesWithVisitor()
+    [Theory]
+    [InlineData("123456789m12344p44z", 0, 0, "2m", Yaku.ClosedIttsuu)]
+    [InlineData("123456789m12344p44z", 0, 1, "2m", Yaku.ClosedIttsuu)]
+    [InlineData("123456789m12344p44z", 0, 2, "2m", Yaku.ClosedIttsuu)]
+    [InlineData("123456789m12344p44z", 0, 3, "2m", Yaku.ClosedIttsuu)]
+    [InlineData("123456789m12344p44z", 1, 1, "2m", Yaku.ClosedIttsuu)]
+    [InlineData("123456789m12344p44z", 1, 2, "2m", Yaku.ClosedIttsuu)]
+    [InlineData("123456789m12344p44z", 1, 3, "2m", Yaku.ClosedIttsuu)]
+    [InlineData("123456789m12344p44z", 2, 2, "2m", Yaku.ClosedIttsuu)]
+    [InlineData("123456789m12344p44z", 2, 3, "2m", Yaku.ClosedIttsuu)]
+    [InlineData("123456789m12344p44z", 3, 3, "2m", Yaku.ClosedIttsuu)]
+    public void ValuePairFu(string handString, int roundWind, int seatWind, string discardString, Yaku expectedYaku)
     {
-      var files = BundlesFolders.SelectMany(Directory.EnumerateFiles);
-      var visitor = new ScoreCalculatingVisitor();
-      foreach (var file in files)
-      {
-        using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
-        ReplayParser.Parse(fileStream, visitor);
-      }
+      var discard = TileType.FromString(discardString);
+      var sp = new ShorthandParser(handString);
+      var hand = new HandCalculator(sp);
 
-      Assert.Equal(0, visitor.FailureCount);
-    }
-    
-    [Fact]
-    public void BundlesWithClassicVisitor()
-    {
-      var files = BundlesFolders.SelectMany(Directory.EnumerateFiles);
-      var visitor = new ClassicScoreCalculatingVisitor();
-      foreach (var file in files)
-      {
-        using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
-        ReplayParser.Parse(fileStream, visitor);
-      }
+      var (yaku, fu) = YakuCalculator.Ron(hand, discard, roundWind, seatWind);
 
-      Assert.Equal(0, visitor.FailureCount);
+      Assert.Equal(expectedYaku, yaku);
     }
 
-    private static readonly string[] BundlesFolders = 
+    private static readonly string[] BundlesFolders =
     {
       @"C:\tenhou\compressed\2014\yonma\bundles",
       @"C:\tenhou\compressed\2015\yonma\bundles",

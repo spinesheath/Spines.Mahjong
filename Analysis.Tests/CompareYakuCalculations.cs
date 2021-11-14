@@ -98,7 +98,7 @@ namespace Spines.Mahjong.Analysis.Tests
                 tileTypes.Add(tileType);
               }
             }
-            
+
             foreach (var tile in tiles.GroupBy(t => t.TileType))
             {
               // TODO ron and offset winds (2 vs 4 fu for value pair - or maybe dragons are enough for that?)
@@ -116,7 +116,7 @@ namespace Spines.Mahjong.Analysis.Tests
               }
 
               var han = Han.Calculate(yaku);
-              if (han > 4 || (han == 4 && classicFu >= 40 && fu >= 40))
+              if (han > 4 || han == 4 && classicFu >= 40 && fu >= 40)
               {
                 continue;
               }

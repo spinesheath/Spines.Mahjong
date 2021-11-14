@@ -8,67 +8,6 @@ namespace Spines.Mahjong.Analysis.Tests
 {
   internal class ClassicScoreCalculatingVisitor : IReplayVisitor
   {
-    private const Yaku YakuFilter = 
-      Yaku.Haku | 
-      Yaku.Hatsu | 
-      Yaku.Chun | 
-      Yaku.BakazeTon | 
-      Yaku.JikazeNan | 
-      Yaku.JikazeShaa | 
-      Yaku.JikazePei | 
-      Yaku.JikazeTon | 
-      Yaku.JikazeNan | 
-      Yaku.JikazeShaa | 
-      Yaku.JikazePei |
-      Yaku.Shousangen |
-      Yaku.Daisangen |
-      Yaku.Shousuushii |
-      Yaku.Daisuushii | 
-      Yaku.ClosedSanshokuDoujun | 
-      Yaku.OpenSanshokuDoujun | 
-      Yaku.SanshokuDoukou | 
-      Yaku.Toitoihou | 
-      Yaku.ClosedHonitsu | 
-      Yaku.ClosedChinitsu | 
-      Yaku.OpenHonitsu |
-      Yaku.OpenChinitsu | 
-      Yaku.ClosedTanyao | 
-      Yaku.OpenTanyao | 
-      Yaku.MenzenTsumo |
-      Yaku.Sanankou |
-      Yaku.Suuankou |
-      Yaku.SuuankouTanki |
-      Yaku.Iipeikou | 
-      Yaku.Chiitoitsu | 
-      Yaku.Ryanpeikou |
-      Yaku.KokushiMusou |
-      Yaku.KokushiMusouJuusanMen | 
-      Yaku.Pinfu |
-      Yaku.Tsuuiisou |
-      Yaku.Chinroutou |
-      Yaku.ChuurenPoutou |
-      Yaku.JunseiChuurenPoutou |
-      Yaku.ClosedChanta |
-      Yaku.OpenChanta |
-      Yaku.Honroutou |
-      Yaku.Ryuuiisou
-      ;
-
-    private const Yaku ExternalYaku =
-      Yaku.AkaDora |
-      Yaku.Dora |
-      Yaku.UraDora |
-      Yaku.Riichi |
-      Yaku.DoubleRiichi |
-      Yaku.Ippatsu |
-      Yaku.Chankan |
-      Yaku.Renhou |
-      Yaku.Chiihou |
-      Yaku.Tenhou |
-      Yaku.RinshanKaihou |
-      Yaku.HouteiRaoyui |
-      Yaku.HaiteiRaoyue;
-
     public ClassicScoreCalculatingVisitor()
     {
       _wall = new FakeWall();
@@ -159,14 +98,14 @@ namespace Spines.Mahjong.Analysis.Tests
     public void Ron(int who, int fromWho, PaymentInformation payment)
     {
       CalculationCount += 1;
-      
+
       var seat = _board.Seats[who];
       if (_currentShouminkanTile == null)
       {
         var discard = _board.CurrentDiscard!;
         var roundWind = _board.RoundWind.Index;
         var seatWind = seat.SeatWind.Index;
-        var concealedTilesAndDiscard = seat.ConcealedTiles.Concat(new []{discard}).ToList();
+        var concealedTilesAndDiscard = seat.ConcealedTiles.Concat(new[] {discard}).ToList();
         var (yaku, fu) = ClassicScoreCalculator.Ron(discard.TileType, roundWind, seatWind, seat.Melds, concealedTilesAndDiscard);
         if ((payment.Yaku & ExternalYaku) == payment.Yaku && yaku != Yaku.None)
         {
@@ -183,7 +122,7 @@ namespace Spines.Mahjong.Analysis.Tests
         var discard = _currentShouminkanTile;
         var roundWind = _board.RoundWind.Index;
         var seatWind = seat.SeatWind.Index;
-        var concealedTilesAndDiscard = seat.ConcealedTiles.Concat(new[] { discard }).ToList();
+        var concealedTilesAndDiscard = seat.ConcealedTiles.Concat(new[] {discard}).ToList();
         var (yaku, fu) = ClassicScoreCalculator.Chankan(discard.TileType, roundWind, seatWind, seat.Melds, concealedTilesAndDiscard);
         if ((payment.Yaku & ExternalYaku) == payment.Yaku && yaku != Yaku.None)
         {
@@ -200,7 +139,7 @@ namespace Spines.Mahjong.Analysis.Tests
     public void Tsumo(int who, PaymentInformation payment)
     {
       CalculationCount += 1;
-      
+
       var seat = _board.Seats[who];
       var draw = seat.CurrentDraw!;
       var roundWind = _board.RoundWind.Index;
@@ -216,6 +155,66 @@ namespace Spines.Mahjong.Analysis.Tests
         FailureCount += 1;
       }
     }
+
+    private const Yaku YakuFilter =
+      Yaku.Haku |
+      Yaku.Hatsu |
+      Yaku.Chun |
+      Yaku.BakazeTon |
+      Yaku.JikazeNan |
+      Yaku.JikazeShaa |
+      Yaku.JikazePei |
+      Yaku.JikazeTon |
+      Yaku.JikazeNan |
+      Yaku.JikazeShaa |
+      Yaku.JikazePei |
+      Yaku.Shousangen |
+      Yaku.Daisangen |
+      Yaku.Shousuushii |
+      Yaku.Daisuushii |
+      Yaku.ClosedSanshokuDoujun |
+      Yaku.OpenSanshokuDoujun |
+      Yaku.SanshokuDoukou |
+      Yaku.Toitoihou |
+      Yaku.ClosedHonitsu |
+      Yaku.ClosedChinitsu |
+      Yaku.OpenHonitsu |
+      Yaku.OpenChinitsu |
+      Yaku.ClosedTanyao |
+      Yaku.OpenTanyao |
+      Yaku.MenzenTsumo |
+      Yaku.Sanankou |
+      Yaku.Suuankou |
+      Yaku.SuuankouTanki |
+      Yaku.Iipeikou |
+      Yaku.Chiitoitsu |
+      Yaku.Ryanpeikou |
+      Yaku.KokushiMusou |
+      Yaku.KokushiMusouJuusanMen |
+      Yaku.Pinfu |
+      Yaku.Tsuuiisou |
+      Yaku.Chinroutou |
+      Yaku.ChuurenPoutou |
+      Yaku.JunseiChuurenPoutou |
+      Yaku.ClosedChanta |
+      Yaku.OpenChanta |
+      Yaku.Honroutou |
+      Yaku.Ryuuiisou;
+
+    private const Yaku ExternalYaku =
+      Yaku.AkaDora |
+      Yaku.Dora |
+      Yaku.UraDora |
+      Yaku.Riichi |
+      Yaku.DoubleRiichi |
+      Yaku.Ippatsu |
+      Yaku.Chankan |
+      Yaku.Renhou |
+      Yaku.Chiihou |
+      Yaku.Tenhou |
+      Yaku.RinshanKaihou |
+      Yaku.HouteiRaoyui |
+      Yaku.HaiteiRaoyue;
 
     private Board _board;
     private Tile? _currentShouminkanTile;

@@ -7,29 +7,6 @@ namespace Spines.Mahjong.Analysis.Tests
 {
   internal class ClassicScoreCalculator
   {
-    private readonly IReadOnlyList<Tile> _concealedTiles;
-    private readonly IReadOnlyList<State.Meld> _melds;
-    private readonly TileType _winningTile;
-    private readonly int _roundWind;
-    private readonly int _seatWind;
-    private readonly bool _isRon;
-
-    private readonly Yaku _han;
-    private readonly int _fu;
-    private readonly bool _isClosed;
-    private readonly IReadOnlyList<Arrangement> _arrangements;
-    private readonly IReadOnlyList<Tile> _allTiles;
-    private readonly IReadOnlyList<int> _allCounts;
-    private readonly IReadOnlyList<int> _concealedCounts;
-    private readonly int _suitPresence;
-
-    private static readonly Dictionary<int, IReadOnlyList<Arrangement>>[] SuitArrangementCaches = 
-    {
-      new Dictionary<int, IReadOnlyList<Arrangement>>(),
-      new Dictionary<int, IReadOnlyList<Arrangement>>(),
-      new Dictionary<int, IReadOnlyList<Arrangement>>()
-    };
-
     private ClassicScoreCalculator(IReadOnlyList<Tile> concealedTiles, IReadOnlyList<State.Meld> melds, TileType winningTile, int roundWind, int seatWind, bool isRon)
     {
       _concealedTiles = concealedTiles;
@@ -69,6 +46,78 @@ namespace Spines.Mahjong.Analysis.Tests
       (_han, _fu) = Flags();
     }
 
+    public static (Yaku, int) Chankan(TileType winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds, IReadOnlyList<Tile> concealedTiles)
+    {
+      var c = new ClassicScoreCalculator(concealedTiles, melds, winningTile, roundWind, seatWind, true);
+      return (c._han, c._fu);
+    }
+
+    public static (Yaku, int) Ron(TileType winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds, IReadOnlyList<Tile> concealedTiles)
+    {
+      var c = new ClassicScoreCalculator(concealedTiles, melds, winningTile, roundWind, seatWind, true);
+      return (c._han, c._fu);
+    }
+
+    public static (Yaku, int) Tsumo(TileType winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds, IReadOnlyList<Tile> concealedTiles)
+    {
+      var c = new ClassicScoreCalculator(concealedTiles, melds, winningTile, roundWind, seatWind, false);
+      return (c._han, c._fu);
+    }
+
+    private static readonly Dictionary<int, IReadOnlyList<Arrangement>>[] SuitArrangementCaches =
+    {
+      new Dictionary<int, IReadOnlyList<Arrangement>>(),
+      new Dictionary<int, IReadOnlyList<Arrangement>>(),
+      new Dictionary<int, IReadOnlyList<Arrangement>>()
+    };
+
+    private protected static readonly int[] Base5Table =
+    {
+      1,
+      5,
+      25,
+      125,
+      625,
+      3125,
+      15625,
+      78125,
+      390625
+    };
+
+    private static readonly Yaku AllYakuman =
+      Yaku.ChuurenPoutou |
+      Yaku.JunseiChuurenPoutou |
+      Yaku.Ryuuiisou |
+      Yaku.Shousuushii |
+      Yaku.Daisuushii |
+      Yaku.Chiihou |
+      Yaku.Chinroutou |
+      Yaku.Suuankou |
+      Yaku.SuuankouTanki |
+      Yaku.KokushiMusou |
+      Yaku.KokushiMusouJuusanMen |
+      Yaku.Tsuuiisou |
+      Yaku.Daisangen |
+      Yaku.Suukantsu |
+      Yaku.Renhou |
+      Yaku.Tenhou;
+
+    private readonly IReadOnlyList<int> _allCounts;
+    private readonly IReadOnlyList<Tile> _allTiles;
+    private readonly IReadOnlyList<Arrangement> _arrangements;
+    private readonly IReadOnlyList<int> _concealedCounts;
+    private readonly IReadOnlyList<Tile> _concealedTiles;
+    private readonly int _fu;
+
+    private readonly Yaku _han;
+    private readonly bool _isClosed;
+    private readonly bool _isRon;
+    private readonly IReadOnlyList<State.Meld> _melds;
+    private readonly int _roundWind;
+    private readonly int _seatWind;
+    private readonly int _suitPresence;
+    private readonly TileType _winningTile;
+
     private bool IsClosed()
     {
       return _melds.All(m => m.IsKan && m.CalledTile == null);
@@ -87,7 +136,7 @@ namespace Spines.Mahjong.Analysis.Tests
       {
         if (_allCounts.All(c => c == 0 || c == 2) && !_melds.Any())
         {
-          result.Add(new Arrangement { IsChiitoitsu = true });
+          result.Add(new Arrangement {IsChiitoitsu = true});
         }
 
         var manzu = CachedSuitArrangements(0);
@@ -114,7 +163,7 @@ namespace Spines.Mahjong.Analysis.Tests
           }
         }
       }
-      
+
       return result;
     }
 
@@ -149,19 +198,6 @@ namespace Spines.Mahjong.Analysis.Tests
       return SuitArrangements(suitId, tileCount, tileCounts).DefaultIfEmpty(new Arrangement()).ToList();
     }
 
-    private protected static readonly int[] Base5Table =
-    {
-      1,
-      5,
-      25,
-      125,
-      625,
-      3125,
-      15625,
-      78125,
-      390625
-    };
-
     private Arrangement Jihai()
     {
       var arrangement = new Arrangement();
@@ -178,7 +214,7 @@ namespace Spines.Mahjong.Analysis.Tests
           arrangement.Koutsus.Add(tileType);
         }
       }
-      
+
       return arrangement;
     }
 
@@ -201,7 +237,7 @@ namespace Spines.Mahjong.Analysis.Tests
 
             var shuntsus = new List<int>();
             var koutsus = new List<int>();
-            var mixedBlock = (int?)null;
+            var mixedBlock = (int?) null;
             var badShape = false;
 
             for (var j = 0; j < 9; j++)
@@ -276,7 +312,7 @@ namespace Spines.Mahjong.Analysis.Tests
                 arrangement.Koutsus.Add(TileType.FromTileTypeId(suitId * 9 + mixedBlock.Value + 2));
                 yield return arrangement;
 
-                var arrangement2 = new Arrangement { Pair = TileType.FromTileTypeId(suitId * 9 + i) };
+                var arrangement2 = new Arrangement {Pair = TileType.FromTileTypeId(suitId * 9 + i)};
                 arrangement2.Koutsus.AddRange(koutsus.Select(t => TileType.FromTileTypeId(suitId * 9 + t)));
                 arrangement2.Shuntsus.AddRange(shuntsus.Select(t => TileType.FromTileTypeId(suitId * 9 + t)));
                 arrangement2.Shuntsus.Add(mixedBlockTileType);
@@ -293,7 +329,7 @@ namespace Spines.Mahjong.Analysis.Tests
         var counts = tileCounts.ToArray();
         var shuntsus = new List<int>();
         var koutsus = new List<int>();
-        var mixedBlock = (int?)null;
+        var mixedBlock = (int?) null;
         var badShape = false;
 
         for (var j = 0; j < 9; j++)
@@ -380,37 +416,6 @@ namespace Spines.Mahjong.Analysis.Tests
       }
     }
 
-    private class Arrangement
-    {
-      public bool IsChiitoitsu { get; set; }
-
-      public bool IsKokushi { get; set; }
-
-      public TileType? Pair { get; set; }
-
-      public List<TileType> Shuntsus { get; } = new List<TileType>();
-
-      public List<TileType> Koutsus { get; } = new List<TileType>();
-    }
-
-    public static (Yaku, int) Ron(TileType winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds, IReadOnlyList<Tile> concealedTiles)
-    {
-      var c = new ClassicScoreCalculator(concealedTiles, melds, winningTile, roundWind, seatWind, true);
-      return (c._han, c._fu);
-    }
-
-    public static (Yaku, int) Tsumo(TileType winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds, IReadOnlyList<Tile> concealedTiles)
-    {
-      var c = new ClassicScoreCalculator(concealedTiles, melds, winningTile, roundWind, seatWind, false);
-      return (c._han, c._fu);
-    }
-
-    public static (Yaku, int) Chankan(TileType winningTile, int roundWind, int seatWind, IReadOnlyList<State.Meld> melds, IReadOnlyList<Tile> concealedTiles)
-    {
-      var c = new ClassicScoreCalculator(concealedTiles, melds, winningTile, roundWind, seatWind, true);
-      return (c._han, c._fu);
-    }
-
     private (Yaku, int) Flags()
     {
       var bestHan = 0;
@@ -473,30 +478,13 @@ namespace Spines.Mahjong.Analysis.Tests
       result |= Suushiihou(arrangement);
       result |= Suukantsu();
 
-      //{ ScoringFieldYaku.None, Yaku.Riichi },
-      //{ ScoringFieldYaku.None, Yaku.Ippatsu },
-      //{ ScoringFieldYaku.None, Yaku.Chankan },
-      //{ ScoringFieldYaku.None, Yaku.RinshanKaihou },
-      //{ ScoringFieldYaku.None, Yaku.HaiteiRaoyue },
-      //{ ScoringFieldYaku.None, Yaku.HouteiRaoyui },
-
-      //{ ScoringFieldYaku.None, Yaku.DoubleRiichi },
-
-      //{ ScoringFieldYaku.None, Yaku.Renhou },
-      //{ ScoringFieldYaku.None, Yaku.Tenhou },
-      //{ ScoringFieldYaku.None, Yaku.Chiihou },
-
-      //{ ScoringFieldYaku.None, Yaku.Dora },
-      //{ ScoringFieldYaku.None, Yaku.UraDora },
-      //{ ScoringFieldYaku.None, Yaku.AkaDora },
-
       var fu = Fu(arrangement, result);
 
       if ((result & AllYakuman) != Yaku.None)
       {
         return (result & AllYakuman, fu);
       }
-      
+
       return (result, fu);
     }
 
@@ -513,7 +501,7 @@ namespace Spines.Mahjong.Analysis.Tests
       }
 
       var fu = 20;
-      
+
       foreach (var meld in _melds)
       {
         var isKyuuhai = meld.LowestTile.TileType.IsKyuuhai;
@@ -897,7 +885,7 @@ namespace Spines.Mahjong.Analysis.Tests
     {
       return meld.Tiles.Any(t => t.TileType.IsKyuuhai);
     }
-    
+
     private Yaku Chiitoitsu(Arrangement arrangement)
     {
       return arrangement.IsChiitoitsu ? Yaku.Chiitoitsu : Yaku.None;
@@ -1031,22 +1019,17 @@ namespace Spines.Mahjong.Analysis.Tests
       return m.IsKan && m.CalledTile == null;
     }
 
-    private static readonly Yaku AllYakuman =
-      Yaku.ChuurenPoutou |
-      Yaku.JunseiChuurenPoutou |
-      Yaku.Ryuuiisou |
-      Yaku.Shousuushii |
-      Yaku.Daisuushii |
-      Yaku.Chiihou |
-      Yaku.Chinroutou |
-      Yaku.Suuankou |
-      Yaku.SuuankouTanki |
-      Yaku.KokushiMusou |
-      Yaku.KokushiMusouJuusanMen |
-      Yaku.Tsuuiisou |
-      Yaku.Daisangen |
-      Yaku.Suukantsu |
-      Yaku.Renhou |
-      Yaku.Tenhou;
+    private class Arrangement
+    {
+      public bool IsChiitoitsu { get; set; }
+
+      public bool IsKokushi { get; set; }
+
+      public List<TileType> Koutsus { get; } = new List<TileType>();
+
+      public TileType? Pair { get; set; }
+
+      public List<TileType> Shuntsus { get; } = new List<TileType>();
+    }
   }
 }

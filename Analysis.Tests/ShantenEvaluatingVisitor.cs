@@ -7,8 +7,6 @@ namespace Spines.Mahjong.Analysis.Tests
 {
   internal class ShantenEvaluatingVisitor : IReplayVisitor
   {
-    private List<HandCalculator> _shantenCalculators;
-
     public ShantenEvaluatingVisitor()
     {
       _shantenCalculators = new List<HandCalculator>();
@@ -96,5 +94,7 @@ namespace Spines.Mahjong.Analysis.Tests
       var shanten = _shantenCalculators[who].Shanten;
       EvaluationCount += shanten < 100 ? 1 : 0;
     }
+
+    private List<HandCalculator> _shantenCalculators;
   }
 }

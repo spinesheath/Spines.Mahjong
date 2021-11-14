@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Spines.Mahjong.Analysis.Tests
 {
-  public class ClassicYakuCalculatorTests
+  public class ClassicScoreCalculatorTests
   {
     [Theory]
     [InlineData("11122233399m111p", 0, 0, "1m", Yaku.Sanankou | Yaku.Toitoihou)]
@@ -31,6 +31,7 @@ namespace Spines.Mahjong.Analysis.Tests
           melds.Add(State.Meld.Ankan(meld.Tiles.First()));
         }
       }
+
       var winningTile = TileType.FromString(discardString);
 
       var (yaku, fu) = ClassicScoreCalculator.Ron(winningTile, roundWind, seatWind, melds, tiles);

@@ -8,90 +8,6 @@ namespace Spines.Mahjong.Analysis.Tests
 {
   internal class ScoreCalculatingVisitor : IReplayVisitor
   {
-    private const Yaku YakuFilter = 
-      Yaku.Haku | 
-      Yaku.Hatsu | 
-      Yaku.Chun | 
-      Yaku.BakazeTon | 
-      Yaku.BakazeNan | 
-      Yaku.BakazeShaa | 
-      Yaku.BakazePei | 
-      Yaku.JikazeTon | 
-      Yaku.JikazeNan | 
-      Yaku.JikazeShaa | 
-      Yaku.JikazePei |
-      Yaku.Shousangen |
-      Yaku.Daisangen |
-      Yaku.Shousuushii |
-      Yaku.Daisuushii | 
-      Yaku.ClosedSanshokuDoujun | 
-      Yaku.OpenSanshokuDoujun | 
-      Yaku.SanshokuDoukou | 
-      Yaku.Toitoihou | 
-      Yaku.ClosedHonitsu | 
-      Yaku.ClosedChinitsu | 
-      Yaku.OpenHonitsu |
-      Yaku.OpenChinitsu | 
-      Yaku.ClosedTanyao | 
-      Yaku.OpenTanyao | 
-      Yaku.MenzenTsumo |
-      Yaku.Sanankou |
-      Yaku.Suuankou |
-      Yaku.SuuankouTanki |
-      Yaku.Iipeikou | 
-      Yaku.Chiitoitsu | 
-      Yaku.Ryanpeikou |
-      Yaku.KokushiMusou |
-      Yaku.KokushiMusouJuusanMen | 
-      Yaku.Pinfu |
-      Yaku.Tsuuiisou |
-      Yaku.Chinroutou |
-      Yaku.ClosedChanta |
-      Yaku.OpenChanta |
-      Yaku.Honroutou |
-      Yaku.ClosedJunchan |
-      Yaku.OpenJunchan |
-      Yaku.ClosedIttsuu |
-      Yaku.OpenIttsuu |
-      Yaku.Sankantsu |
-      Yaku.Suukantsu |
-      Yaku.Ryuuiisou |
-      Yaku.ChuurenPoutou |
-      Yaku.JunseiChuurenPoutou;
-
-    private const Yaku ExternalYaku =
-      Yaku.AkaDora |
-      Yaku.Dora |
-      Yaku.UraDora |
-      Yaku.Riichi |
-      Yaku.DoubleRiichi |
-      Yaku.Ippatsu |
-      Yaku.Chankan |
-      Yaku.Renhou |
-      Yaku.Chiihou |
-      Yaku.Tenhou |
-      Yaku.RinshanKaihou |
-      Yaku.HouteiRaoyui |
-      Yaku.HaiteiRaoyue;
-
-    private const Yaku YakumanFilter =
-      Yaku.Daisangen |
-      Yaku.Shousuushii |
-      Yaku.Daisuushii |
-      Yaku.Suuankou |
-      Yaku.SuuankouTanki |
-      Yaku.KokushiMusou |
-      Yaku.KokushiMusouJuusanMen |
-      Yaku.Tsuuiisou |
-      Yaku.Chinroutou |
-      Yaku.Suukantsu |
-      Yaku.Ryuuiisou |
-      Yaku.ChuurenPoutou |
-      Yaku.Renhou |
-      Yaku.Chiihou |
-      Yaku.Tenhou |
-      Yaku.JunseiChuurenPoutou;
-
     public ScoreCalculatingVisitor()
     {
       _wall = new FakeWall();
@@ -214,7 +130,7 @@ namespace Spines.Mahjong.Analysis.Tests
       if (_currentShouminkanTile == null)
       {
         var discard = _board.CurrentDiscard!.TileType;
-        var hand = (HandCalculator)seat.Hand.WithTile(discard);
+        var hand = (HandCalculator) seat.Hand.WithTile(discard);
         var roundWind = _board.RoundWind.Index;
         var seatWind = seat.SeatWind.Index;
         var (yaku, fu) = YakuCalculator.Ron(hand, discard, roundWind, seatWind);
@@ -233,7 +149,7 @@ namespace Spines.Mahjong.Analysis.Tests
       else
       {
         var discard = _currentShouminkanTile.TileType;
-        var hand = (HandCalculator)seat.Hand.WithTile(discard);
+        var hand = (HandCalculator) seat.Hand.WithTile(discard);
         var roundWind = _board.RoundWind.Index;
         var seatWind = seat.SeatWind.Index;
         var (yaku, fu) = YakuCalculator.Chankan(hand, discard, roundWind, seatWind);
@@ -278,6 +194,90 @@ namespace Spines.Mahjong.Analysis.Tests
         FailureCount += 1;
       }
     }
+
+    private const Yaku YakuFilter =
+      Yaku.Haku |
+      Yaku.Hatsu |
+      Yaku.Chun |
+      Yaku.BakazeTon |
+      Yaku.BakazeNan |
+      Yaku.BakazeShaa |
+      Yaku.BakazePei |
+      Yaku.JikazeTon |
+      Yaku.JikazeNan |
+      Yaku.JikazeShaa |
+      Yaku.JikazePei |
+      Yaku.Shousangen |
+      Yaku.Daisangen |
+      Yaku.Shousuushii |
+      Yaku.Daisuushii |
+      Yaku.ClosedSanshokuDoujun |
+      Yaku.OpenSanshokuDoujun |
+      Yaku.SanshokuDoukou |
+      Yaku.Toitoihou |
+      Yaku.ClosedHonitsu |
+      Yaku.ClosedChinitsu |
+      Yaku.OpenHonitsu |
+      Yaku.OpenChinitsu |
+      Yaku.ClosedTanyao |
+      Yaku.OpenTanyao |
+      Yaku.MenzenTsumo |
+      Yaku.Sanankou |
+      Yaku.Suuankou |
+      Yaku.SuuankouTanki |
+      Yaku.Iipeikou |
+      Yaku.Chiitoitsu |
+      Yaku.Ryanpeikou |
+      Yaku.KokushiMusou |
+      Yaku.KokushiMusouJuusanMen |
+      Yaku.Pinfu |
+      Yaku.Tsuuiisou |
+      Yaku.Chinroutou |
+      Yaku.ClosedChanta |
+      Yaku.OpenChanta |
+      Yaku.Honroutou |
+      Yaku.ClosedJunchan |
+      Yaku.OpenJunchan |
+      Yaku.ClosedIttsuu |
+      Yaku.OpenIttsuu |
+      Yaku.Sankantsu |
+      Yaku.Suukantsu |
+      Yaku.Ryuuiisou |
+      Yaku.ChuurenPoutou |
+      Yaku.JunseiChuurenPoutou;
+
+    private const Yaku ExternalYaku =
+      Yaku.AkaDora |
+      Yaku.Dora |
+      Yaku.UraDora |
+      Yaku.Riichi |
+      Yaku.DoubleRiichi |
+      Yaku.Ippatsu |
+      Yaku.Chankan |
+      Yaku.Renhou |
+      Yaku.Chiihou |
+      Yaku.Tenhou |
+      Yaku.RinshanKaihou |
+      Yaku.HouteiRaoyui |
+      Yaku.HaiteiRaoyue;
+
+    private const Yaku YakumanFilter =
+      Yaku.Daisangen |
+      Yaku.Shousuushii |
+      Yaku.Daisuushii |
+      Yaku.Suuankou |
+      Yaku.SuuankouTanki |
+      Yaku.KokushiMusou |
+      Yaku.KokushiMusouJuusanMen |
+      Yaku.Tsuuiisou |
+      Yaku.Chinroutou |
+      Yaku.Suukantsu |
+      Yaku.Ryuuiisou |
+      Yaku.ChuurenPoutou |
+      Yaku.Renhou |
+      Yaku.Chiihou |
+      Yaku.Tenhou |
+      Yaku.JunseiChuurenPoutou;
 
     private Board _board;
     private Tile? _currentShouminkanTile;
