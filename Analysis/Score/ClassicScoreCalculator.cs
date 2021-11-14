@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Spines.Mahjong.Analysis.Replay;
-using Spines.Mahjong.Analysis.Score;
 
-namespace Spines.Mahjong.Analysis.Tests
+namespace Spines.Mahjong.Analysis.Score
 {
-  internal class ClassicScoreCalculator
+  public class ClassicScoreCalculator
   {
     private ClassicScoreCalculator(IReadOnlyList<Tile> concealedTiles, IReadOnlyList<State.Meld> melds, TileType winningTile, int roundWind, int seatWind, bool isRon)
     {
