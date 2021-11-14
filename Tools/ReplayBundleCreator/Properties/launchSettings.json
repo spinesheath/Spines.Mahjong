@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ReplayBundleCreator": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\tenhou\\compressed\\2016\\yonma\\actions\" \"C:\\tenhou\\compressed\\2016\\yonma\\bundles\""
+    }
+  }
+}

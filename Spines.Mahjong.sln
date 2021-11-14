@@ -9,10 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analysis", "Analysis\Analys
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmark", "Benchmark\Benchmark.csproj", "{2965D962-1FF3-4CC7-BA04-CB1300462AEA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CompressedReplayCreator", "CompressedReplayCreator\CompressedReplayCreator.csproj", "{09034D61-12E7-4F30-B9D5-32B1E4747FC2}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReplayBundleCreator", "ReplayBundleCreator\ReplayBundleCreator.csproj", "{D7BFA572-EB66-4CF4-9BE8-E69DA74037E3}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MemoryProfilingRig", "MemoryProfilingRig\MemoryProfilingRig.csproj", "{157FF3E0-8FBD-45B0-A322-4EFE7E16F6F8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnalyzerBuilder", "AnalyzerBuilder\AnalyzerBuilder.csproj", "{1B10422E-0A51-4731-88BF-A42FAC37B023}"
@@ -21,13 +17,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Ai", "Ai", "{7183B3F5-016D-
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameEngine.Tests", "GameEngine.Tests\GameEngine.Tests.csproj", "{6EA4EBDA-E74F-400E-9142-D9D561DCC435}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleFrontend", "Ai\ConsoleFrontend\ConsoleFrontend.csproj", "{3DD3DC43-BA49-4859-8C34-A2B41096BDE6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleFrontend", "Ai\ConsoleFrontend\ConsoleFrontend.csproj", "{3DD3DC43-BA49-4859-8C34-A2B41096BDE6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Game", "Ai\Game\Game.csproj", "{49E34C24-0920-41DF-BC8D-3791830863CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Game", "Ai\Game\Game.csproj", "{49E34C24-0920-41DF-BC8D-3791830863CA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphicalFrontend", "Ai\GraphicalFrontend\GraphicalFrontend.csproj", "{DA39FB0C-84B3-4948-94C5-D292743BEC5D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleAi", "Ai\SimpleAi\SimpleAi.csproj", "{B89B1568-580F-4E77-AF4E-8E6F1B181A3D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{4C139521-1C5B-4CCA-BA97-3C26623CE91F}"
+	ProjectSection(SolutionItems) = preProject
+		Tools\CompressedReplayCreator\CompressedReplayCreator.csproj = Tools\CompressedReplayCreator\CompressedReplayCreator.csproj
+		Tools\ReplayBundleCreator\ReplayBundleCreator.csproj = Tools\ReplayBundleCreator\ReplayBundleCreator.csproj
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -75,30 +77,6 @@ Global
 		{2965D962-1FF3-4CC7-BA04-CB1300462AEA}.Release|x64.Build.0 = Release|Any CPU
 		{2965D962-1FF3-4CC7-BA04-CB1300462AEA}.Release|x86.ActiveCfg = Release|Any CPU
 		{2965D962-1FF3-4CC7-BA04-CB1300462AEA}.Release|x86.Build.0 = Release|Any CPU
-		{09034D61-12E7-4F30-B9D5-32B1E4747FC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{09034D61-12E7-4F30-B9D5-32B1E4747FC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{09034D61-12E7-4F30-B9D5-32B1E4747FC2}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{09034D61-12E7-4F30-B9D5-32B1E4747FC2}.Debug|x64.Build.0 = Debug|Any CPU
-		{09034D61-12E7-4F30-B9D5-32B1E4747FC2}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{09034D61-12E7-4F30-B9D5-32B1E4747FC2}.Debug|x86.Build.0 = Debug|Any CPU
-		{09034D61-12E7-4F30-B9D5-32B1E4747FC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{09034D61-12E7-4F30-B9D5-32B1E4747FC2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{09034D61-12E7-4F30-B9D5-32B1E4747FC2}.Release|x64.ActiveCfg = Release|Any CPU
-		{09034D61-12E7-4F30-B9D5-32B1E4747FC2}.Release|x64.Build.0 = Release|Any CPU
-		{09034D61-12E7-4F30-B9D5-32B1E4747FC2}.Release|x86.ActiveCfg = Release|Any CPU
-		{09034D61-12E7-4F30-B9D5-32B1E4747FC2}.Release|x86.Build.0 = Release|Any CPU
-		{D7BFA572-EB66-4CF4-9BE8-E69DA74037E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D7BFA572-EB66-4CF4-9BE8-E69DA74037E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D7BFA572-EB66-4CF4-9BE8-E69DA74037E3}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{D7BFA572-EB66-4CF4-9BE8-E69DA74037E3}.Debug|x64.Build.0 = Debug|Any CPU
-		{D7BFA572-EB66-4CF4-9BE8-E69DA74037E3}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{D7BFA572-EB66-4CF4-9BE8-E69DA74037E3}.Debug|x86.Build.0 = Debug|Any CPU
-		{D7BFA572-EB66-4CF4-9BE8-E69DA74037E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D7BFA572-EB66-4CF4-9BE8-E69DA74037E3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D7BFA572-EB66-4CF4-9BE8-E69DA74037E3}.Release|x64.ActiveCfg = Release|Any CPU
-		{D7BFA572-EB66-4CF4-9BE8-E69DA74037E3}.Release|x64.Build.0 = Release|Any CPU
-		{D7BFA572-EB66-4CF4-9BE8-E69DA74037E3}.Release|x86.ActiveCfg = Release|Any CPU
-		{D7BFA572-EB66-4CF4-9BE8-E69DA74037E3}.Release|x86.Build.0 = Release|Any CPU
 		{157FF3E0-8FBD-45B0-A322-4EFE7E16F6F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{157FF3E0-8FBD-45B0-A322-4EFE7E16F6F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{157FF3E0-8FBD-45B0-A322-4EFE7E16F6F8}.Debug|x64.ActiveCfg = Debug|Any CPU

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CompressedReplayCreator": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\tenhou\\2016\" \"C:\\tenhou\\compressed\\2016\""
+    }
+  }
+}
