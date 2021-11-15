@@ -160,6 +160,7 @@ namespace Spines.Mahjong.Analysis.Tests
     [InlineData("11777888999m 111P", 0, 0, "7m", 40)]
     [InlineData("11m111222333p 234M", 0, 0, "1p", 40)]
     [InlineData("11m222233334444p", 0, 0, "1m", 40)]
+    [InlineData("111222333m66z 123M", 0, 0, "1m", 30)]
     public void TotalFuRon(string handString, int roundWind, int seatWind, string discardString, int expectedFu)
     {
       var discard = TileType.FromString(discardString);

@@ -13,17 +13,21 @@ namespace Spines.Mahjong.Analysis.Tests
     [Fact]
     public void CompareWithEvaluatedHands()
     {
-      var workingDirectory = "C:\\tenhou\\scoreDb";
+      const string workingDirectory = "C:\\tenhou\\scoreDb";
       const int groupKinds = 34 + 21;
       const int maxGroupsHash = groupKinds * groupKinds * groupKinds * groupKinds;
+      var failureCount = 0;
 
       var pairs = new[]
       {
-         0,  
-        // 1,  2,  3,  4,  5,  6,  7,  8,
+         //0, 1,  
+        // 2,  3,  4,  5,  6,  7,  8,
         //18, 19, 20, 21, 22, 23, 24, 25, 26,
-        //27, 31, 32
+        //27, 
+        //31,
+        32
       };
+
       foreach (var pair in pairs)
       {
         var path = Path.Combine(workingDirectory, $"standard{pair}.dat");
@@ -127,29 +131,43 @@ namespace Spines.Mahjong.Analysis.Tests
                 var (tsumoHan, tsumoFu) = ScoreCalculator.Tsumo(hand, winningTile, roundWind, seatWind);
                 
                 var expectedTsumoHan = binaryReader.ReadByte();
-                Assert.Equal(expectedTsumoHan, tsumoHan);
+                if (expectedTsumoHan != tsumoHan)
+                {
+                  failureCount += 1;
+                }
 
                 if (expectedTsumoHan < 5)
                 {
                   int expectedTsumoFu = binaryReader.ReadByte();
-                  Assert.Equal(expectedTsumoFu, tsumoFu);
+                  if (expectedTsumoFu != tsumoFu)
+                  {
+                    failureCount += 1;
+                  }
                 }
                 
                 var (ronHan, ronFu) = ScoreCalculator.Ron(hand, winningTile, roundWind, seatWind);
                 
                 var expectedRonHan = binaryReader.ReadByte();
-                Assert.Equal(expectedRonHan, ronHan);
+                if (expectedRonHan != ronHan)
+                {
+                  failureCount += 1;
+                }
 
                 if (expectedTsumoHan < 5)
                 {
                   int expectedRonFu = binaryReader.ReadByte();
-                  Assert.Equal(expectedRonFu, ronFu);
+                  if (expectedRonFu != ronFu)
+                  {
+                    failureCount += 1;
+                  }
                 }
               }
             }
           }
         }
       }
+
+      Assert.Equal(0, failureCount);
     }
 
     private static readonly List<Tuple<int, int>> SimpleWindConfiguration = new()
