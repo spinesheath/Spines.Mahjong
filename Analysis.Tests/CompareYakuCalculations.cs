@@ -132,7 +132,7 @@ namespace Spines.Mahjong.Analysis.Tests
       }
     }
 
-    private void AddGroup(int[] tileCounts, int kind)
+    private static void AddGroup(int[] tileCounts, int kind)
     {
       if (kind < 34)
       {
@@ -149,7 +149,7 @@ namespace Spines.Mahjong.Analysis.Tests
       }
     }
 
-    private void AddMeld(List<State.Meld> melds, List<int>[] meldIds, int kind)
+    private static void AddMeld(List<State.Meld> melds, List<int>[] meldIds, int kind)
     {
       if (kind < 34)
       {

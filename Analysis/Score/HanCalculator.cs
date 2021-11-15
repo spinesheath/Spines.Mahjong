@@ -8,7 +8,8 @@ namespace Spines.Mahjong.Analysis.Score
     {
       if ((yaku & YakumanFilter) != Yaku.None)
       {
-        return int.MaxValue;
+        var yakumanBits = (int)Popcnt.X64.PopCount((ulong)yaku);
+        return yakumanBits + 128;
       }
 
       var setBits1 = (int) Popcnt.X64.PopCount((ulong) (yaku & HanMask1));
