@@ -115,13 +115,13 @@ namespace Spines.Mahjong.Analysis.Score
       var toitoiBit = (result >> BitIndex.Toitoi) & 1L;
 
       var x = openIipeikouBit & (closedChantaBit | closedJunchanBit);
-      var y = (sanankouBit ^ x) & sanankouBit;
-      var z = openIipeikouBit & (sanankouBit | toitoiBit) & openJunchanBit;
+      var removeSequenceYaku = (sanankouBit ^ x) & sanankouBit;
+      var removeOpenJunchan = openIipeikouBit & (sanankouBit | toitoiBit) & openJunchanBit;
       var removeSanankou = x * (1 - toitoiBit);
       result -= (result & (1L << BitIndex.Sanankou)) * removeSanankou;
       // (openIipeikouBit << BitIndex.OpenChanta) means 111222333 shape and chanta, here excluded in case of sanankou
-      result -= (result & ((1L << BitIndex.Pinfu) | (1L << BitIndex.Iipeikou) | (openIipeikouBit << BitIndex.OpenChanta))) * y;
-      result -= (result & (1L << BitIndex.OpenJunchan)) * z;
+      result -= (result & ((1L << BitIndex.Pinfu) | (1L << BitIndex.Iipeikou) | (openIipeikouBit << BitIndex.OpenChanta))) * removeSequenceYaku;
+      result -= (result & (1L << BitIndex.OpenJunchan)) * removeOpenJunchan;
       result -= (result & ((1L << BitIndex.Iipeikou) | (1L << BitIndex.ClosedJunchan))) * (toitoiBit & (1 - openBit));
 
       result += (result & TankiUpgradeableFilter) * tankiBit;
@@ -151,7 +151,7 @@ namespace Spines.Mahjong.Analysis.Score
         return (result, 20 + closedRonFu);
       }
       
-      var squareTypeToShuntsu = ((ryuuiisouSum & ~result) >> BitIndex.Sanankou) & ((1 - openBit) | openJunchanBit);
+      var squareTypeToShuntsu = ((ryuuiisouSum & ~result) >> BitIndex.Sanankou) & ((1 - openBit) | (openJunchanBit & ~removeOpenJunchan));
 
       var footprintKey = (sanshokuShift + 1) * 40 * sanshokuFuMultiplier;
       footprintKey += (int)squareTypeToShuntsu * 40;
