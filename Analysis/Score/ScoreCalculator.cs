@@ -4,7 +4,7 @@ using Spines.Mahjong.Analysis.Shanten;
 
 namespace Spines.Mahjong.Analysis.Score
 {
-  public static class YakuCalculator
+  public static class ScoreCalculator
   {
     private static (ScoringFieldYaku, int) CalculateInternal(HandCalculator hand, TileType winningTile, bool isRon, int roundWind, int seatWind)
     {
@@ -12,19 +12,40 @@ namespace Spines.Mahjong.Analysis.Score
       return ((ScoringFieldYaku)yaku, fu);
     }
 
-    public static (Yaku, int) Ron(HandCalculator hand, TileType winningTile, int roundWind, int seatWind)
+    public static (int, int) Ron(HandCalculator hand, TileType winningTile, int roundWind, int seatWind)
+    {
+      var (yaku, fu) = CalculateInternal(hand, winningTile, true, roundWind, seatWind);
+      var han = Han.Calculate(yaku);
+      return (han, fu);
+    }
+
+    public static (int, int) Tsumo(HandCalculator hand, TileType winningTile, int roundWind, int seatWind)
+    {
+      var (yaku, fu) = CalculateInternal(hand, winningTile, false, roundWind, seatWind);
+      var han = Han.Calculate(yaku);
+      return (han, fu);
+    }
+
+    public static (int, int) Chankan(HandCalculator hand, TileType winningTile, int roundWind, int seatWind)
+    {
+      var (yaku, fu) = CalculateInternal(hand, winningTile, true, roundWind, seatWind);
+      var han = Han.Calculate(yaku);
+      return (han, fu);
+    }
+
+    public static (Yaku, int) RonWithYaku(HandCalculator hand, TileType winningTile, int roundWind, int seatWind)
     {
       var (yaku, fu) = CalculateInternal(hand, winningTile, true, roundWind, seatWind);
       return (MapFlags(yaku), fu);
     }
 
-    public static (Yaku, int) Tsumo(HandCalculator hand, TileType winningTile, int roundWind, int seatWind)
+    public static (Yaku, int) TsumoWithYaku(HandCalculator hand, TileType winningTile, int roundWind, int seatWind)
     {
       var (yaku, fu) = CalculateInternal(hand, winningTile, false, roundWind, seatWind);
       return (MapFlags(yaku), fu);
     }
 
-    public static (Yaku, int) Chankan(HandCalculator hand, TileType winningTile, int roundWind, int seatWind)
+    public static (Yaku, int) ChankanWithYaku(HandCalculator hand, TileType winningTile, int roundWind, int seatWind)
     {
       var (yaku, fu) = CalculateInternal(hand, winningTile, true, roundWind, seatWind);
       return (MapFlags(yaku), fu);

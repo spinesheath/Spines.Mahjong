@@ -49,7 +49,7 @@ namespace Spines.Mahjong.Analysis.Tests
       var sp = new ShorthandParser(handString);
       var hand = new HandCalculator(sp);
 
-      var (yaku, fu) = YakuCalculator.Ron(hand, discard, 0, 0);
+      var (yaku, fu) = ScoreCalculator.RonWithYaku(hand, discard, 0, 0);
 
       Assert.Equal(expectedYaku, yaku);
     }
@@ -105,7 +105,7 @@ namespace Spines.Mahjong.Analysis.Tests
       var sp = new ShorthandParser(handString);
       var hand = new HandCalculator(sp);
 
-      var (yaku, fu) = YakuCalculator.Ron(hand, discard, roundWind, seatWind);
+      var (yaku, fu) = ScoreCalculator.RonWithYaku(hand, discard, roundWind, seatWind);
 
       Assert.Equal(expectedYaku, yaku);
     }
@@ -118,7 +118,7 @@ namespace Spines.Mahjong.Analysis.Tests
       var sp = new ShorthandParser(handString);
       var hand = new HandCalculator(sp);
 
-      var (yaku, fu) = YakuCalculator.Tsumo(hand, discard, roundWind, seatWind);
+      var (yaku, fu) = ScoreCalculator.TsumoWithYaku(hand, discard, roundWind, seatWind);
 
       Assert.Equal(expectedYaku, yaku);
     }
@@ -162,7 +162,7 @@ namespace Spines.Mahjong.Analysis.Tests
       var sp = new ShorthandParser(handString);
       var hand = new HandCalculator(sp);
 
-      var (yaku, fu) = YakuCalculator.Ron(hand, discard, roundWind, seatWind);
+      var (yaku, fu) = ScoreCalculator.RonWithYaku(hand, discard, roundWind, seatWind);
 
       Assert.Equal(expectedFu, fu);
     }
@@ -191,7 +191,7 @@ namespace Spines.Mahjong.Analysis.Tests
       var sp = new ShorthandParser(handString);
       var hand = new HandCalculator(sp);
 
-      var (yaku, fu) = YakuCalculator.Tsumo(hand, draw, roundWind, seatWind);
+      var (yaku, fu) = ScoreCalculator.TsumoWithYaku(hand, draw, roundWind, seatWind);
 
       Assert.Equal(expectedFu, fu);
     }
@@ -213,7 +213,7 @@ namespace Spines.Mahjong.Analysis.Tests
       var sp = new ShorthandParser(handString);
       var hand = new HandCalculator(sp);
 
-      var (yaku, fu) = YakuCalculator.Ron(hand, discard, roundWind, seatWind);
+      var (yaku, fu) = ScoreCalculator.RonWithYaku(hand, discard, roundWind, seatWind);
 
       Assert.Equal(expectedYaku, yaku);
     }

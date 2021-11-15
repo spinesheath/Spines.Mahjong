@@ -493,7 +493,14 @@ namespace Spines.Mahjong.Analysis.Shanten
       foreach (var meldId in meldIds)
       {
         _melds[3] <<= 6;
-        _melds[3] += 1 + meldId;
+        if (meldId < 25)
+        {
+          _melds[3] += 1 + meldId;
+        }
+        else
+        {
+          _melds[3] += 1 + meldId - 9;
+        }
         _meldCount += 1;
 
         if (meldId < 7 + 9)
@@ -506,9 +513,9 @@ namespace Spines.Mahjong.Analysis.Shanten
           JihaiMeldBit += 1 << index;
           InHandByType[tileType] += 3;
 
-          _scoringData.Pon(TileType.FromTileTypeId(3 * 9 + meldId - 7), Base5Hashes[3]);
+          _scoringData.Pon(TileType.FromTileTypeId(tileType), Base5Hashes[3]);
         }
-        else
+        else if (meldId < 25)
         {
           var index = meldId - 16;
           var tileType = index + 27;
@@ -518,7 +525,19 @@ namespace Spines.Mahjong.Analysis.Shanten
           ArrangementValues[3] = HonorClassifier.Daiminkan();
           InHandByType[tileType] += 4;
 
-          _scoringData.Ankan(TileType.FromTileTypeId(3 * 9 + meldId - 16), Base5Hashes[3]);
+          _scoringData.Ankan(TileType.FromTileTypeId(tileType), Base5Hashes[3]);
+        }
+        else
+        {
+          var index = meldId - 25;
+          var tileType = index + 27;
+          HonorClassifier.Draw(0, 0);
+          HonorClassifier.Draw(1, 0);
+          HonorClassifier.Draw(2, 0);
+          ArrangementValues[3] = HonorClassifier.Daiminkan();
+          InHandByType[tileType] += 4;
+
+          _scoringData.Daiminkan(TileType.FromTileTypeId(tileType), Base5Hashes[3]);
         }
       }
     }
@@ -528,7 +547,14 @@ namespace Spines.Mahjong.Analysis.Shanten
       foreach (var meldId in meldIds)
       {
         _melds[suitId] <<= 6;
-        _melds[suitId] += 1 + meldId;
+        if (meldId < 25)
+        {
+          _melds[suitId] += 1 + meldId;
+        }
+        else
+        {
+          _melds[suitId] += 1 + meldId - 9;
+        }
         _meldCount += 1;
 
         if (meldId < 7)
@@ -538,19 +564,29 @@ namespace Spines.Mahjong.Analysis.Shanten
           InHandByType[start + 1] += 1;
           InHandByType[start + 2] += 1;
 
-          _scoringData.Chii(TileType.FromTileTypeId(suitId * 9 + meldId), Base5Hashes[suitId]);
-        }
-        else if (meldId < 16)
-        {
-          InHandByType[9 * suitId + meldId - 7] += 3;
-
-          _scoringData.Pon(TileType.FromTileTypeId(suitId * 9 + meldId - 7), Base5Hashes[suitId]);
+          _scoringData.Chii(TileType.FromTileTypeId(start), Base5Hashes[suitId]);
         }
         else
         {
-          InHandByType[9 * suitId + meldId - 16] += 4;
+          var tileTypeId = 9 * suitId + ((meldId - 7) % 9);
+          if (meldId < 16)
+          {
+            InHandByType[tileTypeId] += 3;
 
-          _scoringData.Ankan(TileType.FromTileTypeId(suitId * 9 + meldId - 16), Base5Hashes[suitId]);
+            _scoringData.Pon(TileType.FromTileTypeId(tileTypeId), Base5Hashes[suitId]);
+          }
+          else if (meldId < 25)
+          {
+            InHandByType[tileTypeId] += 4;
+
+            _scoringData.Ankan(TileType.FromTileTypeId(tileTypeId), Base5Hashes[suitId]);
+          }
+          else
+          {
+            InHandByType[tileTypeId] += 4;
+
+            _scoringData.Daiminkan(TileType.FromTileTypeId(tileTypeId), Base5Hashes[suitId]);
+          }
         }
       }
 
@@ -603,11 +639,13 @@ namespace Spines.Mahjong.Analysis.Shanten
         }
         else if (meldId < 16)
         {
-          sb.Append((char) ('1' + meldId - 7), InHandByType[suitId * 9 + meldId - 7] - ConcealedTiles[suitId * 9 + meldId - 7]);
+          var index = (meldId - 7) % 9;
+          sb.Append((char) ('1' + index), InHandByType[suitId * 9 + index] - ConcealedTiles[suitId * 9 + index]);
         }
         else
         {
-          sb.Append((char)('1' + meldId - 7 - 9), InHandByType[suitId * 9 + meldId - 7 - 9] - ConcealedTiles[suitId * 9 + meldId - 7 - 9]);
+          var index = (meldId - 7) % 9;
+          sb.Append((char)('1' + index), InHandByType[suitId * 9 + index] - ConcealedTiles[suitId * 9 + index]);
         }
 
         sb.Append(suit);

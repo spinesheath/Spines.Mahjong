@@ -72,8 +72,8 @@ namespace Spines.Mahjong.Analysis.Tests
             var h = (HandCalculator) hand.WithTile(draw);
             var roundWind = _board.RoundWind.Index;
             var seatWind = seat.SeatWind.Index;
-            var (tsumoYaku, tsumoFu) = YakuCalculator.Tsumo(h, draw, roundWind, seatWind);
-            var (ronYaku, ronFu) = YakuCalculator.Ron(h, draw, roundWind, seatWind);
+            var (tsumoYaku, tsumoFu) = ScoreCalculator.TsumoWithYaku(h, draw, roundWind, seatWind);
+            var (ronYaku, ronFu) = ScoreCalculator.RonWithYaku(h, draw, roundWind, seatWind);
             WeirdYakuCollector ^= tsumoYaku | ronYaku;
           }
         }
@@ -133,7 +133,7 @@ namespace Spines.Mahjong.Analysis.Tests
         var hand = (HandCalculator) seat.Hand.WithTile(discard);
         var roundWind = _board.RoundWind.Index;
         var seatWind = seat.SeatWind.Index;
-        var (yaku, fu) = YakuCalculator.Ron(hand, discard, roundWind, seatWind);
+        var (yaku, fu) = ScoreCalculator.RonWithYaku(hand, discard, roundWind, seatWind);
 
         if (yaku != (payment.Yaku & YakuFilter))
         {
@@ -152,7 +152,7 @@ namespace Spines.Mahjong.Analysis.Tests
         var hand = (HandCalculator) seat.Hand.WithTile(discard);
         var roundWind = _board.RoundWind.Index;
         var seatWind = seat.SeatWind.Index;
-        var (yaku, fu) = YakuCalculator.Chankan(hand, discard, roundWind, seatWind);
+        var (yaku, fu) = ScoreCalculator.ChankanWithYaku(hand, discard, roundWind, seatWind);
 
         if (yaku != (payment.Yaku & YakuFilter))
         {
@@ -181,7 +181,7 @@ namespace Spines.Mahjong.Analysis.Tests
       var draw = seat.CurrentDraw!.TileType;
       var roundWind = _board.RoundWind.Index;
       var seatWind = seat.SeatWind.Index;
-      var (yaku, fu) = YakuCalculator.Tsumo(hand, draw, roundWind, seatWind);
+      var (yaku, fu) = ScoreCalculator.TsumoWithYaku(hand, draw, roundWind, seatWind);
 
       if (yaku != (payment.Yaku & YakuFilter))
       {

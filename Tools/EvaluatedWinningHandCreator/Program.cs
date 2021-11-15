@@ -195,7 +195,6 @@ namespace EvaluatedWinningHandCreator
 
     private static Meld GetMeld(int kind, int meldType)
     {
-      // TODO lookup precalculated melds?
       if (kind < 34)
       {
         if (meldType == 1)

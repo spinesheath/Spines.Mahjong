@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Spines.Mahjong.Analysis.Score;
 using Spines.Mahjong.Analysis.Shanten;
@@ -8,6 +10,199 @@ namespace Spines.Mahjong.Analysis.Tests
 {
   public class CompareYakuCalculations
   {
+    [Fact]
+    public void CompareWithEvaluatedHands()
+    {
+      var workingDirectory = "C:\\tenhou\\scoreDb";
+      const int groupKinds = 34 + 21;
+      const int maxGroupsHash = groupKinds * groupKinds * groupKinds * groupKinds;
+
+      var pairs = new[]
+      {
+         0,  
+        // 1,  2,  3,  4,  5,  6,  7,  8,
+        //18, 19, 20, 21, 22, 23, 24, 25, 26,
+        //27, 31, 32
+      };
+      foreach (var pair in pairs)
+      {
+        var path = Path.Combine(workingDirectory, $"standard{pair}.dat");
+        using var fileStream = File.OpenRead(path);
+        using var binaryReader = new BinaryReader(fileStream);
+        
+        for (var groupsHash = 0; groupsHash < maxGroupsHash; groupsHash++)
+        {
+          var tileCounts = new int[34];
+          tileCounts[pair] += 2;
+          var k = new int[4];
+
+          var g = groupsHash;
+          k[0] = g % groupKinds;
+          g /= groupKinds;
+          k[1] = g % groupKinds;
+          g /= groupKinds;
+          k[2] = g % groupKinds;
+          g /= groupKinds;
+          k[3] = g;
+
+          if (k[0] > k[1] || k[1] > k[2] || k[2] > k[3])
+          {
+            continue;
+          }
+
+          AddGroup(tileCounts, k[0]);
+          AddGroup(tileCounts, k[1]);
+          AddGroup(tileCounts, k[2]);
+          AddGroup(tileCounts, k[3]);
+
+          if (tileCounts.Any(c => c > 4))
+          {
+            continue;
+          }
+
+          var invalidKanFlags = 0;
+          for (var i = 0; i < 4; i++)
+          {
+            // Shuntsu can not be kan. No free tile can not be kan
+            if (k[i] >= 34 || tileCounts[k[i]] == 4)
+            {
+              invalidKanFlags |= 2 << (i * 2);
+            }
+          }
+
+          for (var m = 0; m < 256; m++)
+          {
+            if ((m & invalidKanFlags) != 0)
+            {
+              continue;
+            }
+
+            var concealedTiles = new int[34];
+            concealedTiles[pair] += 2;
+            var meldIds = new List<int>[] { new(), new(), new(), new() };
+
+            for (var i = 0; i < 4; i++)
+            {
+              var meldType = (m >> (2 * i)) & 3;
+              if (meldType > 0)
+              {
+                var (suit, meldId) = GetSuitAndMeldId(k[i], meldType);
+                meldIds[suit].Add(meldId);
+              }
+              else
+              {
+                AddGroup(concealedTiles, k[i]);
+              }
+            }
+
+            var tileTypes = new List<TileType>();
+            for (var i = 0; i < 34; i++)
+            {
+              var tileType = TileType.FromTileTypeId(i);
+              for (var j = 0; j < concealedTiles[i]; j++)
+              {
+                tileTypes.Add(tileType);
+              }
+            }
+            
+            for (var i = 0; i < 34; i++)
+            {
+              if (concealedTiles[i] == 0)
+              {
+                continue;
+              }
+
+              var winningTile = TileType.FromTileTypeId(i);
+
+              var windConfigurations = SimpleWindConfiguration;
+              if (pair >= 27 && pair < 31)
+              {
+                windConfigurations = WindConfigurations[pair - 27];
+              }
+
+              foreach (var (roundWind, seatWind) in windConfigurations)
+              {
+                var hand = new HandCalculator(tileTypes, meldIds[0], meldIds[1], meldIds[2], meldIds[3]);
+
+                var (tsumoHan, tsumoFu) = ScoreCalculator.Tsumo(hand, winningTile, roundWind, seatWind);
+                
+                var expectedTsumoHan = binaryReader.ReadByte();
+                Assert.Equal(expectedTsumoHan, tsumoHan);
+
+                if (expectedTsumoHan < 5)
+                {
+                  int expectedTsumoFu = binaryReader.ReadByte();
+                  Assert.Equal(expectedTsumoFu, tsumoFu);
+                }
+                
+                var (ronHan, ronFu) = ScoreCalculator.Ron(hand, winningTile, roundWind, seatWind);
+                
+                var expectedRonHan = binaryReader.ReadByte();
+                Assert.Equal(expectedRonHan, ronHan);
+
+                if (expectedTsumoHan < 5)
+                {
+                  int expectedRonFu = binaryReader.ReadByte();
+                  Assert.Equal(expectedRonFu, ronFu);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    private static readonly List<Tuple<int, int>> SimpleWindConfiguration = new()
+    {
+      Tuple.Create(0, 0)
+    };
+
+    private static readonly List<List<Tuple<int, int>>> WindConfigurations = new()
+    {
+      new List<Tuple<int, int>>
+      {
+        Tuple.Create(0, 0), // 4 fu
+        Tuple.Create(0, 1), // 2 fu
+        Tuple.Create(1, 1) // 0 fu
+      },
+      new List<Tuple<int, int>>
+      {
+        Tuple.Create(1, 1), // 4 fu
+        Tuple.Create(0, 1), // 2 fu
+        Tuple.Create(0, 0) // 0 fu
+      },
+      new List<Tuple<int, int>>
+      {
+        Tuple.Create(2, 2), // 4 fu
+        Tuple.Create(0, 2), // 2 fu
+        Tuple.Create(0, 0) // 0 fu
+      },
+      new List<Tuple<int, int>>
+      {
+        Tuple.Create(3, 3), // 4 fu
+        Tuple.Create(0, 3), // 2 fu
+        Tuple.Create(0, 0) // 0 fu
+      }
+    };
+
+
+    private static (int, int) GetSuitAndMeldId(int kind, int meldType)
+    {
+      if (kind < 34)
+      {
+        var suit = kind / 9;
+        var index = kind % 9;
+        return (suit, 9 * meldType - 2 + index);
+      }
+
+      {
+        var x = kind - 34;
+        var suit = x / 7;
+        var index = x % 7;
+        return (suit, index);
+      }
+    }
+
     [Fact]
     public void Regular()
     {
@@ -109,7 +304,7 @@ namespace Spines.Mahjong.Analysis.Tests
               var hand = new HandCalculator(tileTypes, meldIds[0], meldIds[1], meldIds[2], meldIds[3]);
 
               var (classicYaku, classicFu) = ClassicScoreCalculator.Tsumo(winningTile, roundWind, seatWind, melds, tiles);
-              var (yaku, fu) = YakuCalculator.Tsumo(hand, winningTile, roundWind, seatWind);
+              var (yaku, fu) = ScoreCalculator.TsumoWithYaku(hand, winningTile, roundWind, seatWind);
 
               if (classicYaku != yaku)
               {

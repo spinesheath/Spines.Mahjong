@@ -10,6 +10,8 @@
     <AssemblyName>Spines.Mahjong.Analysis.Tests</AssemblyName>
 
     <Nullable>enable</Nullable>
+
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
