@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Spines.Mahjong.Analysis.Shanten;
 
 namespace Spines.Mahjong.Analysis.Score
@@ -17,7 +16,8 @@ namespace Spines.Mahjong.Analysis.Score
       var winningTileIndex = winningTile.Index;
       var winningTileSuit = winningTile.SuitId;
 
-      var waitShiftValues = data.WaitShiftValues.ToArray();
+      var waitShiftValues = new long[4];
+      Array.Copy(data.WaitShiftValues, waitShiftValues, 4);
       waitShiftValues[winningTileSuit] >>= winningTileIndex + 1;
 
       var suitOr = data.SuitOr;
