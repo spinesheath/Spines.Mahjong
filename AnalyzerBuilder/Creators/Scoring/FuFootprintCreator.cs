@@ -143,6 +143,9 @@ namespace AnalyzerBuilder.Creators.Scoring
           }
           else if (arrangementGroup.TileCount < 6) // melds can be used for sanshoku here
           {
+            // could have square in different suit, but not together with sanshoku
+            AddConstraints(constraints, true, winningIndex, -1, -1);
+
             for (var i = 0; i < 7; i++)
             {
               AddConstraints(constraints, false, winningIndex, i, -1);
@@ -242,6 +245,17 @@ namespace AnalyzerBuilder.Creators.Scoring
         {
           Id |= 2;
         }
+      }
+
+      public override string ToString()
+      {
+        var open = Open ? "o" : "c";
+        var tsumo = Tsumo ? "t" : "r";
+        var win = WinningIndex == -1 ? "-" : WinningIndex.ToString();
+        var doujun = DoujunIndex == -1 ? "-" : WinningIndex.ToString();
+        var doukou = DoukouIndex == -1 ? "-" : WinningIndex.ToString();
+        var square = SquareIsNotSanankou ? "s" : "k";
+        return $"{Id}: {open}{tsumo}{win}{doujun}{doukou}{square}";
       }
     }
   }

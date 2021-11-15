@@ -158,13 +158,15 @@ namespace Spines.Mahjong.Analysis.Tests
     [InlineData("666777888s33z 678S", 0, 2, "6s", 40)]
     [InlineData("11m111222333p 123M", 0, 0, "1p", 30)]
     [InlineData("11777888999m 111P", 0, 0, "7m", 40)]
+    [InlineData("11m111222333p 234M", 0, 0, "1p", 40)]
+    [InlineData("11m222233334444p", 0, 0, "1m", 40)]
     public void TotalFuRon(string handString, int roundWind, int seatWind, string discardString, int expectedFu)
     {
       var discard = TileType.FromString(discardString);
       var sp = new ShorthandParser(handString);
       var hand = new HandCalculator(sp);
 
-      var (yaku, fu) = ScoreCalculator.RonWithYaku(hand, discard, roundWind, seatWind);
+      var (han, fu) = ScoreCalculator.Ron(hand, discard, roundWind, seatWind);
 
       Assert.Equal(expectedFu, fu);
     }
@@ -193,7 +195,7 @@ namespace Spines.Mahjong.Analysis.Tests
       var sp = new ShorthandParser(handString);
       var hand = new HandCalculator(sp);
 
-      var (yaku, fu) = ScoreCalculator.TsumoWithYaku(hand, draw, roundWind, seatWind);
+      var (han, fu) = ScoreCalculator.Tsumo(hand, draw, roundWind, seatWind);
 
       Assert.Equal(expectedFu, fu);
     }

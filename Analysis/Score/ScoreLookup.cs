@@ -151,7 +151,7 @@ namespace Spines.Mahjong.Analysis.Score
         return (result, 20 + closedRonFu);
       }
       
-      var squareTypeToShuntsu = ((ryuuiisouSum & ~result) >> BitIndex.Sanankou) & ((1 - openBit) | (openJunchanBit & ~removeOpenJunchan));
+      var squareTypeToShuntsu = ((ryuuiisouSum & ~result) >> BitIndex.Sanankou) & ((1L - openBit) | ((result >> BitIndex.OpenJunchan) & 1L));
 
       var footprintKey = (sanshokuShift + 1) * 40 * sanshokuFuMultiplier;
       footprintKey += (int)squareTypeToShuntsu * 40;
