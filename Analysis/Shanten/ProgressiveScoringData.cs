@@ -41,12 +41,9 @@ namespace Spines.Mahjong.Analysis.Shanten
       Fu = 20;
     }
 
-    public void Ankan(TileType tileType, int base5Hash)
+    public void Ankan(int suitId, int index, int base5Hash)
     {
-      var suit = tileType.Suit;
-      var index = tileType.Index;
-
-      if (suit == Suit.Jihai)
+      if (suitId == 3)
       {
         _meldLookupValues[3] |= 1L << HonorChantaOffset;
         _meldLookupValues[3] |= 1L << HonorHonitsuChinitsuOffset;
@@ -74,9 +71,9 @@ namespace Spines.Mahjong.Analysis.Shanten
       }
       else
       {
-        _meldLookupValues[tileType.SuitId] |= 0b101000L << SuitHonitsuOffset;
-        _meldLookupValues[tileType.SuitId] |= index + 0L;
-        _meldLookupValues[tileType.SuitId] |= 1L << (index + 5);
+        _meldLookupValues[suitId] |= 0b101000L << SuitHonitsuOffset;
+        _meldLookupValues[suitId] |= index + 0L;
+        _meldLookupValues[suitId] |= 1L << (index + 5);
       }
 
       _baseMaskFilter &= NoAnkanYakuFilter;
@@ -84,7 +81,8 @@ namespace Spines.Mahjong.Analysis.Shanten
 
       SankantsuSuukantsu <<= 1;
 
-      if (suit == Suit.Jihai)
+      // TODO same condition as above?
+      if (suitId == 3)
       {
         _baseMaskFilter &= HonorCallFilter;
         _baseMaskFilter &= ChinroutouCallFilter;
@@ -93,6 +91,9 @@ namespace Spines.Mahjong.Analysis.Shanten
         {
           _baseMaskFilter &= RyuuiisouFilter;
         }
+
+        _baseMaskFilter &= NoChantaCallsFilter;
+        Fu += 32;
       }
       else
       {
@@ -100,9 +101,17 @@ namespace Spines.Mahjong.Analysis.Shanten
         {
           _baseMaskFilter &= ChinroutouCallFilter;
           _baseMaskFilter &= HonroutouCallFilter;
+
+          _baseMaskFilter &= OnlyChantaCallsFilter;
+          Fu += 16;
+        }
+        else
+        {
+          _baseMaskFilter &= NoChantaCallsFilter;
+          Fu += 32;
         }
 
-        if (suit == Suit.Souzu)
+        if (suitId == 2)
         {
           if (index % 2 == 0 && index != 2)
           {
@@ -115,34 +124,20 @@ namespace Spines.Mahjong.Analysis.Shanten
         }
       }
 
-      if (tileType.IsKyuuhai)
-      {
-        _baseMaskFilter &= NoChantaCallsFilter;
-        Fu += 32;
-      }
-      else
-      {
-        _baseMaskFilter &= OnlyChantaCallsFilter;
-        Fu += 16;
-      }
-
-      UpdateSuit(tileType.SuitId, base5Hash);
+      UpdateSuit(suitId, base5Hash);
     }
 
-    public void Chii(TileType tileType, int base5Hash)
+    public void Chii(int suitId, int index, int base5Hash)
     {
-      var index = tileType.Index;
-      var suit = tileType.Suit;
-
-      _meldLookupValues[tileType.SuitId] |= 0b101000L << SuitHonitsuOffset;
+      _meldLookupValues[suitId] |= 0b101000L << SuitHonitsuOffset;
 
       if (index % 3 == 0)
       {
-        _meldLookupValues[tileType.SuitId] |= 1L << (SuitIttsuuOffset + index / 3);
+        _meldLookupValues[suitId] |= 1L << (SuitIttsuuOffset + index / 3);
       }
 
-      _meldLookupValues[tileType.SuitId] |= index + 9L;
-      _meldLookupValues[tileType.SuitId] |= 1L << (index + 15);
+      _meldLookupValues[suitId] |= index + 9L;
+      _meldLookupValues[suitId] |= 1L << (index + 15);
 
 
       _baseMask = ClosedYakuFilter;
@@ -153,7 +148,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       _baseMaskFilter &= ChinroutouCallFilter;
       _baseMaskFilter &= HonroutouCallFilter;
 
-      if (suit == Suit.Souzu)
+      if (suitId == 2)
       {
         if (index != 1)
         {
@@ -174,7 +169,7 @@ namespace Spines.Mahjong.Analysis.Shanten
         _baseMaskFilter &= OnlyChantaCallsFilter;
       }
 
-      UpdateSuit(tileType.SuitId, base5Hash);
+      UpdateSuit(suitId, base5Hash);
     }
 
     public ProgressiveScoringData Clone()
@@ -200,12 +195,9 @@ namespace Spines.Mahjong.Analysis.Shanten
       return c;
     }
 
-    public void Daiminkan(TileType tileType, int base5Hash)
+    public void Daiminkan(int suitId, int index, int base5Hash)
     {
-      var suit = tileType.Suit;
-      var index = tileType.Index;
-
-      if (suit == Suit.Jihai)
+      if (suitId == 3)
       {
         _meldLookupValues[3] |= 1L << HonorChantaOffset;
         _meldLookupValues[3] |= 1L << HonorHonitsuChinitsuOffset;
@@ -233,9 +225,9 @@ namespace Spines.Mahjong.Analysis.Shanten
       }
       else
       {
-        _meldLookupValues[tileType.SuitId] |= 0b101000L << SuitHonitsuOffset;
-        _meldLookupValues[tileType.SuitId] |= index + 0L;
-        _meldLookupValues[tileType.SuitId] |= 1L << (index + 5);
+        _meldLookupValues[suitId] |= 0b101000L << SuitHonitsuOffset;
+        _meldLookupValues[suitId] |= index + 0L;
+        _meldLookupValues[suitId] |= 1L << (index + 5);
       }
 
       _baseMask = ClosedYakuFilter;
@@ -243,7 +235,8 @@ namespace Spines.Mahjong.Analysis.Shanten
 
       SankantsuSuukantsu <<= 1;
 
-      if (suit == Suit.Jihai)
+      // TODO same conditions as above?
+      if (suitId == 3)
       {
         _baseMaskFilter &= HonorCallFilter;
         _baseMaskFilter &= ChinroutouCallFilter;
@@ -252,6 +245,9 @@ namespace Spines.Mahjong.Analysis.Shanten
         {
           _baseMaskFilter &= RyuuiisouFilter;
         }
+
+        _baseMaskFilter &= NoChantaCallsFilter;
+        Fu += 16;
       }
       else
       {
@@ -259,9 +255,17 @@ namespace Spines.Mahjong.Analysis.Shanten
         {
           _baseMaskFilter &= ChinroutouCallFilter;
           _baseMaskFilter &= HonroutouCallFilter;
+
+          _baseMaskFilter &= OnlyChantaCallsFilter;
+          Fu += 8;
+        }
+        else
+        {
+          _baseMaskFilter &= NoChantaCallsFilter;
+          Fu += 16;
         }
 
-        if (suit == Suit.Souzu)
+        if (suitId == 2)
         {
           if (index % 2 == 0 && index != 2)
           {
@@ -274,18 +278,7 @@ namespace Spines.Mahjong.Analysis.Shanten
         }
       }
 
-      if (tileType.IsKyuuhai)
-      {
-        _baseMaskFilter &= NoChantaCallsFilter;
-        Fu += 16;
-      }
-      else
-      {
-        _baseMaskFilter &= OnlyChantaCallsFilter;
-        Fu += 8;
-      }
-
-      UpdateSuit(tileType.SuitId, base5Hash);
+      UpdateSuit(suitId, base5Hash);
     }
 
     public void Discard(int suitId, int base5Hash)
@@ -298,12 +291,9 @@ namespace Spines.Mahjong.Analysis.Shanten
       UpdateSuit(suitId, base5Hash);
     }
 
-    public void Pon(TileType tileType, int base5Hash)
+    public void Pon(int suitId, int index, int base5Hash)
     {
-      var suit = tileType.Suit;
-      var index = tileType.Index;
-
-      if (suit == Suit.Jihai)
+      if (suitId == 3)
       {
         _meldLookupValues[3] |= 1L << HonorChantaOffset;
         _meldLookupValues[3] |= 1L << HonorHonitsuChinitsuOffset;
@@ -331,16 +321,17 @@ namespace Spines.Mahjong.Analysis.Shanten
       }
       else
       {
-        _meldLookupValues[tileType.SuitId] |= 0b101000L << SuitHonitsuOffset;
-        _meldLookupValues[tileType.SuitId] |= index + 0L;
-        _meldLookupValues[tileType.SuitId] |= 1L << (index + 5);
+        _meldLookupValues[suitId] |= 0b101000L << SuitHonitsuOffset;
+        _meldLookupValues[suitId] |= index + 0L;
+        _meldLookupValues[suitId] |= 1L << (index + 5);
       }
 
 
       _baseMask = ClosedYakuFilter;
       OpenBit = 1L;
 
-      if (suit == Suit.Jihai)
+      // TODO same conditions above?
+      if (suitId == 3)
       {
         _baseMaskFilter &= HonorCallFilter;
         _baseMaskFilter &= ChinroutouCallFilter;
@@ -349,6 +340,9 @@ namespace Spines.Mahjong.Analysis.Shanten
         {
           _baseMaskFilter &= RyuuiisouFilter;
         }
+
+        _baseMaskFilter &= NoChantaCallsFilter;
+        Fu += 4;
       }
       else
       {
@@ -356,9 +350,17 @@ namespace Spines.Mahjong.Analysis.Shanten
         {
           _baseMaskFilter &= ChinroutouCallFilter;
           _baseMaskFilter &= HonroutouCallFilter;
+
+          _baseMaskFilter &= OnlyChantaCallsFilter;
+          Fu += 2;
+        }
+        else
+        {
+          _baseMaskFilter &= NoChantaCallsFilter;
+          Fu += 4;
         }
 
-        if (suit == Suit.Souzu)
+        if (suitId == 2)
         {
           if (index % 2 == 0 && index != 2)
           {
@@ -371,18 +373,7 @@ namespace Spines.Mahjong.Analysis.Shanten
         }
       }
 
-      if (tileType.IsKyuuhai)
-      {
-        _baseMaskFilter &= NoChantaCallsFilter;
-        Fu += 4;
-      }
-      else
-      {
-        _baseMaskFilter &= OnlyChantaCallsFilter;
-        Fu += 2;
-      }
-
-      UpdateSuit(tileType.SuitId, base5Hash);
+      UpdateSuit(suitId, base5Hash);
     }
 
     public void Shouminkan(TileType tileType, int base5Hash)

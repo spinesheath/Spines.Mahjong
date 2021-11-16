@@ -110,24 +110,19 @@ namespace Spines.Mahjong.Analysis.Tests
 
                 if (meldId < 7)
                 {
-                  var start = 9 * suitId + meldId;
-                  data.Chii(TileType.FromTileTypeId(start), base5Hashes[suitId]);
+                  data.Chii(suitId, meldId, base5Hashes[suitId]);
+                }
+                else if (meldId < 16)
+                {
+                  data.Pon(suitId, meldId - 7, base5Hashes[suitId]);
+                }
+                else if (meldId < 25)
+                {
+                  data.Ankan(suitId, meldId - 16, base5Hashes[suitId]);
                 }
                 else
                 {
-                  var tileTypeId = 9 * suitId + (meldId - 7) % 9;
-                  if (meldId < 16)
-                  {
-                    data.Pon(TileType.FromTileTypeId(tileTypeId), base5Hashes[suitId]);
-                  }
-                  else if (meldId < 25)
-                  {
-                    data.Ankan(TileType.FromTileTypeId(tileTypeId), base5Hashes[suitId]);
-                  }
-                  else
-                  {
-                    data.Daiminkan(TileType.FromTileTypeId(tileTypeId), base5Hashes[suitId]);
-                  }
+                  data.Daiminkan(suitId, meldId - 25, base5Hashes[suitId]);
                 }
               }
             }
