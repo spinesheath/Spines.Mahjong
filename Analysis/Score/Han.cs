@@ -36,7 +36,7 @@ namespace Spines.Mahjong.Analysis.Score
       Yaku.Tenhou |
       Yaku.JunseiChuurenPoutou;
 
-    private const ScoringFieldYaku ScoringFieldYakumanFilter =
+    private const long ScoringFieldYakumanFilter = (long) (
       ScoringFieldYaku.Daisangen |
       ScoringFieldYaku.Shousuushii |
       ScoringFieldYaku.Daisuushii |
@@ -49,9 +49,9 @@ namespace Spines.Mahjong.Analysis.Score
       ScoringFieldYaku.Suukantsu |
       ScoringFieldYaku.Ryuuiisou |
       ScoringFieldYaku.ChuurenPoutou |
-      ScoringFieldYaku.JunseiChuurenPoutou;
+      ScoringFieldYaku.JunseiChuurenPoutou);
 
-    private static readonly Yaku HanMask1 =
+    private const Yaku HanMask1 =
       Yaku.MenzenTsumo |
       Yaku.Riichi |
       Yaku.Ippatsu |
@@ -98,7 +98,7 @@ namespace Spines.Mahjong.Analysis.Score
       Yaku.Shousuushii |
       Yaku.Suukantsu;
 
-    private static readonly Yaku HanMask2 =
+    private const Yaku HanMask2 =
       Yaku.DoubleRiichi |
       Yaku.Chiitoitsu |
       Yaku.ClosedChanta |
@@ -117,11 +117,11 @@ namespace Spines.Mahjong.Analysis.Score
       Yaku.ClosedHonitsu |
       Yaku.ClosedChinitsu;
 
-    private static readonly Yaku HanMask4 =
+    private const Yaku HanMask4 =
       Yaku.OpenChinitsu |
       Yaku.ClosedChinitsu;
 
-    private static readonly ScoringFieldYaku ScoringFieldHanMask1 =
+    private const long ScoringFieldHanMask1 = (long) (
       ScoringFieldYaku.MenzenTsumo |
       ScoringFieldYaku.Pinfu |
       ScoringFieldYaku.OpenTanyao |
@@ -157,9 +157,9 @@ namespace Spines.Mahjong.Analysis.Score
       ScoringFieldYaku.KokushiMusouJuusanmen |
       ScoringFieldYaku.Daisuushii |
       ScoringFieldYaku.Shousuushii |
-      ScoringFieldYaku.Suukantsu;
+      ScoringFieldYaku.Suukantsu);
 
-    private static readonly ScoringFieldYaku ScoringFieldHanMask2 =
+    private const long ScoringFieldHanMask2 = (long) (
       ScoringFieldYaku.Chiitoitsu |
       ScoringFieldYaku.ClosedChanta |
       ScoringFieldYaku.ClosedIttsuu |
@@ -175,15 +175,15 @@ namespace Spines.Mahjong.Analysis.Score
       ScoringFieldYaku.ClosedJunchan |
       ScoringFieldYaku.OpenHonitsu |
       ScoringFieldYaku.ClosedHonitsu |
-      ScoringFieldYaku.ClosedChinitsu;
+      ScoringFieldYaku.ClosedChinitsu);
 
-    private static readonly ScoringFieldYaku ScoringFieldHanMask4 =
+    private const long ScoringFieldHanMask4 = (long) (
       ScoringFieldYaku.OpenChinitsu |
-      ScoringFieldYaku.ClosedChinitsu;
+      ScoringFieldYaku.ClosedChinitsu);
 
-    internal static int Calculate(ScoringFieldYaku yaku)
+    internal static int CalculateScoringField(long yaku)
     {
-      if ((yaku & ScoringFieldYakumanFilter) != ScoringFieldYaku.None)
+      if ((yaku & ScoringFieldYakumanFilter) != 0)
       {
         var yakumanBits = (int) Popcnt.X64.PopCount((ulong) yaku);
         return yakumanBits + 128;
