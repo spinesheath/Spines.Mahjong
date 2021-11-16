@@ -43,6 +43,10 @@ namespace Spines.Mahjong.Analysis.Shanten
 
     public void Ankan(int suitId, int index, int base5Hash)
     {
+      _baseMaskFilter &= NoAnkanYakuFilter;
+      ShiftedAnkanCount += 1L << (BitIndex.Sanankou - 2);
+      SankantsuSuukantsu <<= 1;
+
       if (suitId == 3)
       {
         _meldLookupValues[3] |= 1L << HonorChantaOffset;
@@ -67,36 +71,20 @@ namespace Spines.Mahjong.Analysis.Shanten
         if (index != 5)
         {
           _meldLookupValues[3] &= ~(4L << HonorRyuuiisouOffset);
+          _baseMaskFilter &= RyuuiisouFilter;
         }
+
+        _baseMaskFilter &= HonorCallFilter;
+        _baseMaskFilter &= ChinroutouCallFilter;
+        _baseMaskFilter &= NoChantaCallsFilter;
+        Fu += 32;
       }
       else
       {
         _meldLookupValues[suitId] |= 0b101000L << SuitHonitsuOffset;
         _meldLookupValues[suitId] |= index + 0L;
         _meldLookupValues[suitId] |= 1L << (index + 5);
-      }
 
-      _baseMaskFilter &= NoAnkanYakuFilter;
-      ShiftedAnkanCount += 1L << (BitIndex.Sanankou - 2);
-
-      SankantsuSuukantsu <<= 1;
-
-      // TODO same condition as above?
-      if (suitId == 3)
-      {
-        _baseMaskFilter &= HonorCallFilter;
-        _baseMaskFilter &= ChinroutouCallFilter;
-
-        if (index != 5)
-        {
-          _baseMaskFilter &= RyuuiisouFilter;
-        }
-
-        _baseMaskFilter &= NoChantaCallsFilter;
-        Fu += 32;
-      }
-      else
-      {
         if (index > 0 && index < 8)
         {
           _baseMaskFilter &= ChinroutouCallFilter;
@@ -138,7 +126,6 @@ namespace Spines.Mahjong.Analysis.Shanten
 
       _meldLookupValues[suitId] |= index + 9L;
       _meldLookupValues[suitId] |= 1L << (index + 15);
-
 
       _baseMask = ClosedYakuFilter;
       OpenBit = 1L;
@@ -197,6 +184,10 @@ namespace Spines.Mahjong.Analysis.Shanten
 
     public void Daiminkan(int suitId, int index, int base5Hash)
     {
+      _baseMask = ClosedYakuFilter;
+      OpenBit = 1L;
+      SankantsuSuukantsu <<= 1;
+
       if (suitId == 3)
       {
         _meldLookupValues[3] |= 1L << HonorChantaOffset;
@@ -221,41 +212,24 @@ namespace Spines.Mahjong.Analysis.Shanten
         if (index != 5)
         {
           _meldLookupValues[3] &= ~(4L << HonorRyuuiisouOffset);
+          _baseMaskFilter &= RyuuiisouFilter;
         }
+
+        _baseMaskFilter &= HonorCallFilter;
+        _baseMaskFilter &= ChinroutouCallFilter;
+        _baseMaskFilter &= NoChantaCallsFilter;
+        Fu += 16;
       }
       else
       {
         _meldLookupValues[suitId] |= 0b101000L << SuitHonitsuOffset;
         _meldLookupValues[suitId] |= index + 0L;
         _meldLookupValues[suitId] |= 1L << (index + 5);
-      }
 
-      _baseMask = ClosedYakuFilter;
-      OpenBit = 1L;
-
-      SankantsuSuukantsu <<= 1;
-
-      // TODO same conditions as above?
-      if (suitId == 3)
-      {
-        _baseMaskFilter &= HonorCallFilter;
-        _baseMaskFilter &= ChinroutouCallFilter;
-
-        if (index != 5)
-        {
-          _baseMaskFilter &= RyuuiisouFilter;
-        }
-
-        _baseMaskFilter &= NoChantaCallsFilter;
-        Fu += 16;
-      }
-      else
-      {
         if (index > 0 && index < 8)
         {
           _baseMaskFilter &= ChinroutouCallFilter;
           _baseMaskFilter &= HonroutouCallFilter;
-
           _baseMaskFilter &= OnlyChantaCallsFilter;
           Fu += 8;
         }
@@ -293,6 +267,9 @@ namespace Spines.Mahjong.Analysis.Shanten
 
     public void Pon(int suitId, int index, int base5Hash)
     {
+      _baseMask = ClosedYakuFilter;
+      OpenBit = 1L;
+
       if (suitId == 3)
       {
         _meldLookupValues[3] |= 1L << HonorChantaOffset;
@@ -317,35 +294,20 @@ namespace Spines.Mahjong.Analysis.Shanten
         if (index != 5)
         {
           _meldLookupValues[3] &= ~(4L << HonorRyuuiisouOffset);
+          _baseMaskFilter &= RyuuiisouFilter;
         }
+
+        _baseMaskFilter &= HonorCallFilter;
+        _baseMaskFilter &= ChinroutouCallFilter;
+        _baseMaskFilter &= NoChantaCallsFilter;
+        Fu += 4;
       }
       else
       {
         _meldLookupValues[suitId] |= 0b101000L << SuitHonitsuOffset;
         _meldLookupValues[suitId] |= index + 0L;
         _meldLookupValues[suitId] |= 1L << (index + 5);
-      }
 
-
-      _baseMask = ClosedYakuFilter;
-      OpenBit = 1L;
-
-      // TODO same conditions above?
-      if (suitId == 3)
-      {
-        _baseMaskFilter &= HonorCallFilter;
-        _baseMaskFilter &= ChinroutouCallFilter;
-
-        if (index != 5)
-        {
-          _baseMaskFilter &= RyuuiisouFilter;
-        }
-
-        _baseMaskFilter &= NoChantaCallsFilter;
-        Fu += 4;
-      }
-      else
-      {
         if (index > 0 && index < 8)
         {
           _baseMaskFilter &= ChinroutouCallFilter;
