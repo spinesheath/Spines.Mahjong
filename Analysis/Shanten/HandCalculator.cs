@@ -59,7 +59,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       foreach (var tileType in tiles)
       {
         InHandByType[tileType.TileTypeId] += 1;
-        Base5Hashes[tileType.SuitId] += Base5Table[tileType.Index];
+        Base5Hashes[tileType.SuitId] += Base5.Table[tileType.Index];
 
         var previousTileCount = ConcealedTiles[tileType.TileTypeId]++;
         Kokushi.Draw(tileType.KyuuhaiValue, previousTileCount);
@@ -84,7 +84,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       Debug.Assert(InHandByType[tileType.TileTypeId] < 4, "Can't draw a tile with 4 of that tile in hand.");
 
       InHandByType[tileType.TileTypeId] += 1;
-      Base5Hashes[tileType.SuitId] += Base5Table[tileType.Index];
+      Base5Hashes[tileType.SuitId] += Base5.Table[tileType.Index];
 
       var previousTileCount = ConcealedTiles[tileType.TileTypeId]++;
       Kokushi.Draw(tileType.KyuuhaiValue, previousTileCount);
@@ -108,7 +108,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       Debug.Assert(InHandByType[tileType.TileTypeId] > 0, "Can't discard a tile that is not in the hand.");
 
       InHandByType[tileType.TileTypeId] -= 1;
-      Base5Hashes[tileType.SuitId] -= Base5Table[tileType.Index];
+      Base5Hashes[tileType.SuitId] -= Base5.Table[tileType.Index];
 
       var tileCountAfterDiscard = --ConcealedTiles[tileType.TileTypeId];
       Kokushi.Discard(tileType.KyuuhaiValue, tileCountAfterDiscard);
@@ -139,7 +139,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       ConcealedTiles[lowestId + 1] -= 1;
       ConcealedTiles[lowestId + 2] -= 1;
       ConcealedTiles[calledTileType.TileTypeId] += 1;
-      Base5Hashes[suitId] -= Base5Table[lowestIndex] + Base5Table[lowestIndex + 1] + Base5Table[lowestIndex + 2] - Base5Table[calledTileType.Index];
+      Base5Hashes[suitId] -= Base5.Table[lowestIndex] + Base5.Table[lowestIndex + 1] + Base5.Table[lowestIndex + 2] - Base5.Table[calledTileType.Index];
 
       _meldCount += 1;
       _melds[suitId] <<= 6;
@@ -160,7 +160,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       InHandByType[tileType.TileTypeId] += 1;
       var previousTiles = ConcealedTiles[tileType.TileTypeId];
       ConcealedTiles[tileType.TileTypeId] -= 2;
-      Base5Hashes[suitId] -= 2 * Base5Table[index];
+      Base5Hashes[suitId] -= 2 * Base5.Table[index];
       _meldCount += 1;
       _melds[suitId] <<= 6;
       _melds[suitId] += 1 + 7 + index;
@@ -185,7 +185,7 @@ namespace Spines.Mahjong.Analysis.Shanten
 
       var suitId = tileType.SuitId;
       ConcealedTiles[tileType.TileTypeId] -= 1;
-      Base5Hashes[suitId] -= Base5Table[tileType.Index];
+      Base5Hashes[suitId] -= Base5.Table[tileType.Index];
 
       for (var i = 0; i < 4; i++)
       {
@@ -217,7 +217,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       var suitId = tileType.SuitId;
       var index = tileType.Index;
       ConcealedTiles[tileType.TileTypeId] -= 4;
-      Base5Hashes[suitId] -= 4 * Base5Table[tileType.Index];
+      Base5Hashes[suitId] -= 4 * Base5.Table[tileType.Index];
       _meldCount += 1;
       _melds[suitId] <<= 6;
       _melds[suitId] += 1 + 7 + 9 + index;
@@ -243,7 +243,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       var index = tileType.Index;
       InHandByType[tileType.TileTypeId] += 1;
       ConcealedTiles[tileType.TileTypeId] -= 3;
-      Base5Hashes[suitId] -= 3 * Base5Table[tileType.Index];
+      Base5Hashes[suitId] -= 3 * Base5.Table[tileType.Index];
       _meldCount += 1;
       _melds[suitId] <<= 6;
       _melds[suitId] += 1 + 7 + 9 + index;
@@ -305,7 +305,7 @@ namespace Spines.Mahjong.Analysis.Shanten
             Chiitoi.Draw(ConcealedTiles[tileTypeId]);
 
             ConcealedTiles[tileTypeId] += 1;
-            Base5Hashes[suit] += Base5Table[index];
+            Base5Hashes[suit] += Base5.Table[index];
             localArrangements[suit] = SuitClassifiers[suit].GetValue(ConcealedTiles, suit, Base5Hashes);
 
             var newShanten = CalculateShanten(localArrangements);
@@ -316,7 +316,7 @@ namespace Spines.Mahjong.Analysis.Shanten
             ukeIre[tileTypeId] = t;
 
             ConcealedTiles[tileTypeId] -= 1;
-            Base5Hashes[suit] -= Base5Table[index];
+            Base5Hashes[suit] -= Base5.Table[index];
             Kokushi.Discard(kyuuhaiValue, ConcealedTiles[tileTypeId]);
             Chiitoi.Discard(ConcealedTiles[tileTypeId]);
           }
@@ -436,19 +436,6 @@ namespace Spines.Mahjong.Analysis.Shanten
 
       return shantenWithTile;
     }
-
-    private protected static readonly int[] Base5Table =
-    {
-      1,
-      5,
-      25,
-      125,
-      625,
-      3125,
-      15625,
-      78125,
-      390625
-    };
 
     private readonly int[] _melds = new int[4]; // identified by meldId, youngest meld in least significant bits
 

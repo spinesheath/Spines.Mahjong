@@ -44,7 +44,7 @@ namespace Spines.Mahjong.Analysis.Shanten
             InHandByType[tileTypeId] -= 1;
             Kokushi.Discard(kyuuhaiValue, ConcealedTiles[tileTypeId]);
             Chiitoi.Discard(ConcealedTiles[tileTypeId]);
-            Base5Hashes[suit] -= Base5Table[index];
+            Base5Hashes[suit] -= Base5.Table[index];
             
             localArrangements[suit] = SuitClassifiers[suit].GetValue(ConcealedTiles, suit, Base5Hashes);
             var newShanten = CalculateShanten(localArrangements);
@@ -59,7 +59,7 @@ namespace Spines.Mahjong.Analysis.Shanten
               }
             }
 
-            Base5Hashes[suit] += Base5Table[index];
+            Base5Hashes[suit] += Base5.Table[index];
             Kokushi.Draw(kyuuhaiValue, ConcealedTiles[tileTypeId]);
             Chiitoi.Draw(ConcealedTiles[tileTypeId]);
             ConcealedTiles[tileTypeId] += 1;
@@ -124,7 +124,7 @@ namespace Spines.Mahjong.Analysis.Shanten
             Kokushi.Draw(kyuuhaiValue, ConcealedTiles[tileTypeId]);
             Chiitoi.Draw(ConcealedTiles[tileTypeId]);
             ConcealedTiles[tileTypeId] += 1;
-            Base5Hashes[suit] += Base5Table[index];
+            Base5Hashes[suit] += Base5.Table[index];
             
             localArrangements[suit] = SuitClassifiers[suit].GetValue(ConcealedTiles, suit, Base5Hashes);
             var newShanten = CalculateShanten(localArrangements);
@@ -135,7 +135,7 @@ namespace Spines.Mahjong.Analysis.Shanten
             ukeIre += t;
 
             ConcealedTiles[tileTypeId] -= 1;
-            Base5Hashes[suit] -= Base5Table[index];
+            Base5Hashes[suit] -= Base5.Table[index];
             Kokushi.Discard(kyuuhaiValue, ConcealedTiles[tileTypeId]);
             Chiitoi.Discard(ConcealedTiles[tileTypeId]);
           }

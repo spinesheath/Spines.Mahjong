@@ -20,9 +20,10 @@ namespace Spines.Mahjong.Analysis.Tests
 
       var pairs = new[]
       {
-         0,  1,  2,  3,  4,  5,  6,  7,  8,
-        18, 19, 20, 21, 22, 23, 24, 25, 26,
-        27, 31, 32
+         0,  
+        // 1,  2,  3,  4,  5,  6,  7,  8,
+        //18, 19, 20, 21, 22, 23, 24, 25, 26,
+        //27, 31, 32
       };
 
       foreach (var pair in pairs)
@@ -80,32 +81,58 @@ namespace Spines.Mahjong.Analysis.Tests
 
             var concealedTiles = new int[34];
             concealedTiles[pair] += 2;
-            var meldIds = new List<int>[] { new(), new(), new(), new() };
+            
+            for (var i = 0; i < 4; i++)
+            {
+              var meldType = (m >> (2 * i)) & 3;
+              if (meldType <= 0)
+              {
+                AddGroup(concealedTiles, k[i]);
+              }
+            }
+
+            var base5Hashes = new int[4];
+            for (var i = 0; i < 34; i++)
+            {
+              var suit = i / 9;
+              var index = i % 9;
+              base5Hashes[suit] += concealedTiles[i] * Base5.Table[index];
+            }
+
+            var data = new ProgressiveScoringData();
+            data.Init(base5Hashes);
 
             for (var i = 0; i < 4; i++)
             {
               var meldType = (m >> (2 * i)) & 3;
               if (meldType > 0)
               {
-                var (suit, meldId) = GetSuitAndMeldId(k[i], meldType);
-                meldIds[suit].Add(meldId);
-              }
-              else
-              {
-                AddGroup(concealedTiles, k[i]);
+                var (suitId, meldId) = GetSuitAndMeldId(k[i], meldType);
+
+                if (meldId < 7)
+                {
+                  var start = 9 * suitId + meldId;
+                  data.Chii(TileType.FromTileTypeId(start), base5Hashes[suitId]);
+                }
+                else
+                {
+                  var tileTypeId = 9 * suitId + (meldId - 7) % 9;
+                  if (meldId < 16)
+                  {
+                    data.Pon(TileType.FromTileTypeId(tileTypeId), base5Hashes[suitId]);
+                  }
+                  else if (meldId < 25)
+                  {
+                    data.Ankan(TileType.FromTileTypeId(tileTypeId), base5Hashes[suitId]);
+                  }
+                  else
+                  {
+                    data.Daiminkan(TileType.FromTileTypeId(tileTypeId), base5Hashes[suitId]);
+                  }
+                }
               }
             }
 
-            var tileTypes = new List<TileType>();
-            for (var i = 0; i < 34; i++)
-            {
-              var tileType = TileType.FromTileTypeId(i);
-              for (var j = 0; j < concealedTiles[i]; j++)
-              {
-                tileTypes.Add(tileType);
-              }
-            }
-            
             for (var i = 0; i < 34; i++)
             {
               if (concealedTiles[i] == 0)
@@ -123,9 +150,7 @@ namespace Spines.Mahjong.Analysis.Tests
 
               foreach (var (roundWind, seatWind) in windConfigurations)
               {
-                var hand = new HandCalculator(tileTypes, meldIds[0], meldIds[1], meldIds[2], meldIds[3]);
-
-                var (tsumoHan, tsumoFu) = ScoreCalculator.Tsumo(hand.ScoringData, winningTile, roundWind, seatWind);
+                var (tsumoHan, tsumoFu) = ScoreCalculator.Tsumo(data, winningTile, roundWind, seatWind);
                 
                 var expectedTsumoHan = binaryReader.ReadByte();
                 if (expectedTsumoHan != tsumoHan)
@@ -142,7 +167,7 @@ namespace Spines.Mahjong.Analysis.Tests
                   }
                 }
                 
-                var (ronHan, ronFu) = ScoreCalculator.Ron(hand.ScoringData, winningTile, roundWind, seatWind);
+                var (ronHan, ronFu) = ScoreCalculator.Ron(data, winningTile, roundWind, seatWind);
                 
                 var expectedRonHan = binaryReader.ReadByte();
                 if (expectedRonHan != ronHan)

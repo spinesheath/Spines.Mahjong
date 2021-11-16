@@ -4,7 +4,7 @@ using Spines.Mahjong.Analysis.Score;
 
 namespace Spines.Mahjong.Analysis.Shanten
 {
-  internal class ProgressiveScoringData : IScoringData
+  public class ProgressiveScoringData : IScoringData
   {
     static ProgressiveScoringData()
     {
