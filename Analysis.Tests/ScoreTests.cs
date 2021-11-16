@@ -48,8 +48,9 @@ namespace Spines.Mahjong.Analysis.Tests
       var discard = TileType.FromString(discardString);
       var sp = new ShorthandParser(handString);
       var hand = new HandCalculator(sp);
+      var wind = new WindScoringData(0 , 0);
 
-      var (yaku, fu) = ScoreCalculator.RonWithYaku(hand.ScoringData, discard, 0, 0);
+      var (yaku, fu) = ScoreCalculator.RonWithYaku(hand.ScoringData, wind, discard);
 
       Assert.Equal(expectedYaku, yaku);
     }
@@ -104,8 +105,9 @@ namespace Spines.Mahjong.Analysis.Tests
       var discard = TileType.FromString(discardString);
       var sp = new ShorthandParser(handString);
       var hand = new HandCalculator(sp);
+      var wind = new WindScoringData(roundWind, seatWind);
 
-      var (yaku, fu) = ScoreCalculator.RonWithYaku(hand.ScoringData, discard, roundWind, seatWind);
+      var (yaku, fu) = ScoreCalculator.RonWithYaku(hand.ScoringData, wind, discard);
 
       Assert.Equal(expectedYaku, yaku);
     }
@@ -117,8 +119,9 @@ namespace Spines.Mahjong.Analysis.Tests
       var discard = TileType.FromString(discardString);
       var sp = new ShorthandParser(handString);
       var hand = new HandCalculator(sp);
+      var wind = new WindScoringData(roundWind, seatWind);
 
-      var (yaku, fu) = ScoreCalculator.TsumoWithYaku(hand.ScoringData, discard, roundWind, seatWind);
+      var (yaku, fu) = ScoreCalculator.TsumoWithYaku(hand.ScoringData, wind, discard);
 
       Assert.Equal(expectedYaku, yaku);
     }
@@ -166,8 +169,9 @@ namespace Spines.Mahjong.Analysis.Tests
       var discard = TileType.FromString(discardString);
       var sp = new ShorthandParser(handString);
       var hand = new HandCalculator(sp);
+      var wind = new WindScoringData(roundWind, seatWind);
 
-      var (han, fu) = ScoreCalculator.Ron(hand.ScoringData, discard, roundWind, seatWind);
+      var (han, fu) = ScoreCalculator.Ron(hand.ScoringData, wind, discard);
 
       Assert.Equal(expectedFu, fu);
     }
@@ -195,8 +199,9 @@ namespace Spines.Mahjong.Analysis.Tests
       var draw = TileType.FromString(drawString);
       var sp = new ShorthandParser(handString);
       var hand = new HandCalculator(sp);
-
-      var (han, fu) = ScoreCalculator.Tsumo(hand.ScoringData, draw, roundWind, seatWind);
+      var wind = new WindScoringData(roundWind, seatWind);
+      
+      var (han, fu) = ScoreCalculator.Tsumo(hand.ScoringData, wind, draw);
 
       Assert.Equal(expectedFu, fu);
     }
@@ -217,8 +222,9 @@ namespace Spines.Mahjong.Analysis.Tests
       var discard = TileType.FromString(discardString);
       var sp = new ShorthandParser(handString);
       var hand = new HandCalculator(sp);
+      var wind = new WindScoringData(roundWind, seatWind);
 
-      var (yaku, fu) = ScoreCalculator.RonWithYaku(hand.ScoringData, discard, roundWind, seatWind);
+      var (yaku, fu) = ScoreCalculator.RonWithYaku(hand.ScoringData, wind, discard);
 
       Assert.Equal(expectedYaku, yaku);
     }

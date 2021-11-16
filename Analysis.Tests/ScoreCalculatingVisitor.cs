@@ -72,8 +72,9 @@ namespace Spines.Mahjong.Analysis.Tests
             var h = (HandCalculator) hand.WithTile(draw);
             var roundWind = _board.RoundWind.Index;
             var seatWind = seat.SeatWind.Index;
-            var (tsumoYaku, tsumoFu) = ScoreCalculator.TsumoWithYaku(h.ScoringData, draw, roundWind, seatWind);
-            var (ronYaku, ronFu) = ScoreCalculator.RonWithYaku(h.ScoringData, draw, roundWind, seatWind);
+            var wind = new WindScoringData(roundWind, seatWind);
+            var (tsumoYaku, tsumoFu) = ScoreCalculator.TsumoWithYaku(h.ScoringData, wind, draw);
+            var (ronYaku, ronFu) = ScoreCalculator.RonWithYaku(h.ScoringData, wind, draw);
             WeirdYakuCollector ^= tsumoYaku | ronYaku;
           }
         }
@@ -133,7 +134,8 @@ namespace Spines.Mahjong.Analysis.Tests
         var hand = (HandCalculator) seat.Hand.WithTile(discard);
         var roundWind = _board.RoundWind.Index;
         var seatWind = seat.SeatWind.Index;
-        var (yaku, fu) = ScoreCalculator.RonWithYaku(hand.ScoringData, discard, roundWind, seatWind);
+        var wind = new WindScoringData(roundWind, seatWind);
+        var (yaku, fu) = ScoreCalculator.RonWithYaku(hand.ScoringData, wind, discard);
 
         if (yaku != (payment.Yaku & YakuFilter))
         {
@@ -152,7 +154,8 @@ namespace Spines.Mahjong.Analysis.Tests
         var hand = (HandCalculator) seat.Hand.WithTile(discard);
         var roundWind = _board.RoundWind.Index;
         var seatWind = seat.SeatWind.Index;
-        var (yaku, fu) = ScoreCalculator.ChankanWithYaku(hand.ScoringData, discard, roundWind, seatWind);
+        var wind = new WindScoringData(roundWind, seatWind);
+        var (yaku, fu) = ScoreCalculator.ChankanWithYaku(hand.ScoringData, wind, discard);
 
         if (yaku != (payment.Yaku & YakuFilter))
         {
@@ -181,7 +184,8 @@ namespace Spines.Mahjong.Analysis.Tests
       var draw = seat.CurrentDraw!.TileType;
       var roundWind = _board.RoundWind.Index;
       var seatWind = seat.SeatWind.Index;
-      var (yaku, fu) = ScoreCalculator.TsumoWithYaku(hand.ScoringData, draw, roundWind, seatWind);
+      var wind = new WindScoringData(roundWind, seatWind);
+      var (yaku, fu) = ScoreCalculator.TsumoWithYaku(hand.ScoringData, wind, draw);
 
       if (yaku != (payment.Yaku & YakuFilter))
       {

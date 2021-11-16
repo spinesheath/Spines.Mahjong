@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Spines.Mahjong.Analysis.Score;
@@ -148,9 +147,9 @@ namespace Spines.Mahjong.Analysis.Tests
                 windConfigurations = WindConfigurations[pair - 27];
               }
 
-              foreach (var (roundWind, seatWind) in windConfigurations)
+              foreach (var wind in windConfigurations)
               {
-                var (tsumoHan, tsumoFu) = ScoreCalculator.Tsumo(data, winningTile, roundWind, seatWind);
+                var (tsumoHan, tsumoFu) = ScoreCalculator.Tsumo(data, wind, winningTile);
                 
                 var expectedTsumoHan = binaryReader.ReadByte();
                 if (expectedTsumoHan != tsumoHan)
@@ -167,7 +166,7 @@ namespace Spines.Mahjong.Analysis.Tests
                   }
                 }
                 
-                var (ronHan, ronFu) = ScoreCalculator.Ron(data, winningTile, roundWind, seatWind);
+                var (ronHan, ronFu) = ScoreCalculator.Ron(data, wind, winningTile);
                 
                 var expectedRonHan = binaryReader.ReadByte();
                 if (expectedRonHan != ronHan)
@@ -192,40 +191,39 @@ namespace Spines.Mahjong.Analysis.Tests
       Assert.Equal(0, failureCount);
     }
 
-    private static readonly List<Tuple<int, int>> SimpleWindConfiguration = new()
+    private static readonly List<IWindScoringData> SimpleWindConfiguration = new()
     {
-      Tuple.Create(0, 0)
+      new WindScoringData(0, 0)
     };
 
-    private static readonly List<List<Tuple<int, int>>> WindConfigurations = new()
+    private static readonly List<List<IWindScoringData>> WindConfigurations = new()
     {
-      new List<Tuple<int, int>>
+      new List<IWindScoringData>
       {
-        Tuple.Create(0, 0), // 4 fu
-        Tuple.Create(0, 1), // 2 fu
-        Tuple.Create(1, 1) // 0 fu
+        new WindScoringData(0, 0), // 4 fu
+        new WindScoringData(0, 1), // 2 fu
+        new WindScoringData(1, 1) // 0 fu
       },
-      new List<Tuple<int, int>>
+      new List<IWindScoringData>
       {
-        Tuple.Create(1, 1), // 4 fu
-        Tuple.Create(0, 1), // 2 fu
-        Tuple.Create(0, 0) // 0 fu
+        new WindScoringData(1, 1), // 4 fu
+        new WindScoringData(0, 1), // 2 fu
+        new WindScoringData(0, 0) // 0 fu
       },
-      new List<Tuple<int, int>>
+      new List<IWindScoringData>
       {
-        Tuple.Create(2, 2), // 4 fu
-        Tuple.Create(0, 2), // 2 fu
-        Tuple.Create(0, 0) // 0 fu
+        new WindScoringData(2, 2), // 4 fu
+        new WindScoringData(0, 2), // 2 fu
+        new WindScoringData(0, 0) // 0 fu
       },
-      new List<Tuple<int, int>>
+      new List<IWindScoringData>
       {
-        Tuple.Create(3, 3), // 4 fu
-        Tuple.Create(0, 3), // 2 fu
-        Tuple.Create(0, 0) // 0 fu
-      }
+        new WindScoringData(3, 3), // 4 fu
+        new WindScoringData(0, 3), // 2 fu
+        new WindScoringData(0, 0) // 0 fu
+      },
     };
-
-
+    
     private static (int, int) GetSuitAndMeldId(int kind, int meldType)
     {
       if (kind < 34)
@@ -336,15 +334,15 @@ namespace Spines.Mahjong.Analysis.Tests
 
             foreach (var tile in tiles.GroupBy(t => t.TileType))
             {
-              // TODO ron and offset winds (2 vs 4 fu for value pair - or maybe dragons are enough for that?)
-
               var winningTile = tile.Key;
               var roundWind = 0;
               var seatWind = 0;
               var hand = new HandCalculator(tileTypes, meldIds[0], meldIds[1], meldIds[2], meldIds[3]);
 
               var (classicYaku, classicFu) = ClassicScoreCalculator.Tsumo(winningTile, roundWind, seatWind, melds, tiles);
-              var (yaku, fu) = ScoreCalculator.TsumoWithYaku(hand.ScoringData, winningTile, roundWind, seatWind);
+
+              var wind = new WindScoringData(roundWind, seatWind);
+              var (yaku, fu) = ScoreCalculator.TsumoWithYaku(hand.ScoringData, wind, winningTile);
 
               if (classicYaku != yaku)
               {
