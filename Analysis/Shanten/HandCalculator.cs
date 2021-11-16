@@ -37,6 +37,8 @@ namespace Spines.Mahjong.Analysis.Shanten
       // Don't need to set the melds in the suit classifiers here because entry state for concealed suits for a hand without melds is 0.
     }
 
+    public IScoringData ScoringData => _scoringData;
+
     public override string ToString()
     {
       return Shanten + ": " + GetConcealedString(0, 'm') + GetConcealedString(1, 'p') + GetConcealedString(2, 's') +
@@ -65,7 +67,7 @@ namespace Spines.Mahjong.Analysis.Shanten
 
         if (tileType.SuitId == 3)
         {
-          ArrangementValues[3] = HonorClassifier.Draw(previousTileCount, JihaiMeldBit >> tileType.Index & 1);
+          ArrangementValues[3] = HonorClassifier.Draw(previousTileCount, (JihaiMeldBit >> tileType.Index) & 1);
         }
       }
 
@@ -90,7 +92,7 @@ namespace Spines.Mahjong.Analysis.Shanten
 
       if (tileType.SuitId == 3)
       {
-        ArrangementValues[3] = HonorClassifier.Draw(previousTileCount, JihaiMeldBit >> tileType.Index & 1);
+        ArrangementValues[3] = HonorClassifier.Draw(previousTileCount, (JihaiMeldBit >> tileType.Index) & 1);
       }
       else
       {
@@ -114,7 +116,7 @@ namespace Spines.Mahjong.Analysis.Shanten
 
       if (tileType.SuitId == 3)
       {
-        ArrangementValues[3] = HonorClassifier.Discard(tileCountAfterDiscard, JihaiMeldBit >> tileType.Index & 1);
+        ArrangementValues[3] = HonorClassifier.Discard(tileCountAfterDiscard, (JihaiMeldBit >> tileType.Index) & 1);
       }
       else
       {
@@ -188,9 +190,9 @@ namespace Spines.Mahjong.Analysis.Shanten
       for (var i = 0; i < 4; i++)
       {
         var pon = 1 + 7 + tileType.Index;
-        if ((_melds[suitId] >> 6 * i & 0b111111) == pon)
+        if (((_melds[suitId] >> (6 * i)) & 0b111111) == pon)
         {
-          _melds[suitId] += 9 << 6 * i;
+          _melds[suitId] += 9 << (6 * i);
           break;
         }
       }
@@ -280,7 +282,8 @@ namespace Spines.Mahjong.Analysis.Shanten
     /// 34 ints, one per tileType.
     /// -1 if that tileType is not an ukeIre.
     /// 0-4 for the remaining tiles of that tileType if ukeIre.
-    /// TODO it should be possible to exclude certain tile types from checking entirely, like 1z if 111Z has been called already
+    /// TODO it should be possible to exclude certain tile types from checking entirely, like 1z if 111Z has been called
+    /// already
     /// </summary>
     public int[] GetUkeIreFor13()
     {
@@ -335,7 +338,7 @@ namespace Spines.Mahjong.Analysis.Shanten
           var previousTileCount = ConcealedTiles[tileTypeId];
           Kokushi.Draw(1, previousTileCount);
           Chiitoi.Draw(previousTileCount);
-          localArrangements[3] = HonorClassifier.Clone().Draw(ConcealedTiles[tileTypeId], JihaiMeldBit >> index & 1);
+          localArrangements[3] = HonorClassifier.Clone().Draw(ConcealedTiles[tileTypeId], (JihaiMeldBit >> index) & 1);
 
           var newShanten = CalculateShanten(localArrangements);
           var a = currentShanten - newShanten;
@@ -434,6 +437,33 @@ namespace Spines.Mahjong.Analysis.Shanten
       return shantenWithTile;
     }
 
+    private protected static readonly int[] Base5Table =
+    {
+      1,
+      5,
+      25,
+      125,
+      625,
+      3125,
+      15625,
+      78125,
+      390625
+    };
+
+    private readonly int[] _melds = new int[4]; // identified by meldId, youngest meld in least significant bits
+
+    private protected readonly int[] ArrangementValues = new int[4];
+    private protected readonly int[] Base5Hashes = new int[4]; // base 5 representation of concealed suits.
+    private protected readonly byte[] ConcealedTiles = new byte[34];
+    private protected readonly byte[] InHandByType = new byte[34]; // tiles in hand by tile type, including melds, kan is 4 tiles here
+    private protected readonly SuitClassifier[] SuitClassifiers = {new(), new(), new()};
+    private int _meldCount;
+    private ProgressiveScoringData _scoringData = new();
+    private protected ChiitoiClassifier Chiitoi = ChiitoiClassifier.Create();
+    private protected ProgressiveHonorClassifier HonorClassifier;
+    private protected int JihaiMeldBit; // bit=1 for honor pon, least significant bit represents east wind. bit=0 for both kan and no meld.
+    private protected KokushiClassifier Kokushi = KokushiClassifier.Create();
+
     private protected IHandCalculator CloneOnto(HandCalculator hand)
     {
       Array.Copy(ArrangementValues, hand.ArrangementValues, ArrangementValues.Length);
@@ -455,38 +485,10 @@ namespace Spines.Mahjong.Analysis.Shanten
       return hand;
     }
 
-    private protected readonly int[] ArrangementValues = new int[4];
-    private protected readonly int[] Base5Hashes = new int[4]; // base 5 representation of concealed suits.
-    private protected readonly byte[] ConcealedTiles = new byte[34];
-    private protected readonly byte[] InHandByType = new byte[34]; // tiles in hand by tile type, including melds, kan is 4 tiles here
-    private readonly int[] _melds = new int[4]; // identified by meldId, youngest meld in least significant bits
-    private protected int JihaiMeldBit; // bit=1 for honor pon, least significant bit represents east wind. bit=0 for both kan and no meld.
-    private protected readonly SuitClassifier[] SuitClassifiers = {new(), new(), new()};
-    private protected ChiitoiClassifier Chiitoi = ChiitoiClassifier.Create();
-    private protected ProgressiveHonorClassifier HonorClassifier;
-    private protected KokushiClassifier Kokushi = KokushiClassifier.Create();
-    private int _meldCount;
-    private ProgressiveScoringData _scoringData = new();
-
-    internal IScoringData ScoringData => _scoringData;
-
     protected int TilesInHand()
     {
       return ConcealedTiles.Sum(x => x) + _meldCount * 3;
     }
-
-    private protected static readonly int[] Base5Table = 
-    {
-      1,
-      5,
-      25,
-      125,
-      625,
-      3125,
-      15625,
-      78125,
-      390625
-    };
 
     private void InitializeJihaiMelds(IEnumerable<int> meldIds)
     {
@@ -501,6 +503,7 @@ namespace Spines.Mahjong.Analysis.Shanten
         {
           _melds[3] += 1 + meldId - 9;
         }
+
         _meldCount += 1;
 
         if (meldId < 7 + 9)
@@ -555,6 +558,7 @@ namespace Spines.Mahjong.Analysis.Shanten
         {
           _melds[suitId] += 1 + meldId - 9;
         }
+
         _meldCount += 1;
 
         if (meldId < 7)
@@ -568,7 +572,7 @@ namespace Spines.Mahjong.Analysis.Shanten
         }
         else
         {
-          var tileTypeId = 9 * suitId + ((meldId - 7) % 9);
+          var tileTypeId = 9 * suitId + (meldId - 7) % 9;
           if (meldId < 16)
           {
             InHandByType[tileTypeId] += 3;
@@ -645,7 +649,7 @@ namespace Spines.Mahjong.Analysis.Shanten
         else
         {
           var index = (meldId - 7) % 9;
-          sb.Append((char)('1' + index), InHandByType[suitId * 9 + index] - ConcealedTiles[suitId * 9 + index]);
+          sb.Append((char) ('1' + index), InHandByType[suitId * 9 + index] - ConcealedTiles[suitId * 9 + index]);
         }
 
         sb.Append(suit);

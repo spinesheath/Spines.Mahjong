@@ -53,7 +53,6 @@ namespace Spines.Mahjong.Analysis.Score
     OpenJunchan = 1L << BitIndex.OpenJunchan,
     ClosedIttsuu = 1L << BitIndex.ClosedIttsuu,
     OpenIttsuu = 1L << BitIndex.OpenIttsuu,
-
     Sankantsu = 1L << BitIndex.Sankantsu,
     Suukantsu = 1L << BitIndex.Suukantsu,
   }

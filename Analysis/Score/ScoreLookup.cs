@@ -1,13 +1,11 @@
 ﻿using System;
-using Spines.Mahjong.Analysis.Shanten;
 
 namespace Spines.Mahjong.Analysis.Score
 {
   internal static class ScoreLookup
   {
-    public static (long, int) Flags(HandCalculator hand, TileType winningTile, bool isRon, int roundWind, int seatWind)
+    public static (long, int) Flags(IScoringData data, TileType winningTile, bool isRon, int roundWind, int seatWind)
     {
-      var data = hand.ScoringData;
       var openBit = data.OpenBit;
 
       // TODO might be able to rework ron shift to not use up so many bits.

@@ -1,6 +1,6 @@
 ﻿namespace Spines.Mahjong.Analysis.Score
 {
-  internal interface IScoringData
+  public interface IScoringData
   {
     long BigAndToSumFilter { get; }
 

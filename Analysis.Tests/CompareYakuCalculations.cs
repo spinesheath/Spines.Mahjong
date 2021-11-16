@@ -20,12 +20,9 @@ namespace Spines.Mahjong.Analysis.Tests
 
       var pairs = new[]
       {
-         //0, 1,  
-        // 2,  3,  4,  5,  6,  7,  8,
-        //18, 19, 20, 21, 22, 23, 24, 25, 26,
-        //27, 
-        //31,
-        32
+         0,  1,  2,  3,  4,  5,  6,  7,  8,
+        18, 19, 20, 21, 22, 23, 24, 25, 26,
+        27, 31, 32
       };
 
       foreach (var pair in pairs)
@@ -128,7 +125,7 @@ namespace Spines.Mahjong.Analysis.Tests
               {
                 var hand = new HandCalculator(tileTypes, meldIds[0], meldIds[1], meldIds[2], meldIds[3]);
 
-                var (tsumoHan, tsumoFu) = ScoreCalculator.Tsumo(hand, winningTile, roundWind, seatWind);
+                var (tsumoHan, tsumoFu) = ScoreCalculator.Tsumo(hand.ScoringData, winningTile, roundWind, seatWind);
                 
                 var expectedTsumoHan = binaryReader.ReadByte();
                 if (expectedTsumoHan != tsumoHan)
@@ -145,7 +142,7 @@ namespace Spines.Mahjong.Analysis.Tests
                   }
                 }
                 
-                var (ronHan, ronFu) = ScoreCalculator.Ron(hand, winningTile, roundWind, seatWind);
+                var (ronHan, ronFu) = ScoreCalculator.Ron(hand.ScoringData, winningTile, roundWind, seatWind);
                 
                 var expectedRonHan = binaryReader.ReadByte();
                 if (expectedRonHan != ronHan)
@@ -322,7 +319,7 @@ namespace Spines.Mahjong.Analysis.Tests
               var hand = new HandCalculator(tileTypes, meldIds[0], meldIds[1], meldIds[2], meldIds[3]);
 
               var (classicYaku, classicFu) = ClassicScoreCalculator.Tsumo(winningTile, roundWind, seatWind, melds, tiles);
-              var (yaku, fu) = ScoreCalculator.TsumoWithYaku(hand, winningTile, roundWind, seatWind);
+              var (yaku, fu) = ScoreCalculator.TsumoWithYaku(hand.ScoringData, winningTile, roundWind, seatWind);
 
               if (classicYaku != yaku)
               {
