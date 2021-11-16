@@ -4,7 +4,7 @@ namespace Spines.Mahjong.Analysis.Score
 {
   internal static class ScoreLookup
   {
-    public static (long, int) Flags(IScoringData data, TileType winningTile, bool isRon, int roundWind, int seatWind)
+    public static (long, int) Flags(IScoringData data, IWindScoringData windScoringData, TileType winningTile, bool isRon)
     {
       var openBit = data.OpenBit;
 
@@ -41,8 +41,7 @@ namespace Spines.Mahjong.Analysis.Score
        * A flag in BigSum is created by adding 1 for each suit with a pair and a 2 for honors.
        * This will leave a 0 in the second bit in the bad case: 11223399m11p11s44z This 0 is aligned with the pinfu bit index.
        */
-      var windShiftAmount = WindShiftHonor(roundWind, seatWind);
-      var honorWindShift = honorOr >> windShiftAmount;
+      var honorWindShift = honorOr >> windScoringData.HonorShift;
       var waitAndWindShift = waitShiftValues[0] & waitShiftValues[1] & waitShiftValues[2] & waitShiftValues[3] & honorWindShift;
       var pinfu = waitAndWindShift &
                   // TODO suitsAnd + 1 should instead be handled in bitField preparation
@@ -83,8 +82,7 @@ namespace Spines.Mahjong.Analysis.Score
       var bigSumPostElimination = bigSum & ~((bigSum & BigSumEliminationFilter) >> EliminationDelta);
       result |= bigSumPostElimination & BigSumPostEliminationYakuFilter;
 
-      var valueWindFilter = ValueWindFilter(roundWind, seatWind);
-      result |= honorSum & HonorSumYakuFilter & valueWindFilter;
+      result |= honorSum & HonorSumYakuFilter & windScoringData.ValueWindFilter;
 
       result |= data.SankantsuSuukantsu & (11L << BitIndex.Sankantsu);
 
@@ -171,11 +169,8 @@ namespace Spines.Mahjong.Analysis.Score
 
       var tsumoFu = 2 >> ronShiftAmount;
 
-      // TODO this can be calculated once together with windShiftAmount and used over many hands
-      // doubleValueWindBit is 1 iff seat and round wind are the same
-      var doubleValueWindBit = System.Runtime.Intrinsics.X86.Popcnt.PopCount((uint)windShiftAmount) & 1L;
       // lowest bit of honorOr is 1 iff there is a wind pair
-      var valueWindAdjuster = 1 + (honorOr & doubleValueWindBit);
+      var valueWindAdjuster = 1 + (honorOr & windScoringData.DoubleValueWindBit);
       var valuePairFu = (honorWindShift & 1L) << (int)valueWindAdjuster;
 
       var fu = data.Fu + closedRonFu + tsumoFu + (int) valuePairFu + fuM + fuP + fuS + (int)ankouFuJihai + (int)singleWaitFuJihai;
@@ -247,19 +242,6 @@ namespace Spines.Mahjong.Analysis.Score
     // Sanankou bit index added here for square type, since it does not interfere with ryuuiisou
     private const long RyuuiisouSumFilter01 = (1L << (BitIndex.Ryuuiisou - 4)) | (1L << BitIndex.Sanankou);
     private const long RyuuiisouSumFilter2 = (1L << (BitIndex.Ryuuiisou - 2)) | (1L << BitIndex.Sanankou);
-
-    private static int WindShiftHonor(int roundWind, int seatWind)
-    {
-      return (1 << roundWind) | (1 << seatWind);
-    }
-
-    private static long ValueWindFilter(int roundWind, int seatWind)
-    {
-      var mask = ~((0b1111L << BitIndex.BakazeTon) | (0b1111L << BitIndex.JikazeTon));
-      mask |= 0b1L << (BitIndex.BakazeTon + roundWind);
-      mask |= 0b1L << (BitIndex.JikazeTon + seatWind);
-      return mask;
-    }
 
     private static string PrintBinarySegment(long bits, int from, int length)
     {

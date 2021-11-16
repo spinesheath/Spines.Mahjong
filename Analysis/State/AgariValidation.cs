@@ -15,7 +15,8 @@ namespace Spines.Mahjong.Analysis.State
       }
 
       // Most yaku
-      if (ScoreLookup.Flags(seat.Hand.ScoringData, seat.CurrentDraw!.TileType, false, board.RoundWind.Index, seat.SeatWind.Index).Item1 != 0)
+      var w = new WindScoringData(board.RoundWind.Index, seat.SeatWind.Index);
+      if (ScoreLookup.Flags(seat.Hand.ScoringData, w, seat.CurrentDraw!.TileType, false).Item1 != 0)
       {
         return true;
       }
@@ -71,7 +72,8 @@ namespace Spines.Mahjong.Analysis.State
       }
 
       // Most yaku
-      if (ScoreLookup.Flags(hand.ScoringData, winningTile.TileType, true, board.RoundWind.Index, seat.SeatWind.Index).Item1 != 0)
+      var w = new WindScoringData(board.RoundWind.Index, seat.SeatWind.Index);
+      if (ScoreLookup.Flags(hand.ScoringData, w, winningTile.TileType, true).Item1 != 0)
       {
         return true;
       }

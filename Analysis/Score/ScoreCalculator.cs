@@ -7,40 +7,46 @@ namespace Spines.Mahjong.Analysis.Score
   {
     public static (int, int) Chankan(IScoringData data, TileType winningTile, int roundWind, int seatWind)
     {
-      var (yaku, fu) = ScoreLookup.Flags(data, winningTile, true, roundWind, seatWind);
+      var w = new WindScoringData(roundWind, seatWind);
+      var (yaku, fu) = ScoreLookup.Flags(data, w, winningTile, true);
       var han = Han.CalculateScoringField(yaku);
       return (han, fu);
     }
 
     public static (Yaku, int) ChankanWithYaku(IScoringData data, TileType winningTile, int roundWind, int seatWind)
     {
-      var (yaku, fu) = ScoreLookup.Flags(data, winningTile, true, roundWind, seatWind);
+      var w = new WindScoringData(roundWind, seatWind);
+      var (yaku, fu) = ScoreLookup.Flags(data, w, winningTile, true);
       return (MapFlags(yaku), fu);
     }
 
     public static (int, int) Ron(IScoringData data, TileType winningTile, int roundWind, int seatWind)
     {
-      var (yaku, fu) = ScoreLookup.Flags(data, winningTile, true, roundWind, seatWind);
+      var w = new WindScoringData(roundWind, seatWind);
+      var (yaku, fu) = ScoreLookup.Flags(data, w, winningTile, true);
       var han = Han.CalculateScoringField(yaku);
       return (han, fu);
     }
 
     public static (Yaku, int) RonWithYaku(IScoringData data, TileType winningTile, int roundWind, int seatWind)
     {
-      var (yaku, fu) = ScoreLookup.Flags(data, winningTile, true, roundWind, seatWind);
+      var w = new WindScoringData(roundWind, seatWind);
+      var (yaku, fu) = ScoreLookup.Flags(data, w, winningTile, true);
       return (MapFlags(yaku), fu);
     }
 
     public static (int, int) Tsumo(IScoringData data, TileType winningTile, int roundWind, int seatWind)
     {
-      var (yaku, fu) = ScoreLookup.Flags(data, winningTile, false, roundWind, seatWind);
+      var w = new WindScoringData(roundWind, seatWind);
+      var (yaku, fu) = ScoreLookup.Flags(data, w, winningTile, false);
       var han = Han.CalculateScoringField(yaku);
       return (han, fu);
     }
 
     public static (Yaku, int) TsumoWithYaku(IScoringData data, TileType winningTile, int roundWind, int seatWind)
     {
-      var (yaku, fu) = ScoreLookup.Flags(data, winningTile, false, roundWind, seatWind);
+      var w = new WindScoringData(roundWind, seatWind);
+      var (yaku, fu) = ScoreLookup.Flags(data, w, winningTile, false);
       return (MapFlags(yaku), fu);
     }
 
