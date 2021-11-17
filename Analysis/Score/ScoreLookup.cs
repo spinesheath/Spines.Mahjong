@@ -5,7 +5,7 @@ namespace Spines.Mahjong.Analysis.Score
 {
   internal static class ScoreLookup
   {
-    public static (long, int) Flags(ProgressiveScoringData data, IWindScoringData windScoringData, TileType winningTile, bool isRon)
+    public static (long, int) Flags(ProgressiveScoringData data, WindScoringData windScoringData, TileType winningTile, bool isRon)
     {
       var openBit = data.OpenBit;
 

@@ -186,36 +186,36 @@ namespace Spines.Mahjong.Analysis.Tests
       Assert.Equal(0, failureCount);
     }
 
-    private static readonly List<IWindScoringData> SimpleWindConfiguration = new()
+    private static readonly List<WindScoringData> SimpleWindConfiguration = new()
     {
       new WindScoringData(0, 0)
     };
 
-    private static readonly List<List<IWindScoringData>> WindConfigurations = new()
+    private static readonly List<List<WindScoringData>> WindConfigurations = new()
     {
-      new List<IWindScoringData>
+      new List<WindScoringData>
       {
-        new WindScoringData(0, 0), // 4 fu
-        new WindScoringData(0, 1), // 2 fu
-        new WindScoringData(1, 1) // 0 fu
+        new(0, 0), // 4 fu
+        new(0, 1), // 2 fu
+        new(1, 1) // 0 fu
       },
-      new List<IWindScoringData>
+      new List<WindScoringData>
       {
-        new WindScoringData(1, 1), // 4 fu
-        new WindScoringData(0, 1), // 2 fu
-        new WindScoringData(0, 0) // 0 fu
+        new(1, 1), // 4 fu
+        new(0, 1), // 2 fu
+        new(0, 0) // 0 fu
       },
-      new List<IWindScoringData>
+      new List<WindScoringData>
       {
-        new WindScoringData(2, 2), // 4 fu
-        new WindScoringData(0, 2), // 2 fu
-        new WindScoringData(0, 0) // 0 fu
+        new(2, 2), // 4 fu
+        new(0, 2), // 2 fu
+        new(0, 0) // 0 fu
       },
-      new List<IWindScoringData>
+      new List<WindScoringData>
       {
-        new WindScoringData(3, 3), // 4 fu
-        new WindScoringData(0, 3), // 2 fu
-        new WindScoringData(0, 0) // 0 fu
+        new(3, 3), // 4 fu
+        new(0, 3), // 2 fu
+        new(0, 0) // 0 fu
       },
     };
     

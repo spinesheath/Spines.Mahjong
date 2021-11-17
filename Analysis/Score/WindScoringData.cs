@@ -1,6 +1,6 @@
 ﻿namespace Spines.Mahjong.Analysis.Score
 {
-  public class WindScoringData : IWindScoringData
+  public class WindScoringData
   {
     public WindScoringData(int roundWind, int seatWind)
     {
