@@ -155,7 +155,7 @@ namespace Spines.Mahjong.Analysis.Score
       footprintKey |= ronShiftAmount & 1; // ronShiftAmount is either 0 or 0b1001
       footprintKey |= (int)openBit << 1;
 
-      var keys = new[] {footprintKey, footprintKey, footprintKey, 0};
+      Span<int> keys = stackalloc int[] {footprintKey, footprintKey, footprintKey, 0};
       keys[winningTileSuit] += (winningTileIndex + 1) * 4;
 
       var fuM = data.FuFootprint(0, keys[0]);
