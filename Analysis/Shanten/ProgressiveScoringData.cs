@@ -4,7 +4,7 @@ using Spines.Mahjong.Analysis.Score;
 
 namespace Spines.Mahjong.Analysis.Shanten
 {
-  public class ProgressiveScoringData : IScoringData
+  public class ProgressiveScoringData
   {
     static ProgressiveScoringData()
     {
@@ -16,6 +16,10 @@ namespace Spines.Mahjong.Analysis.Shanten
       LookupSuitWaitShift = Resource.LongLookup("Scoring", "SuitWaitShiftLookup.dat");
 
       LookupFuFootprints = Resource.Lookup("Scoring", "SuitFu.dat");
+
+      SuitWaitShift0 = LookupSuitWaitShift[0];
+      SuitOr0 = LookupSuitOr[0];
+      HonorWaitShift0 = LookupHonorWaitShift[0];
     }
 
     public ProgressiveScoringData()
@@ -28,18 +32,16 @@ namespace Spines.Mahjong.Analysis.Shanten
       _baseMaskFilter = ~0L;
       _baseMask = FilterOpenYaku;
 
-      var suitWaitShift0 = LookupSuitWaitShift[0];
-      WaitShiftValues = new[] {suitWaitShift0, suitWaitShift0, suitWaitShift0, LookupHonorWaitShift[0]};
-
-      var suitOr0 = LookupSuitOr[0];
-      SuitOr = new[] {suitOr0, suitOr0, suitOr0, 0L};
-
       HonorOr = LookupHonorOr[0] | (_meldLookupValues[3] & ~0b1_111_111_111_111L);
 
       HonorSum = LookupHonorSum[0] + _meldLookupValues[3];
 
       Fu = 20;
     }
+
+    public long[] WaitShiftValues { get; } = {SuitWaitShift0, SuitWaitShift0, SuitWaitShift0, HonorWaitShift0};
+
+    public long[] SuitOr { get; } = {SuitOr0, SuitOr0, SuitOr0, 0L};
 
     public void Ankan(int suitId, int index, int base5Hash)
     {
@@ -168,10 +170,6 @@ namespace Spines.Mahjong.Analysis.Shanten
       return LookupFuFootprints[_fuFootprintOffsets[suitId] + index];
     }
 
-    public long[] WaitShiftValues { get; }
-
-    public long[] SuitOr { get; }
-
     public long HonorOr { get; private set; }
 
     public long HonorSum { get; private set; }
@@ -245,6 +243,9 @@ namespace Spines.Mahjong.Analysis.Shanten
 
     private long _baseMask;
     private long _baseMaskFilter;
+    private static readonly long SuitWaitShift0;
+    private static readonly long SuitOr0;
+    private static readonly long HonorWaitShift0;
 
     private void AnyKoutsu(int suitId, int index, int base5Hash, int baseFu)
     {

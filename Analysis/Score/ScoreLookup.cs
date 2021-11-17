@@ -1,10 +1,11 @@
 ﻿using System;
+using Spines.Mahjong.Analysis.Shanten;
 
 namespace Spines.Mahjong.Analysis.Score
 {
   internal static class ScoreLookup
   {
-    public static (long, int) Flags(IScoringData data, IWindScoringData windScoringData, TileType winningTile, bool isRon)
+    public static (long, int) Flags(ProgressiveScoringData data, IWindScoringData windScoringData, TileType winningTile, bool isRon)
     {
       var openBit = data.OpenBit;
 
