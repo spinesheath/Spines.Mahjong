@@ -13,9 +13,9 @@ namespace Spines.Mahjong.Analysis.Score
 
       var winningTileIndex = winningTile.Index;
       var winningTileSuit = winningTile.SuitId;
-
-      var waitShiftValues = new long[4];
-      Array.Copy(data.WaitShiftValues, waitShiftValues, 4);
+      
+      Span<long> waitShiftValues = stackalloc long[4];
+      data.WaitShiftValues.CopyTo(waitShiftValues);
       waitShiftValues[winningTileSuit] >>= winningTileIndex + 1;
 
       var suitOr = data.SuitOr;
@@ -55,6 +55,7 @@ namespace Spines.Mahjong.Analysis.Score
       // TODO get rid of this conditional
       var singleWaitFuJihai = winningTileSuit == 3 ? (waitShiftValues[winningTileSuit] >> 9) & 2L : 0;
       
+      // TODO waitAndRonShift is only used for ankou now, so maybe shifting inside the array is not necessary anymore?
       waitShiftValues[winningTileSuit] >>= ronShiftAmount;
 
       var waitAndRonShift = (waitShiftValues[0] & RonShiftSumFilter) +
