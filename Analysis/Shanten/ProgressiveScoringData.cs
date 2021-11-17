@@ -27,13 +27,13 @@ namespace Spines.Mahjong.Analysis.Shanten
 
       _baseMaskFilter = ~0L;
       _baseMask = FilterOpenYaku;
-      
+
       var suitWaitShift0 = LookupSuitWaitShift[0];
       WaitShiftValues = new[] {suitWaitShift0, suitWaitShift0, suitWaitShift0, LookupHonorWaitShift[0]};
-      
+
       var suitOr0 = LookupSuitOr[0];
       SuitOr = new[] {suitOr0, suitOr0, suitOr0, 0L};
-      
+
       HonorOr = LookupHonorOr[0] | (_meldLookupValues[3] & ~0b1_111_111_111_111L);
 
       HonorSum = LookupHonorSum[0] + _meldLookupValues[3];
@@ -44,64 +44,9 @@ namespace Spines.Mahjong.Analysis.Shanten
     public void Ankan(int suitId, int index, int base5Hash)
     {
       _baseMaskFilter &= FilterNoAnkanYaku;
-      ShiftedAnkanCount += 1L << (BitIndex.Sanankou - 2);
       SankantsuSuukantsu <<= 1;
-
-      if (suitId == 3)
-      {
-        _meldLookupValues[3] |= SetterMeldLookupForHonorKoutsu;
-        _meldLookupValues[3] += AdderMeldLookupForHonorKoutsu;
-
-        if (index < 4)
-        {
-          _meldLookupValues[3] |= ((1L << OffsetHonorJikaze) | (1L << OffsetHonorBakaze)) << index;
-          _meldLookupValues[3] += (1L << OffsetHonorShousuushii) | (1L << OffsetHonorDaisuushii);
-          _meldLookupValues[3] &= ~(1L << (OffsetHonorShousuushii + 2));
-        }
-        else
-        {
-          _meldLookupValues[3] |= (1L << (OffsetHonorHakuHatsuChun - 4)) << index;
-          _meldLookupValues[3] += (1L << OffsetHonorShousangen) | (1L << OffsetHonorDaisangen);
-        }
-
-        if (index != 5)
-        {
-          _meldLookupValues[3] &= ~(4L << OffsetHonorRyuuiisou);
-          _baseMaskFilter &= FilterRyuuiisou;
-        }
-
-        _baseMaskFilter &= FilterHonorCall & FilterChinroutouCall & FilterNoChantaCalls;
-        Fu += 32;
-      }
-      else
-      {
-        _meldLookupValues[suitId] |= (0b101000L << OffsetSuitHonitsu) | index | ((1L << 5) << index);
-
-        if (index > 0 && index < 8)
-        {
-          _baseMaskFilter &= FilterChinroutouCall & FilterHonroutouCall & FilterOnlyChantaCalls;
-          Fu += 16;
-        }
-        else
-        {
-          _baseMaskFilter &= FilterNoChantaCalls;
-          Fu += 32;
-        }
-
-        if (suitId == 2)
-        {
-          if (index % 2 == 0 && index != 2)
-          {
-            _baseMaskFilter &= FilterRyuuiisou;
-          }
-        }
-        else
-        {
-          _baseMaskFilter &= FilterRyuuiisou;
-        }
-      }
-
-      UpdateSuit(suitId, base5Hash);
+      ShiftedAnkanCount += 1L << (BitIndex.Sanankou - 2);
+      AnyKoutsu(suitId, index, base5Hash, 16);
     }
 
     public void Chii(int suitId, int index, int base5Hash)
@@ -113,7 +58,7 @@ namespace Spines.Mahjong.Analysis.Shanten
         _meldLookupValues[suitId] |= 1L << (OffsetSuitIttsuu + index / 3);
       }
 
-      _meldLookupValues[suitId] |= (index + 9L) | ((1L << 15) << index);
+      _meldLookupValues[suitId] |= (index + 9L) | (1L << 15 << index);
 
       _baseMask = FilterClosedYaku;
       OpenBit = 1L;
@@ -172,64 +117,9 @@ namespace Spines.Mahjong.Analysis.Shanten
     public void Daiminkan(int suitId, int index, int base5Hash)
     {
       _baseMask = FilterClosedYaku;
-      OpenBit = 1L;
       SankantsuSuukantsu <<= 1;
-
-      if (suitId == 3)
-      {
-        _meldLookupValues[3] |= SetterMeldLookupForHonorKoutsu;
-        _meldLookupValues[3] += AdderMeldLookupForHonorKoutsu;
-
-        if (index < 4)
-        {
-          _meldLookupValues[3] |= ((1L << OffsetHonorJikaze) | (1L << OffsetHonorBakaze)) << index;
-          _meldLookupValues[3] += (1L << OffsetHonorShousuushii) | (1L << OffsetHonorDaisuushii);
-          _meldLookupValues[3] &= ~(1L << (OffsetHonorShousuushii + 2));
-        }
-        else
-        {
-          _meldLookupValues[3] |= (1L << (OffsetHonorHakuHatsuChun - 4)) << index;
-          _meldLookupValues[3] += (1L << OffsetHonorShousangen) | (1L << OffsetHonorDaisangen);
-        }
-
-        if (index != 5)
-        {
-          _meldLookupValues[3] &= ~(4L << OffsetHonorRyuuiisou);
-          _baseMaskFilter &= FilterRyuuiisou;
-        }
-
-        _baseMaskFilter &= FilterHonorCall & FilterChinroutouCall & FilterNoChantaCalls;
-        Fu += 16;
-      }
-      else
-      {
-        _meldLookupValues[suitId] |= (0b101000L << OffsetSuitHonitsu) | index | ((1L << 5) << index);
-
-        if (index > 0 && index < 8)
-        {
-          _baseMaskFilter &= FilterChinroutouCall & FilterHonroutouCall & FilterOnlyChantaCalls;
-          Fu += 8;
-        }
-        else
-        {
-          _baseMaskFilter &= FilterNoChantaCalls;
-          Fu += 16;
-        }
-
-        if (suitId == 2)
-        {
-          if (index % 2 == 0 && index != 2)
-          {
-            _baseMaskFilter &= FilterRyuuiisou;
-          }
-        }
-        else
-        {
-          _baseMaskFilter &= FilterRyuuiisou;
-        }
-      }
-
-      UpdateSuit(suitId, base5Hash);
+      OpenBit = 1L;
+      AnyKoutsu(suitId, index, base5Hash, 8);
     }
 
     public void Discard(int suitId, int base5Hash)
@@ -242,66 +132,19 @@ namespace Spines.Mahjong.Analysis.Shanten
       UpdateSuit(suitId, base5Hash);
     }
 
+    public void Init(int[] base5Hashes)
+    {
+      UpdateSuit(0, base5Hashes[0]);
+      UpdateSuit(1, base5Hashes[1]);
+      UpdateSuit(2, base5Hashes[2]);
+      UpdateSuit(3, base5Hashes[3]);
+    }
+
     public void Pon(int suitId, int index, int base5Hash)
     {
       _baseMask = FilterClosedYaku;
       OpenBit = 1L;
-
-      if (suitId == 3)
-      {
-        _meldLookupValues[3] |= SetterMeldLookupForHonorKoutsu;
-        _meldLookupValues[3] += AdderMeldLookupForHonorKoutsu;
-
-        if (index < 4)
-        {
-          _meldLookupValues[3] |= ((1L << OffsetHonorJikaze) | (1L << OffsetHonorBakaze)) << index;
-          _meldLookupValues[3] += (1L << OffsetHonorShousuushii) | (1L << OffsetHonorDaisuushii);
-          _meldLookupValues[3] &= ~(1L << (OffsetHonorShousuushii + 2));
-        }
-        else
-        {
-          _meldLookupValues[3] |= (1L << (OffsetHonorHakuHatsuChun - 4)) << index;
-          _meldLookupValues[3] += (1L << OffsetHonorShousangen) | 1L << OffsetHonorDaisangen;
-        }
-
-        if (index != 5)
-        {
-          _meldLookupValues[3] &= ~(4L << OffsetHonorRyuuiisou);
-          _baseMaskFilter &= FilterRyuuiisou;
-        }
-
-        _baseMaskFilter &= FilterHonorCall & FilterChinroutouCall & FilterNoChantaCalls;
-        Fu += 4;
-      }
-      else
-      {
-        _meldLookupValues[suitId] |= (0b101000L << OffsetSuitHonitsu) | index | ((1L << 5) << index);
-
-        if (index > 0 && index < 8)
-        {
-          _baseMaskFilter &= FilterChinroutouCall & FilterHonroutouCall & FilterOnlyChantaCalls;
-          Fu += 2;
-        }
-        else
-        {
-          _baseMaskFilter &= FilterNoChantaCalls;
-          Fu += 4;
-        }
-
-        if (suitId == 2)
-        {
-          if (index % 2 == 0 && index != 2)
-          {
-            _baseMaskFilter &= FilterRyuuiisou;
-          }
-        }
-        else
-        {
-          _baseMaskFilter &= FilterRyuuiisou;
-        }
-      }
-
-      UpdateSuit(suitId, base5Hash);
+      AnyKoutsu(suitId, index, base5Hash, 2);
     }
 
     public void Shouminkan(TileType tileType, int base5Hash)
@@ -318,14 +161,6 @@ namespace Spines.Mahjong.Analysis.Shanten
       }
 
       UpdateSuit(tileType.SuitId, base5Hash);
-    }
-
-    public void Init(int[] base5Hashes)
-    {
-      UpdateSuit(0, base5Hashes[0]);
-      UpdateSuit(1, base5Hashes[1]);
-      UpdateSuit(2, base5Hashes[2]);
-      UpdateSuit(3, base5Hashes[3]);
     }
 
     public int FuFootprint(int suitId, int index)
@@ -404,12 +239,71 @@ namespace Spines.Mahjong.Analysis.Shanten
     private static readonly long[] LookupSuitWaitShift;
     private static readonly byte[] LookupFuFootprints;
 
+    private readonly int[] _fuFootprintOffsets = new int[3];
+
     private readonly long[] _meldLookupValues = new long[4];
 
     private long _baseMask;
     private long _baseMaskFilter;
 
-    private readonly int[] _fuFootprintOffsets = new int[3];
+    private void AnyKoutsu(int suitId, int index, int base5Hash, int baseFu)
+    {
+      if (suitId == 3)
+      {
+        _meldLookupValues[3] |= SetterMeldLookupForHonorKoutsu;
+        _meldLookupValues[3] += AdderMeldLookupForHonorKoutsu;
+
+        if (index < 4)
+        {
+          _meldLookupValues[3] |= ((1L << OffsetHonorJikaze) | (1L << OffsetHonorBakaze)) << index;
+          _meldLookupValues[3] += (1L << OffsetHonorShousuushii) | (1L << OffsetHonorDaisuushii);
+          _meldLookupValues[3] &= ~(1L << (OffsetHonorShousuushii + 2));
+        }
+        else
+        {
+          _meldLookupValues[3] |= 1L << (OffsetHonorHakuHatsuChun - 4) << index;
+          _meldLookupValues[3] += (1L << OffsetHonorShousangen) | (1L << OffsetHonorDaisangen);
+        }
+
+        if (index != 5)
+        {
+          _meldLookupValues[3] &= ~(4L << OffsetHonorRyuuiisou);
+          _baseMaskFilter &= FilterRyuuiisou;
+        }
+
+        _baseMaskFilter &= FilterHonorCall & FilterChinroutouCall & FilterNoChantaCalls;
+        Fu += 2 * baseFu;
+      }
+      else
+      {
+        _meldLookupValues[suitId] |= (0b101000L << OffsetSuitHonitsu) | index | ((1L << 5) << index);
+
+        if (index > 0 && index < 8)
+        {
+          _baseMaskFilter &= FilterChinroutouCall & FilterHonroutouCall & FilterOnlyChantaCalls;
+          Fu += baseFu;
+        }
+        else
+        {
+          _baseMaskFilter &= FilterNoChantaCalls;
+          Fu += 2 * baseFu;
+        }
+
+        if (suitId == 2)
+        {
+          if (index % 2 == 0 && index != 2)
+          {
+            _baseMaskFilter &= FilterRyuuiisou;
+          }
+        }
+        else
+        {
+          _baseMaskFilter &= FilterRyuuiisou;
+        }
+      }
+
+      UpdateSuit(suitId, base5Hash);
+    }
 
     private void UpdateSuit(int suitId, int base5Hash)
     {
@@ -424,7 +318,7 @@ namespace Spines.Mahjong.Analysis.Shanten
         WaitShiftValues[suitId] = LookupSuitWaitShift[base5Hash];
         var suitOr = LookupSuitOr[base5Hash] | _meldLookupValues[suitId];
         SuitOr[suitId] = suitOr + (1L << (BitIndex.ClosedIttsuu - 3));
-        _fuFootprintOffsets[suitId] = (int)((WaitShiftValues[suitId] >> 10) & 0b1111111111111L) * 680;
+        _fuFootprintOffsets[suitId] = (int) ((WaitShiftValues[suitId] >> 10) & 0b1111111111111L) * 680;
       }
     }
   }
