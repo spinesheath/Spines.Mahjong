@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Spines.Mahjong.Analysis.Score;
@@ -17,25 +18,28 @@ namespace Spines.Mahjong.Analysis.Tests
       const int maxGroupsHash = groupKinds * groupKinds * groupKinds * groupKinds;
       var failureCount = 0;
 
-      var pairs = new[]
+      var pairTileTypeIds = new[]
       {
-         0,  
-        // 1,  2,  3,  4,  5,  6,  7,  8,
+         0, 1, 
+        //2,  3,  4,  5,  6,  7,  8,
         //18, 19, 20, 21, 22, 23, 24, 25, 26,
         //27, 31, 32
       };
 
-      foreach (var pair in pairs)
+      var tileCounts = new int[34];
+      var k = new int[4];
+      var base5Hashes = new int[4];
+      var concealedTiles = new int[34];
+      foreach (var pairTileTypeId in pairTileTypeIds)
       {
-        var path = Path.Combine(workingDirectory, $"standard{pair}.dat");
+        var path = Path.Combine(workingDirectory, $"standard{pairTileTypeId}.dat");
         using var fileStream = File.OpenRead(path);
         using var binaryReader = new BinaryReader(fileStream);
-        
+
         for (var groupsHash = 0; groupsHash < maxGroupsHash; groupsHash++)
         {
-          var tileCounts = new int[34];
-          tileCounts[pair] += 2;
-          var k = new int[4];
+          Array.Clear(tileCounts, 0, tileCounts.Length);
+          tileCounts[pairTileTypeId] += 2;
 
           var g = groupsHash;
           k[0] = g % groupKinds;
@@ -78,8 +82,8 @@ namespace Spines.Mahjong.Analysis.Tests
               continue;
             }
 
-            var concealedTiles = new int[34];
-            concealedTiles[pair] += 2;
+            Array.Clear(concealedTiles, 0, concealedTiles.Length);
+            concealedTiles[pairTileTypeId] += 2;
             
             for (var i = 0; i < 4; i++)
             {
@@ -90,7 +94,7 @@ namespace Spines.Mahjong.Analysis.Tests
               }
             }
 
-            var base5Hashes = new int[4];
+            Array.Clear(base5Hashes, 0, base5Hashes.Length);
             for (var i = 0; i < 34; i++)
             {
               var suit = i / 9;
@@ -137,9 +141,9 @@ namespace Spines.Mahjong.Analysis.Tests
               var winningTile = TileType.FromTileTypeId(i);
 
               var windConfigurations = SimpleWindConfiguration;
-              if (pair >= 27 && pair < 31)
+              if (pairTileTypeId >= 27 && pairTileTypeId < 31)
               {
-                windConfigurations = WindConfigurations[pair - 27];
+                windConfigurations = WindConfigurations[pairTileTypeId - 27];
               }
 
               foreach (var wind in windConfigurations)
