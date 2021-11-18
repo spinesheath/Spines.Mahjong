@@ -152,8 +152,6 @@ namespace Spines.Mahjong.Analysis.Shanten
 
     public (long, int) YakuAndFu(WindScoringData windScoringData, TileType winningTile, bool isRon)
     {
-      var openBit = OpenBit;
-
       // TODO might be able to rework ron shift to not use up so many bits.
       var ronShiftAmount = isRon ? 9 : 0;
 
@@ -164,15 +162,12 @@ namespace Spines.Mahjong.Analysis.Shanten
       WaitShiftValues.CopyTo(waitShiftValues);
       waitShiftValues[winningTileSuit] >>= winningTileIndex + 1;
 
-      var suitOr = SuitOr;
-      var suitsAnd = suitOr[0] & suitOr[1] & suitOr[2];
-      var honorOr = HonorOr;
-      var honorSum = HonorSum;
+      var suitsAnd = SuitOr[0] & SuitOr[1] & SuitOr[2];
 
-      var bigSum = (suitOr[0] & SuitBigSumFilter) +
-                   (suitOr[1] & SuitBigSumFilter) +
-                   (suitOr[2] & SuitBigSumFilter) +
-                   (honorOr & HonorBigSumFilter);
+      var bigSum = (SuitOr[0] & SuitBigSumFilter) +
+                   (SuitOr[1] & SuitBigSumFilter) +
+                   (SuitOr[2] & SuitBigSumFilter) +
+                   (HonorOr & HonorBigSumFilter);
 
       var sanshokuShift = (int) suitsAnd & 0b11111;
       var sanshoku = (suitsAnd >> sanshokuShift) & SanshokuYakuFilter;
@@ -187,11 +182,11 @@ namespace Spines.Mahjong.Analysis.Shanten
        * A flag in BigSum is created by adding 1 for each suit with a pair and a 2 for honors.
        * This will leave a 0 in the second bit in the bad case: 11223399m11p11s44z This 0 is aligned with the pinfu bit index.
        */
-      var honorWindShift = honorOr >> windScoringData.HonorShift;
+      var honorWindShift = HonorOr >> windScoringData.HonorShift;
       var waitAndWindShift = waitShiftValues[0] & waitShiftValues[1] & waitShiftValues[2] & waitShiftValues[3] & honorWindShift;
       var pinfu = waitAndWindShift &
                   // TODO suitsAnd + 1 should instead be handled in bitField preparation
-                  (suitOr[winningTileSuit] >> (int) ((winningTileIndex + ((suitsAnd + 1) & 1)) * (sanshoku >> 6))) &
+                  (SuitOr[winningTileSuit] >> (int) ((winningTileIndex + ((suitsAnd + 1) & 1)) * (sanshoku >> 6))) &
                   bigSum &
                   PinfuYakuFilter;
 
@@ -214,7 +209,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       waitAndRonShift += bigSum & (0b111L << AnkouRonShiftSumFilterIndex);
       waitAndRonShift += waitAndRonShift & (0b101L << AnkouRonShiftSumFilterIndex);
 
-      var bigAnd = suitsAnd & honorOr;
+      var bigAnd = suitsAnd & HonorOr;
 
       var result = 0L;
 
@@ -229,14 +224,14 @@ namespace Spines.Mahjong.Analysis.Shanten
       var bigSumPostElimination = bigSum & ~((bigSum & BigSumEliminationFilter) >> EliminationDelta);
       result |= bigSumPostElimination & BigSumPostEliminationYakuFilter;
 
-      result |= honorSum & HonorSumYakuFilter & windScoringData.ValueWindFilter;
+      result |= HonorSum & HonorSumYakuFilter & windScoringData.ValueWindFilter;
 
       result |= SankantsuSuukantsu & (11L << BitIndex.Sankantsu);
 
-      var ryuuiisouSum = (suitOr[0] & RyuuiisouSumFilter01) +
-                         (suitOr[1] & RyuuiisouSumFilter01) +
-                         (suitOr[2] & RyuuiisouSumFilter2) +
-                         honorSum;
+      var ryuuiisouSum = (SuitOr[0] & RyuuiisouSumFilter01) +
+                         (SuitOr[1] & RyuuiisouSumFilter01) +
+                         (SuitOr[2] & RyuuiisouSumFilter2) +
+                         HonorSum;
       result |= ryuuiisouSum & (1L << BitIndex.Ryuuiisou);
 
       if ((result & (1L << BitIndex.Chiitoitsu)) != 0)
@@ -250,7 +245,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       // get this before shifting to open ssk
       var sanshokuFuMultiplier = (int) (((result >> BitIndex.SanshokuDoukou) + (result >> BitIndex.ClosedSanshokuDoujun)) & 1);
 
-      result += (result & OpenBitFilter) * openBit;
+      result += (result & OpenBitFilter) * OpenBit;
 
       var closedChantaBit = (result >> BitIndex.ClosedChanta) & 1L;
       var closedJunchanBit = (result >> BitIndex.ClosedJunchan) & 1L;
@@ -265,12 +260,12 @@ namespace Spines.Mahjong.Analysis.Shanten
       // (openIipeikouBit << BitIndex.OpenChanta) means 111222333 shape and chanta, here excluded in case of sanankou
       result -= (result & ((1L << BitIndex.Pinfu) | (1L << BitIndex.Iipeikou) | (openIipeikouBit << BitIndex.OpenChanta))) * removeSequenceYaku;
       result -= (result & (1L << BitIndex.OpenJunchan)) * removeOpenJunchan;
-      result -= (result & ((1L << BitIndex.Iipeikou) | (1L << BitIndex.ClosedJunchan))) * (toitoiBit & (1 - openBit));
+      result -= (result & ((1L << BitIndex.Iipeikou) | (1L << BitIndex.ClosedJunchan))) * (toitoiBit & (1 - OpenBit));
 
       result += (result & TankiUpgradeableFilter) * tankiBit;
 
       // This covers the 22234555m222p222s case where sanankou/sanshoku doukou depend on the wait.
-      var sanankouAndDoukou = (suitOr[winningTileSuit] >> (BitIndex.Sanankou - BitIndex.SanshokuDoukou + 1)) & (1L << BitIndex.SanshokuDoukou);
+      var sanankouAndDoukou = (SuitOr[winningTileSuit] >> (BitIndex.Sanankou - BitIndex.SanshokuDoukou + 1)) & (1L << BitIndex.SanshokuDoukou);
       var waitPreventsDoukou = (suitsAnd >> (winningTileIndex + ronShiftAmount - 9)) & sanankouAndDoukou;
       result -= waitPreventsDoukou & (result >> (BitIndex.Sanankou - BitIndex.SanshokuDoukou));
 
@@ -287,19 +282,19 @@ namespace Spines.Mahjong.Analysis.Shanten
         return (result, 25);
       }
 
-      var closedRonFu = (int) (1 - openBit) * (10 >> (9 - ronShiftAmount));
+      var closedRonFu = (int) (1 - OpenBit) * (10 >> (9 - ronShiftAmount));
 
       if ((result & PinfuYakuFilter) != 0)
       {
         return (result, 20 + closedRonFu);
       }
 
-      var squareTypeToShuntsu = ((ryuuiisouSum & ~result) >> BitIndex.Sanankou) & ((1L - openBit) | (result >> BitIndex.OpenJunchan) | ((result >> BitIndex.OpenChanta) & 1L));
+      var squareTypeToShuntsu = ((ryuuiisouSum & ~result) >> BitIndex.Sanankou) & ((1L - OpenBit) | (result >> BitIndex.OpenJunchan) | ((result >> BitIndex.OpenChanta) & 1L));
 
       var footprintKey = (sanshokuShift + 1) * 40 * sanshokuFuMultiplier;
       footprintKey += (int) squareTypeToShuntsu * 40;
       footprintKey |= ronShiftAmount & 1; // ronShiftAmount is either 0 or 0b1001
-      footprintKey |= (int) openBit << 1;
+      footprintKey |= (int) OpenBit << 1;
 
       Span<int> keys = stackalloc int[] {footprintKey, footprintKey, footprintKey, 0};
       keys[winningTileSuit] += (winningTileIndex + 1) * 4;
@@ -317,7 +312,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       var tsumoFu = 2 >> ronShiftAmount;
 
       // lowest bit of honorOr is 1 iff there is a wind pair
-      var valueWindAdjuster = 1 + (honorOr & windScoringData.DoubleValueWindBit);
+      var valueWindAdjuster = 1 + (HonorOr & windScoringData.DoubleValueWindBit);
       var valuePairFu = (honorWindShift & 1L) << (int) valueWindAdjuster;
 
       var fu = Fu + closedRonFu + tsumoFu + (int) valuePairFu + fuM + fuP + fuS + (int) ankouFuJihai + (int) singleWaitFuJihai;
