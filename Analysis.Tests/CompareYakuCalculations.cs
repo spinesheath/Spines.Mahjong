@@ -94,7 +94,10 @@ namespace Spines.Mahjong.Analysis.Tests
               }
             }
 
-            Array.Clear(base5Hashes, 0, base5Hashes.Length);
+            base5Hashes[0] = 0;
+            base5Hashes[1] = 0;
+            base5Hashes[2] = 0;
+            base5Hashes[3] = 0;
             for (var i = 0; i < 34; i++)
             {
               var suit = i / 9;
