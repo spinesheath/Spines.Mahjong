@@ -30,6 +30,8 @@ namespace Spines.Mahjong.Analysis.Tests
       var groupKinds = new int[4];
       var base5Hashes = new int[4];
       var concealedTiles = new int[36];
+      Span<int> base5Table = stackalloc int[9];
+      Base5.Table.CopyTo(base5Table);
       foreach (var pairTileTypeId in pairTileTypeIds)
       {
         var path = Path.Combine(workingDirectory, $"standard{pairTileTypeId}.dat");
@@ -101,7 +103,7 @@ namespace Spines.Mahjong.Analysis.Tests
             {
               for (var index = 0; index < 9; index++, tileTypeId++)
               {
-                base5Hashes[suit] += concealedTiles[tileTypeId] * Base5.Table[index];
+                base5Hashes[suit] += concealedTiles[tileTypeId] * base5Table[index];
               }
             }
 
