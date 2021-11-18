@@ -8,40 +8,40 @@ namespace Spines.Mahjong.Analysis.Score
   {
     public static (int, int) Chankan(ProgressiveScoringData data, WindScoringData wind, TileType winningTile)
     {
-      var (yaku, fu) = ScoreLookup.Flags(data, wind, winningTile, true);
+      var (yaku, fu) = data.Flags(wind, winningTile, true);
       var han = Han.CalculateScoringField(yaku);
       return (han, fu);
     }
 
     public static (Yaku, int) ChankanWithYaku(ProgressiveScoringData data, WindScoringData wind, TileType winningTile)
     {
-      var (yaku, fu) = ScoreLookup.Flags(data, wind, winningTile, true);
+      var (yaku, fu) = data.Flags(wind, winningTile, true);
       return (MapFlags(yaku), fu);
     }
 
     public static (int, int) Ron(ProgressiveScoringData data, WindScoringData wind, TileType winningTile)
     {
-      var (yaku, fu) = ScoreLookup.Flags(data, wind, winningTile, true);
+      var (yaku, fu) = data.Flags(wind, winningTile, true);
       var han = Han.CalculateScoringField(yaku);
       return (han, fu);
     }
 
     public static (Yaku, int) RonWithYaku(ProgressiveScoringData data, WindScoringData wind, TileType winningTile)
     {
-      var (yaku, fu) = ScoreLookup.Flags(data, wind, winningTile, true);
+      var (yaku, fu) = data.Flags(wind, winningTile, true);
       return (MapFlags(yaku), fu);
     }
 
     public static (int, int) Tsumo(ProgressiveScoringData data, WindScoringData wind, TileType winningTile)
     {
-      var (yaku, fu) = ScoreLookup.Flags(data, wind, winningTile, false);
+      var (yaku, fu) = data.Flags(wind, winningTile, false);
       var han = Han.CalculateScoringField(yaku);
       return (han, fu);
     }
 
     public static (Yaku, int) TsumoWithYaku(ProgressiveScoringData data, WindScoringData wind, TileType winningTile)
     {
-      var (yaku, fu) = ScoreLookup.Flags(data, wind, winningTile, false);
+      var (yaku, fu) = data.Flags(wind, winningTile, false);
       return (MapFlags(yaku), fu);
     }
 
