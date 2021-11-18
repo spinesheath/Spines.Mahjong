@@ -168,23 +168,14 @@ namespace Spines.Mahjong.Analysis.Shanten
 
     public (long, int) YakuAndFu(WindScoringData windScoringData, TileType winningTile, bool isRon)
     {
-      // TODO might be able to rework ron shift to not use up so many bits.
-      var ronShiftAmount = isRon ? 9 : 0;
+      Span<long> waitShiftValues = stackalloc long[4];
+      _waitShiftValues.CopyTo(waitShiftValues);
 
       var winningTileIndex = winningTile.Index;
       var winningTileSuit = winningTile.SuitId;
-
-      Span<long> waitShiftValues = stackalloc long[4];
-      _waitShiftValues.CopyTo(waitShiftValues);
       waitShiftValues[winningTileSuit] >>= winningTileIndex + 1;
 
       var suitsAnd = _suitOr[0] & _suitOr[1] & _suitOr[2];
-
-      var bigSum = (_suitOr[0] & SuitBigSumFilter) +
-                   (_suitOr[1] & SuitBigSumFilter) +
-                   (_suitOr[2] & SuitBigSumFilter) +
-                   (_honorOr & HonorBigSumFilter);
-
       var sanshokuShift = (int) suitsAnd & 0b11111;
       var sanshoku = (suitsAnd >> sanshokuShift) & SanshokuYakuFilter;
 
@@ -198,6 +189,10 @@ namespace Spines.Mahjong.Analysis.Shanten
        * A flag in BigSum is created by adding 1 for each suit with a pair and a 2 for honors.
        * This will leave a 0 in the second bit in the bad case: 11223399m11p11s44z This 0 is aligned with the pinfu bit index.
        */
+      var bigSum = (_suitOr[0] & SuitBigSumFilter) +
+                   (_suitOr[1] & SuitBigSumFilter) +
+                   (_suitOr[2] & SuitBigSumFilter) +
+                   (_honorOr & HonorBigSumFilter);
       var honorWindShift = _honorOr >> windScoringData.HonorShift;
       var waitAndWindShift = waitShiftValues[0] & waitShiftValues[1] & waitShiftValues[2] & waitShiftValues[3] & honorWindShift;
       var pinfu = waitAndWindShift &
@@ -213,6 +208,8 @@ namespace Spines.Mahjong.Analysis.Shanten
       var singleWaitFuJihai = winningTileSuit == 3 ? (waitShiftValues[winningTileSuit] >> 9) & 2L : 0;
 
       // TODO waitAndRonShift is only used for ankou now, so maybe shifting inside the array is not necessary anymore?
+      // TODO might be able to rework ron shift to not use up so many bits.
+      var ronShiftAmount = isRon ? 9 : 0;
       waitShiftValues[winningTileSuit] >>= ronShiftAmount;
 
       var waitAndRonShift = (waitShiftValues[0] & RonShiftSumFilter) +
