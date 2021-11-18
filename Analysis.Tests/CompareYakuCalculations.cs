@@ -14,8 +14,8 @@ namespace Spines.Mahjong.Analysis.Tests
     public void CompareWithEvaluatedHands()
     {
       const string workingDirectory = "C:\\tenhou\\scoreDb";
-      const int groupKinds = 34 + 21;
-      const int maxGroupsHash = groupKinds * groupKinds * groupKinds * groupKinds;
+      const int numberOfGroupKinds = 34 + 21;
+      const int maxGroupsHash = numberOfGroupKinds * numberOfGroupKinds * numberOfGroupKinds * numberOfGroupKinds;
       var failureCount = 0;
 
       var pairTileTypeIds = new[]
@@ -27,7 +27,7 @@ namespace Spines.Mahjong.Analysis.Tests
       };
 
       var tileCounts = new int[34];
-      var k = new int[4];
+      var groupKinds = new int[4];
       var base5Hashes = new int[4];
       var concealedTiles = new int[34];
       foreach (var pairTileTypeId in pairTileTypeIds)
@@ -48,42 +48,34 @@ namespace Spines.Mahjong.Analysis.Tests
           tileCounts[pairTileTypeId] += 2;
 
           var g = groupsHash;
-          k[0] = g % groupKinds;
-          g /= groupKinds;
-          k[1] = g % groupKinds;
-          g /= groupKinds;
-          k[2] = g % groupKinds;
-          g /= groupKinds;
-          k[3] = g;
+          groupKinds[0] = g % numberOfGroupKinds;
+          g /= numberOfGroupKinds;
+          groupKinds[1] = g % numberOfGroupKinds;
+          g /= numberOfGroupKinds;
+          groupKinds[2] = g % numberOfGroupKinds;
+          g /= numberOfGroupKinds;
+          groupKinds[3] = g;
 
-          if (k[0] > k[1] || k[1] > k[2] || k[2] > k[3])
+          if (groupKinds[0] > groupKinds[1] || groupKinds[1] > groupKinds[2] || groupKinds[2] > groupKinds[3])
           {
             continue;
           }
 
-          AddGroup(tileCounts, k[0]);
-          AddGroup(tileCounts, k[1]);
-          AddGroup(tileCounts, k[2]);
-          AddGroup(tileCounts, k[3]);
+          AddGroup(tileCounts, groupKinds[0]);
+          AddGroup(tileCounts, groupKinds[1]);
+          AddGroup(tileCounts, groupKinds[2]);
+          AddGroup(tileCounts, groupKinds[3]);
 
           if (tileCounts.Any(c => c > 4))
           {
             continue;
           }
 
-          var invalidKanFlags = 0;
-          for (var i = 0; i < 4; i++)
-          {
-            // Shuntsu can not be kan. No free tile can not be kan
-            if (k[i] >= 34 || tileCounts[k[i]] == 4)
-            {
-              invalidKanFlags |= 2 << (i * 2);
-            }
-          }
+          var invalidKanFlags = InvalidKanFlags(groupKinds, tileCounts);
 
-          for (var m = 0; m < 256; m++)
+          for (var groupInterpretationIterator = 0; groupInterpretationIterator < 256; groupInterpretationIterator++)
           {
-            if ((m & invalidKanFlags) != 0)
+            if ((groupInterpretationIterator & invalidKanFlags) != 0)
             {
               continue;
             }
@@ -93,10 +85,10 @@ namespace Spines.Mahjong.Analysis.Tests
             
             for (var i = 0; i < 4; i++)
             {
-              var meldType = (m >> (2 * i)) & 3;
+              var meldType = (groupInterpretationIterator >> (2 * i)) & 3;
               if (meldType <= 0)
               {
-                AddGroup(concealedTiles, k[i]);
+                AddGroup(concealedTiles, groupKinds[i]);
               }
             }
 
@@ -111,34 +103,7 @@ namespace Spines.Mahjong.Analysis.Tests
               base5Hashes[suit] += concealedTiles[i] * Base5.Table[index];
             }
 
-            var data = new ProgressiveScoringData();
-            data.Init(base5Hashes);
-
-            for (var i = 0; i < 4; i++)
-            {
-              var meldType = (m >> (2 * i)) & 3;
-              if (meldType > 0)
-              {
-                var (suitId, meldId) = GetSuitAndMeldId(k[i], meldType);
-
-                if (meldId < 7)
-                {
-                  data.Chii(suitId, meldId, base5Hashes[suitId]);
-                }
-                else if (meldId < 16)
-                {
-                  data.Pon(suitId, meldId - 7, base5Hashes[suitId]);
-                }
-                else if (meldId < 25)
-                {
-                  data.Ankan(suitId, meldId - 16, base5Hashes[suitId]);
-                }
-                else
-                {
-                  data.Daiminkan(suitId, meldId - 25, base5Hashes[suitId]);
-                }
-              }
-            }
+            var data = CreateProgressiveScoringData(groupKinds, base5Hashes, groupInterpretationIterator);
 
             for (var i = 0; i < 34; i++)
             {
@@ -193,6 +158,65 @@ namespace Spines.Mahjong.Analysis.Tests
       Assert.Equal(0, failureCount);
     }
 
+    private static int InvalidKanFlags(int[] groupKinds, int[] tileCounts)
+    {
+      var invalidKanFlags = 0;
+      for (var i = 0; i < 4; i++)
+      {
+        // Shuntsu can not be kan. No free tile can not be kan
+        if (groupKinds[i] >= 34 || tileCounts[groupKinds[i]] == 4)
+        {
+          invalidKanFlags |= 2 << (i * 2);
+        }
+      }
+
+      return invalidKanFlags;
+    }
+
+    private static ProgressiveScoringData CreateProgressiveScoringData(int[] groupKinds, int[] base5Hashes, int groupInterpretationIterator)
+    {
+      var data = new ProgressiveScoringData();
+      data.Init(base5Hashes);
+
+      for (var i = 0; i < 4; i++)
+      {
+        var meldType = (groupInterpretationIterator >> (2 * i)) & 3;
+        if (meldType == 0)
+        {
+          continue;
+        }
+        
+        var kind = groupKinds[i];
+
+        if (kind < 34)
+        {
+          var suitId = kind / 9;
+          var index = kind % 9;
+          if (meldType == 1)
+          {
+            data.Pon(suitId, index, base5Hashes[suitId]);
+          }
+          else if (meldType == 2)
+          {
+            data.Ankan(suitId, index, base5Hashes[suitId]);
+          }
+          else
+          {
+            data.Daiminkan(suitId, index, base5Hashes[suitId]);
+          }
+        }
+        else
+        {
+          var x = kind - 34;
+          var suitId = x / 7;
+          var meldId = x % 7;
+          data.Chii(suitId, meldId, base5Hashes[suitId]);
+        }
+      }
+
+      return data;
+    }
+
     private static readonly List<WindScoringData> SimpleWindConfiguration = new()
     {
       new WindScoringData(0, 0)
@@ -225,23 +249,6 @@ namespace Spines.Mahjong.Analysis.Tests
         new(0, 0) // 0 fu
       },
     };
-    
-    private static (int, int) GetSuitAndMeldId(int kind, int meldType)
-    {
-      if (kind < 34)
-      {
-        var suit = kind / 9;
-        var index = kind % 9;
-        return (suit, 9 * meldType - 2 + index);
-      }
-
-      {
-        var x = kind - 34;
-        var suit = x / 7;
-        var index = x % 7;
-        return (suit, index);
-      }
-    }
 
     private static void AddGroup(int[] tileCounts, int kind)
     {
