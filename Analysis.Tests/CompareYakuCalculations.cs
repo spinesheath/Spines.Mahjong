@@ -29,7 +29,7 @@ namespace Spines.Mahjong.Analysis.Tests
       var tileCounts = new int[34];
       var groupKinds = new int[4];
       var base5Hashes = new int[4];
-      var concealedTiles = new int[34];
+      var concealedTiles = new int[36];
       foreach (var pairTileTypeId in pairTileTypeIds)
       {
         var path = Path.Combine(workingDirectory, $"standard{pairTileTypeId}.dat");
@@ -96,11 +96,13 @@ namespace Spines.Mahjong.Analysis.Tests
             base5Hashes[1] = 0;
             base5Hashes[2] = 0;
             base5Hashes[3] = 0;
-            for (var i = 0; i < 34; i++)
+            var tileTypeId = 0;
+            for (var suit = 0; suit < base5Hashes.Length; suit++)
             {
-              var suit = i / 9;
-              var index = i % 9;
-              base5Hashes[suit] += concealedTiles[i] * Base5.Table[index];
+              for (var index = 0; index < 9; index++, tileTypeId++)
+              {
+                base5Hashes[suit] += concealedTiles[tileTypeId] * Base5.Table[index];
+              }
             }
 
             var data = CreateProgressiveScoringData(groupKinds, base5Hashes, groupInterpretationIterator);
