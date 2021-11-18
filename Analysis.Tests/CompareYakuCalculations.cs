@@ -176,8 +176,7 @@ namespace Spines.Mahjong.Analysis.Tests
     private static ProgressiveScoringData CreateProgressiveScoringData(int[] groupKinds, int[] base5Hashes, int groupInterpretationIterator)
     {
       var data = new ProgressiveScoringData();
-      data.Init(base5Hashes);
-
+      
       for (var i = 0; i < 4; i++)
       {
         var meldType = (groupInterpretationIterator >> (2 * i)) & 3;
@@ -194,15 +193,15 @@ namespace Spines.Mahjong.Analysis.Tests
           var index = kind % 9;
           if (meldType == 1)
           {
-            data.Pon(suitId, index, base5Hashes[suitId]);
+            data.Pon(suitId, index);
           }
           else if (meldType == 2)
           {
-            data.Ankan(suitId, index, base5Hashes[suitId]);
+            data.Ankan(suitId, index);
           }
           else
           {
-            data.Daiminkan(suitId, index, base5Hashes[suitId]);
+            data.Daiminkan(suitId, index);
           }
         }
         else
@@ -210,9 +209,11 @@ namespace Spines.Mahjong.Analysis.Tests
           var x = kind - 34;
           var suitId = x / 7;
           var meldId = x % 7;
-          data.Chii(suitId, meldId, base5Hashes[suitId]);
+          data.Chii(suitId, meldId);
         }
       }
+
+      data.Init(base5Hashes);
 
       return data;
     }
