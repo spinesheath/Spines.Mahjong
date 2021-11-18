@@ -36,6 +36,12 @@ namespace Spines.Mahjong.Analysis.Tests
         using var fileStream = File.OpenRead(path);
         using var binaryReader = new BinaryReader(fileStream);
 
+        var windConfigurations = SimpleWindConfiguration;
+        if (pairTileTypeId >= 27 && pairTileTypeId < 31)
+        {
+          windConfigurations = WindConfigurations[pairTileTypeId - 27];
+        }
+
         for (var groupsHash = 0; groupsHash < maxGroupsHash; groupsHash++)
         {
           Array.Clear(tileCounts, 0, tileCounts.Length);
@@ -142,12 +148,6 @@ namespace Spines.Mahjong.Analysis.Tests
               }
 
               var winningTile = TileType.FromTileTypeId(i);
-
-              var windConfigurations = SimpleWindConfiguration;
-              if (pairTileTypeId >= 27 && pairTileTypeId < 31)
-              {
-                windConfigurations = WindConfigurations[pairTileTypeId - 27];
-              }
 
               foreach (var wind in windConfigurations)
               {
