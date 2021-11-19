@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Spines.Mahjong.Analysis.Score;
 using Spines.Mahjong.Analysis.Shanten;
 using Xunit;
@@ -69,7 +68,7 @@ namespace Spines.Mahjong.Analysis.Tests
           AddGroup(tileCounts, groupKinds[2]);
           AddGroup(tileCounts, groupKinds[3]);
 
-          if (tileCounts.Any(c => c > 4))
+          if (InvalidTileCounts(tileCounts))
           {
             continue;
           }
@@ -119,10 +118,11 @@ namespace Spines.Mahjong.Analysis.Tests
 
               var winningTile = TileType.FromTileTypeId(i);
 
-              foreach (var wind in windConfigurations)
+              for (var index = 0; index < windConfigurations.Length; index++)
               {
+                var wind = windConfigurations[index];
                 var (tsumoHan, tsumoFu) = ScoreCalculator.Tsumo(data, wind, winningTile);
-                
+
                 var expectedTsumoHan = binaryReader.ReadByte();
                 if (expectedTsumoHan != tsumoHan)
                 {
@@ -137,9 +137,9 @@ namespace Spines.Mahjong.Analysis.Tests
                     failureCount += 1;
                   }
                 }
-                
+
                 var (ronHan, ronFu) = ScoreCalculator.Ron(data, wind, winningTile);
-                
+
                 var expectedRonHan = binaryReader.ReadByte();
                 if (expectedRonHan != ronHan)
                 {
@@ -161,6 +161,19 @@ namespace Spines.Mahjong.Analysis.Tests
       }
 
       Assert.Equal(0, failureCount);
+    }
+
+    private static bool InvalidTileCounts(int[] tileCounts)
+    {
+      for (var i = 0; i < tileCounts.Length; i++)
+      {
+        if (tileCounts[i] > 4)
+        {
+          return true;
+        }
+      }
+
+      return false;
     }
 
     private static int InvalidKanFlags(int[] groupKinds, int[] tileCounts)
@@ -223,37 +236,17 @@ namespace Spines.Mahjong.Analysis.Tests
       return data;
     }
 
-    private static readonly List<WindScoringData> SimpleWindConfiguration = new()
-    {
-      new WindScoringData(0, 0)
-    };
+    private static readonly WindScoringData[] SimpleWindConfiguration = { new(0, 0) };
 
-    private static readonly List<List<WindScoringData>> WindConfigurations = new()
+    /// <summary>
+    /// 0, 2, 4 fu for each wind pair
+    /// </summary>
+    private static readonly List<WindScoringData[]> WindConfigurations = new()
     {
-      new List<WindScoringData>
-      {
-        new(0, 0), // 4 fu
-        new(0, 1), // 2 fu
-        new(1, 1) // 0 fu
-      },
-      new List<WindScoringData>
-      {
-        new(1, 1), // 4 fu
-        new(0, 1), // 2 fu
-        new(0, 0) // 0 fu
-      },
-      new List<WindScoringData>
-      {
-        new(2, 2), // 4 fu
-        new(0, 2), // 2 fu
-        new(0, 0) // 0 fu
-      },
-      new List<WindScoringData>
-      {
-        new(3, 3), // 4 fu
-        new(0, 3), // 2 fu
-        new(0, 0) // 0 fu
-      },
+      new WindScoringData[] { new(0, 0), new(0, 1), new(1, 1) },
+      new WindScoringData[] { new(1, 1), new(0, 1), new(0, 0) },
+      new WindScoringData[] { new(2, 2), new(0, 2), new(0, 0) },
+      new WindScoringData[] { new(3, 3), new(0, 3), new(0, 0) },
     };
 
     private static void AddGroup(int[] tileCounts, int kind)
