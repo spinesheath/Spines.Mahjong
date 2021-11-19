@@ -20,8 +20,8 @@ namespace Spines.Mahjong.Analysis.Tests
 
       var pairTileTypeIds = new[]
       {
-         0, 1, 
-        //2,  3,  4,  5,  6,  7,  8,
+         0, 1, 2, 
+        //3,  4,  5,  6,  7,  8,
         //18, 19, 20, 21, 22, 23, 24, 25, 26,
         //27, 31, 32
       };
@@ -32,6 +32,7 @@ namespace Spines.Mahjong.Analysis.Tests
       var concealedTiles = new int[36];
       Span<int> base5Table = stackalloc int[9];
       Base5.Table.CopyTo(base5Table);
+      var scoringData = new ProgressiveScoringData();
       foreach (var pairTileTypeId in pairTileTypeIds)
       {
         var path = Path.Combine(workingDirectory, $"standard{pairTileTypeId}.dat");
@@ -107,7 +108,7 @@ namespace Spines.Mahjong.Analysis.Tests
               }
             }
 
-            var data = CreateProgressiveScoringData(groupKinds, base5Hashes, groupInterpretationIterator);
+            var data = CreateProgressiveScoringData(scoringData, groupKinds, base5Hashes, groupInterpretationIterator);
 
             for (var i = 0; i < 34; i++)
             {
@@ -177,9 +178,9 @@ namespace Spines.Mahjong.Analysis.Tests
       return invalidKanFlags;
     }
 
-    private static ProgressiveScoringData CreateProgressiveScoringData(int[] groupKinds, int[] base5Hashes, int groupInterpretationIterator)
+    private static ProgressiveScoringData CreateProgressiveScoringData(ProgressiveScoringData data, int[] groupKinds, int[] base5Hashes, int groupInterpretationIterator)
     {
-      var data = new ProgressiveScoringData();
+      data.Reset();
       
       for (var i = 0; i < 4; i++)
       {

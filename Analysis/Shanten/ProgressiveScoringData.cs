@@ -39,6 +39,42 @@ namespace Spines.Mahjong.Analysis.Shanten
       _baseAndMeldFu = 20;
     }
 
+    public void Reset()
+    {
+      _meldLookupValues[3] |= 4L << OffsetHonorRyuuiisou;
+
+      _bigAndToSumFilter = (0b1L << BitIndex.Toitoi) | (0b1L << BitIndex.ClosedChanta);
+      _sankantsuSuukantsu = 1L << (BitIndex.Sankantsu - 3);
+
+      _baseMaskFilter = ~0L;
+      _baseMask = FilterOpenYaku;
+
+      _honorOr = LookupHonorOr[0] | (_meldLookupValues[3] & ~0b1_111_111_111_111L);
+
+      _honorSum = LookupHonorSum[0] + _meldLookupValues[3];
+
+      _baseAndMeldFu = 20;
+
+
+      _openBit = 0L;
+      _shiftedAnkanCount = 0L;
+
+      _fuFootprintOffsets[0] = 0;
+      _fuFootprintOffsets[1] = 0;
+      _fuFootprintOffsets[2] = 0;
+      _meldLookupValues[0] = 0;
+      _meldLookupValues[1] = 0;
+      _meldLookupValues[2] = 0;
+      _meldLookupValues[3] = 0;
+      _suitOr[0] = SuitOr0;
+      _suitOr[1] = SuitOr0;
+      _suitOr[2] = SuitOr0;
+      _waitShiftValues[0] = SuitWaitShift0;
+      _waitShiftValues[1] = SuitWaitShift0;
+      _waitShiftValues[2] = SuitWaitShift0;
+      _waitShiftValues[3] = HonorWaitShift0;
+    }
+
     public void Ankan(int suitId, int index)
     {
       _baseMaskFilter &= FilterNoAnkanYaku;
@@ -470,7 +506,6 @@ namespace Spines.Mahjong.Analysis.Shanten
     private readonly long[] _suitOr = {SuitOr0, SuitOr0, SuitOr0, 0L};
     private readonly long[] _waitShiftValues = {SuitWaitShift0, SuitWaitShift0, SuitWaitShift0, HonorWaitShift0};
     private int _baseAndMeldFu;
-
     private long _baseMask;
     private long _baseMaskFilter;
     private long _bigAndToSumFilter;
