@@ -81,35 +81,35 @@ namespace Spines.Mahjong.Analysis.Tests
               continue;
             }
 
+            var tilePresences = 1L << pairTileTypeId;
             base5Hashes[0] = 0;
             base5Hashes[1] = 0;
             base5Hashes[2] = 0;
             base5Hashes[3] = 0;
-            var tilePresences = 1L << pairTileTypeId;
-
             base5Hashes[pairTileTypeId / 9] += base5Table[pairTileTypeId % 9] * 2;
 
             for (var i = 0; i < 4; i++)
             {
-              var meldType = (groupInterpretationIterator >> (2 * i)) & 3;
-              if (meldType <= 0)
+              if (((groupInterpretationIterator >> (2 * i)) & 3) != 0)
               {
-                var kind = groupKinds[i];
-                if (kind < 34)
-                {
-                  base5Hashes[kind / 9] += base5Table[kind % 9] * 3;
+                continue;
+              }
 
-                  tilePresences |= 1L << kind;
-                }
-                else
-                {
-                  var x = kind - 34;
-                  var suit = x / 7;
-                  var index = x % 7;
-                  base5Hashes[suit] += base5Table[index] * 31;
+              var kind = groupKinds[i];
+              if (kind < 34)
+              {
+                base5Hashes[kind / 9] += base5Table[kind % 9] * 3;
 
-                  tilePresences |= 0b111L << (9 * suit + index);
-                }
+                tilePresences |= 1L << kind;
+              }
+              else
+              {
+                var x = kind - 34;
+                var suit = x / 7;
+                var index = x % 7;
+                base5Hashes[suit] += base5Table[index] * 31;
+
+                tilePresences |= 0b111L << (9 * suit + index);
               }
             }
 
