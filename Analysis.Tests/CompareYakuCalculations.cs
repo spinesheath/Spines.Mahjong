@@ -106,10 +106,9 @@ namespace Spines.Mahjong.Analysis.Tests
                   var x = kind - 34;
                   var suit = x / 7;
                   var index = x % 7;
-                  var lowestTileTypeId = 9 * suit + index;
-                  base5Hashes[suit] += base5Table[index] + base5Table[index + 1] + base5Table[index + 2];
+                  base5Hashes[suit] += base5Table[index] * 31;
 
-                  tilePresences |= 0b111L << lowestTileTypeId;
+                  tilePresences |= 0b111L << (9 * suit + index);
                 }
               }
             }
