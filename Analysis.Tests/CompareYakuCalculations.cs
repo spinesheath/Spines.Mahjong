@@ -28,7 +28,6 @@ namespace Spines.Mahjong.Analysis.Tests
       var tileCounts = new int[34];
       var groupKinds = new int[4];
       var base5Hashes = new int[4];
-      var concealedTiles = new int[36];
       Span<int> base5Table = stackalloc int[9];
       Base5.Table.CopyTo(base5Table);
       var scoringData = new ProgressiveScoringData();
@@ -82,28 +81,36 @@ namespace Spines.Mahjong.Analysis.Tests
               continue;
             }
 
-            Array.Clear(concealedTiles, 0, concealedTiles.Length);
-            concealedTiles[pairTileTypeId] += 2;
-            
+            base5Hashes[0] = 0;
+            base5Hashes[1] = 0;
+            base5Hashes[2] = 0;
+            base5Hashes[3] = 0;
+            var tilePresences = 1L << pairTileTypeId;
+
+            base5Hashes[pairTileTypeId / 9] += base5Table[pairTileTypeId % 9] * 2;
+
             for (var i = 0; i < 4; i++)
             {
               var meldType = (groupInterpretationIterator >> (2 * i)) & 3;
               if (meldType <= 0)
               {
-                AddGroup(concealedTiles, groupKinds[i]);
-              }
-            }
+                var kind = groupKinds[i];
+                if (kind < 34)
+                {
+                  base5Hashes[kind / 9] += base5Table[kind % 9] * 3;
 
-            base5Hashes[0] = 0;
-            base5Hashes[1] = 0;
-            base5Hashes[2] = 0;
-            base5Hashes[3] = 0;
-            var tileTypeId = 0;
-            for (var suit = 0; suit < base5Hashes.Length; suit++)
-            {
-              for (var index = 0; index < 9; index++, tileTypeId++)
-              {
-                base5Hashes[suit] += concealedTiles[tileTypeId] * base5Table[index];
+                  tilePresences |= 1L << kind;
+                }
+                else
+                {
+                  var x = kind - 34;
+                  var suit = x / 7;
+                  var index = x % 7;
+                  var lowestTileTypeId = 9 * suit + index;
+                  base5Hashes[suit] += base5Table[index] + base5Table[index + 1] + base5Table[index + 2];
+
+                  tilePresences |= 0b111L << lowestTileTypeId;
+                }
               }
             }
 
@@ -111,7 +118,7 @@ namespace Spines.Mahjong.Analysis.Tests
 
             for (var i = 0; i < 34; i++)
             {
-              if (concealedTiles[i] == 0)
+              if ((tilePresences >> i & 1L) == 0)
               {
                 continue;
               }
