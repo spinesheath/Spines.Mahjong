@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -13,7 +12,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       _workingDirectory = workingDirectory;
     }
 
-    public void CreateLookup()
+    public void CreateLookup(FootprintCollection footprints)
     {
       const int maxLookupIndex = 1953125; // 5^9
       var orLookup = new long[maxLookupIndex];
@@ -23,18 +22,11 @@ namespace AnalyzerBuilder.Creators.Scoring
       var groupedByHash = language.GroupBy(w => w.Base5Hash);
       var arrangementGroups = groupedByHash.Select(g => new ArrangementGroup(g)).ToList();
 
-      var comparer = new FuConstraintFootprintComparer();
-      var footprints = new Dictionary<byte[], int>(comparer);
-
       foreach (var arrangementGroup in arrangementGroups)
       {
         var footprintCreator = new FuFootprintCreator(arrangementGroup);
 
-        if (!footprints.TryGetValue(footprintCreator.Footprint, out var footprintIndex))
-        {
-          footprintIndex = footprints.Count;
-          footprints.Add(footprintCreator.Footprint, footprintIndex);
-        }
+        var footprintIndex = footprints.IndexOf(footprintCreator.Footprint);
         
         var base5Hash = arrangementGroup.Base5Hash;
         var field = new SuitScoringBitField(arrangementGroup, footprintIndex);
@@ -46,26 +38,8 @@ namespace AnalyzerBuilder.Creators.Scoring
         waitShiftLookup[base5Hash] = field.WaitShiftValue;
       }
 
-      var allFootprints = new byte[footprints.Count * 680];
-      foreach (var (footprint, index) in footprints)
-      {
-        Array.Copy(footprint, 0, allFootprints, index * footprint.Length, footprint.Length);
-      }
-
       Write("SuitOrLookup.dat", orLookup);
       Write("SuitWaitShiftLookup.dat", waitShiftLookup);
-      Write("SuitFu.dat", allFootprints);
-    }
-
-    private void Write(string filename, byte[] data)
-    {
-      var path = Path.Combine(_workingDirectory, filename);
-      using var fileStream = File.Create(path);
-      using var writer = new BinaryWriter(fileStream);
-      for (var i = 0; i < data.Length; i++)
-      {
-        writer.Write(data[i]);
-      }
     }
 
     private void Write(string filename, long[] data)

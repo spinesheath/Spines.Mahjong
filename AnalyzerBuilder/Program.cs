@@ -10,11 +10,7 @@ namespace AnalyzerBuilder
     {
       var workingDirectory = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "..", "..", "..", "..", "Analysis", "Resources", "Scoring"));
 
-      var a = new SuitScoringInformationCreator(workingDirectory);
-      a.CreateLookup();
-
-      var c = new HonorScoringInformationCreator(workingDirectory);
-      c.CreateLookup();
+      ScoringDataCreator.Create(workingDirectory);
     }
   }
 }
