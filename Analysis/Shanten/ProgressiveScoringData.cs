@@ -41,7 +41,10 @@ namespace Spines.Mahjong.Analysis.Shanten
 
     public void Reset()
     {
-      _meldLookupValues[3] |= 4L << OffsetHonorRyuuiisou;
+      _meldLookupValues[0] = 0;
+      _meldLookupValues[1] = 0;
+      _meldLookupValues[2] = 0;
+      _meldLookupValues[3] = 4L << OffsetHonorRyuuiisou;
 
       _bigAndToSumFilter = (0b1L << BitIndex.Toitoi) | (0b1L << BitIndex.ClosedChanta);
       _sankantsuSuukantsu = 1L << (BitIndex.Sankantsu - 3);
@@ -62,10 +65,6 @@ namespace Spines.Mahjong.Analysis.Shanten
       _fuFootprintOffsets[0] = 0;
       _fuFootprintOffsets[1] = 0;
       _fuFootprintOffsets[2] = 0;
-      _meldLookupValues[0] = 0;
-      _meldLookupValues[1] = 0;
-      _meldLookupValues[2] = 0;
-      _meldLookupValues[3] = 0;
       _suitOr[0] = SuitOr0;
       _suitOr[1] = SuitOr0;
       _suitOr[2] = SuitOr0;
