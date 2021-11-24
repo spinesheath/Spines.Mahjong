@@ -14,6 +14,8 @@ namespace Spines.Mahjong.Analysis.Tests
 
     public int EvaluationCount { get; private set; }
 
+    public int ErrorCount { get; private set; }
+
     public void EndMatch()
     {
       _shantenCalculators = new List<HandCalculator>();
@@ -32,21 +34,41 @@ namespace Spines.Mahjong.Analysis.Tests
     {
       _shantenCalculators[seatIndex].Init(tiles.Select(t => t.TileType));
       var shanten = _shantenCalculators[seatIndex].Shanten;
-      EvaluationCount += shanten < 100 ? 1 : 0;
+      
+      if (shanten > 6 || shanten < 0)
+      {
+        ErrorCount += 1;
+      }
+
+      EvaluationCount += 1;
     }
 
     public void Draw(int seatIndex, Tile tile)
     {
+      var before = _shantenCalculators[seatIndex].Shanten;
       _shantenCalculators[seatIndex].Draw(tile.TileType);
       var shanten = _shantenCalculators[seatIndex].Shanten;
-      EvaluationCount += shanten < 100 ? 1 : 0;
+
+      if (shanten > before || shanten < before - 1)
+      {
+        ErrorCount += 1;
+      }
+
+      EvaluationCount += 1;
     }
 
     public void Discard(int seatIndex, Tile tile)
     {
+      var before = _shantenCalculators[seatIndex].Shanten;
       _shantenCalculators[seatIndex].Discard(tile.TileType);
       var shanten = _shantenCalculators[seatIndex].Shanten;
-      EvaluationCount += shanten < 100 ? 1 : 0;
+      
+      if (shanten < before || shanten > before + 1)
+      {
+        ErrorCount += 1;
+      }
+
+      EvaluationCount += 1;
     }
 
     public void Chii(int who, int fromWho, Tile calledTile, Tile handTile0, Tile handTile1)
@@ -61,38 +83,66 @@ namespace Spines.Mahjong.Analysis.Tests
       {
         lowest = handTile1;
       }
-
+      
       _shantenCalculators[who].Chii(lowest.TileType, calledTile.TileType);
       var shanten = _shantenCalculators[who].Shanten;
-      EvaluationCount += shanten < 100 ? 1 : 0;
+
+      if (shanten > 6 || shanten < -1)
+      {
+        ErrorCount += 1;
+      }
+
+      EvaluationCount += 1;
     }
 
     public void Pon(int who, int fromWho, Tile calledTile, Tile handTile0, Tile handTile1)
     {
       _shantenCalculators[who].Pon(calledTile.TileType);
       var shanten = _shantenCalculators[who].Shanten;
-      EvaluationCount += shanten < 100 ? 1 : 0;
+
+      if (shanten > 6 || shanten < -1)
+      {
+        ErrorCount += 1;
+      }
+
+      EvaluationCount += 1;
     }
 
     public void Daiminkan(int who, int fromWho, Tile calledTile, Tile handTile0, Tile handTile1, Tile handTile2)
     {
       _shantenCalculators[who].Daiminkan(calledTile.TileType);
       var shanten = _shantenCalculators[who].Shanten;
-      EvaluationCount += shanten < 100 ? 1 : 0;
+
+      if (shanten > 6 || shanten < 0)
+      {
+        ErrorCount += 1;
+      }
     }
 
     public void Shouminkan(int who, int fromWho, Tile calledTile, Tile addedTile, Tile handTile0, Tile handTile1)
     {
       _shantenCalculators[who].Shouminkan(addedTile.TileType);
       var shanten = _shantenCalculators[who].Shanten;
-      EvaluationCount += shanten < 100 ? 1 : 0;
+
+      if (shanten > 6 || shanten < 0)
+      {
+        ErrorCount += 1;
+      }
+
+      EvaluationCount += 1;
     }
 
     public void Ankan(int who, TileType tileType)
     {
       _shantenCalculators[who].Ankan(tileType);
       var shanten = _shantenCalculators[who].Shanten;
-      EvaluationCount += shanten < 100 ? 1 : 0;
+
+      if (shanten > 6 || shanten < 0)
+      {
+        ErrorCount += 1;
+      }
+
+      EvaluationCount += 1;
     }
 
     private List<HandCalculator> _shantenCalculators;

@@ -62,7 +62,8 @@ namespace Spines.Mahjong.Analysis.Tests
         using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
         ReplayParser.Parse(fileStream, visitor);
       }
-
+      
+      Assert.Equal(0, visitor.ErrorCount);
       Assert.Equal(1, visitor.EvaluationCount);
     }
 
