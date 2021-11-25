@@ -7,9 +7,9 @@ namespace AnalyzerBuilder.Creators.Scoring
 {
   internal class SuitScoringInformationCreator
   {
-    public SuitScoringInformationCreator(string workingDirectory)
+    public SuitScoringInformationCreator(string directory)
     {
-      _workingDirectory = workingDirectory;
+      _directory = directory;
     }
 
     public void CreateLookup(FootprintCollection footprints)
@@ -44,7 +44,7 @@ namespace AnalyzerBuilder.Creators.Scoring
 
     private void Write(string filename, long[] data)
     {
-      var path = Path.Combine(_workingDirectory, filename);
+      var path = Path.Combine(_directory, filename);
       using var fileStream = File.Create(path);
       using var writer = new BinaryWriter(fileStream);
       for (var i = 0; i < data.Length; i++)
@@ -53,7 +53,7 @@ namespace AnalyzerBuilder.Creators.Scoring
       }
     }
 
-    private readonly string _workingDirectory;
+    private readonly string _directory;
 
     private static IEnumerable<Arrangement> CreateAnalyzedWords()
     {
