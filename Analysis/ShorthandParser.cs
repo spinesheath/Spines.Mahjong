@@ -114,7 +114,7 @@ namespace Spines.Mahjong.Analysis
     /// <summary>
     /// The counts of the 34 tile types, in order manzu 1-9, pinzu 1-9, souzu 1-9, honors 1-7.
     /// </summary>
-    internal IEnumerable<int> Concealed => Manzu.Concat(Pinzu).Concat(Souzu).Concat(Jihai);
+    public IEnumerable<int> Concealed => Manzu.Concat(Pinzu).Concat(Souzu).Concat(Jihai);
 
     /// <summary>
     /// The counts of the 9 manzu types, in order 1-9.

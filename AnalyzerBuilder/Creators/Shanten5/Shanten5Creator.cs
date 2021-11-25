@@ -87,7 +87,7 @@ namespace AnalyzerBuilder.Creators.Shanten5
           tileCount -= 4 * carry;
         }
 
-        if (base5Hash % 10000 == 0)
+        if (base5Hash % 10000 == 9999)
         {
           Console.WriteLine($"{(double)base5Hash / Base5.MaxFor7Digits:P}");
         }
@@ -137,7 +137,7 @@ namespace AnalyzerBuilder.Creators.Shanten5
           tileCount -= 4 * carry;
         }
 
-        if (base5Hash % 10000 == 0)
+        if (base5Hash % 10000 == 9999)
         {
           Console.WriteLine($"{(double)base5Hash / Base5.MaxFor9Digits:P}");
         }
@@ -146,7 +146,9 @@ namespace AnalyzerBuilder.Creators.Shanten5
 
     private static void GetSuitShantenValues(int[] counts, byte[] row)
     {
-      foreach (var arrangement in Analyze(SuitProtoGroups, counts.ToArray(), new int[9], new Arrangement(0, 0, 0), 0, 0))
+      var results = new List<Arrangement>();
+      Analyze(SuitProtoGroups, counts.ToArray(), new int[9], new Arrangement(0, 0, 0), 0, 0, results);
+      foreach (var arrangement in results)
       {
         var index = arrangement.HasJantou ? 5 : 0;
         index += arrangement.MentsuCount;
@@ -163,7 +165,9 @@ namespace AnalyzerBuilder.Creators.Shanten5
 
     private static void GetHonorShantenValues(int[] counts, byte[] row)
     {
-      foreach (var arrangement in Analyze(HonorProtoGroups, counts.ToArray(), new int[7], new Arrangement(0, 0, 0), 0, 0))
+      var results = new List<Arrangement>();
+      Analyze(HonorProtoGroups, counts.ToArray(), new int[7], new Arrangement(0, 0, 0), 0, 0, results);
+      foreach (var arrangement in results)
       {
         var index = arrangement.HasJantou ? 5 : 0;
         index += arrangement.MentsuCount;
@@ -178,18 +182,15 @@ namespace AnalyzerBuilder.Creators.Shanten5
       }
     }
 
-    private static IEnumerable<Arrangement> Analyze(IReadOnlyList<ProtoGroup> protoGroups, int[] counts, int[] used, Arrangement arrangement, int currentTileType, int currentProtoGroup)
+    private static void Analyze(IReadOnlyList<ProtoGroup> protoGroups, int[] counts, int[] used, Arrangement arrangement, int currentTileType, int currentProtoGroup, List<Arrangement> results)
     {
       if (currentTileType >= counts.Length)
       {
-        yield return arrangement;
-        yield break;
+        results.Add(arrangement);
+        return;
       }
 
-      foreach (var a in Analyze(protoGroups, counts, used, arrangement, currentTileType + 1, 0))
-      {
-        yield return a;
-      }
+      Analyze(protoGroups, counts, used, arrangement, currentTileType + 1, 0, results);
 
       for (var i = currentProtoGroup; i < protoGroups.Count; ++i)
       {
@@ -204,12 +205,7 @@ namespace AnalyzerBuilder.Creators.Shanten5
 
           protoGroup.Insert(counts, used, currentTileType);
           var added = arrangement.SetJantouValue(protoGroup.Value);
-
-          foreach (var a in Analyze(protoGroups, counts, used, added, currentTileType, i))
-          {
-            yield return a;
-          }
-
+          Analyze(protoGroups, counts, used, added, currentTileType, i, results);
           protoGroup.Remove(counts, used, currentTileType);
         }
         else
@@ -221,12 +217,7 @@ namespace AnalyzerBuilder.Creators.Shanten5
 
           protoGroup.Insert(counts, used, currentTileType);
           var added = arrangement.AddMentsu(protoGroup.Value);
-
-          foreach (var a in Analyze(protoGroups, counts, used, added, currentTileType, i))
-          {
-            yield return a;
-          }
-
+          Analyze(protoGroups, counts, used, added, currentTileType, i, results);
           protoGroup.Remove(counts, used, currentTileType);
         }
       }
