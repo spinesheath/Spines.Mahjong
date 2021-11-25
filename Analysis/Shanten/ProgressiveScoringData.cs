@@ -252,11 +252,12 @@ namespace Spines.Mahjong.Analysis.Shanten
       var tankiBit = waitShiftValues[winningTileSuit] & 0b1L;
 
       // get this before ron shifting
-      // TODO get rid of this conditional
+      // TODO get rid of this conditional / check if this is converted to (0/1) - 1 AND difference
       var singleWaitFuJihai = winningTileSuit == 3 ? (waitShiftValues[winningTileSuit] >> 9) & 2L : 0;
 
       // TODO waitAndRonShift is only used for ankou now, so maybe shifting inside the array is not necessary anymore?
       // TODO might be able to rework ron shift to not use up so many bits.
+      // TODO check if this is converted to (0/1) - 1 AND difference
       var ronShiftAmount = isRon ? 9 : 0;
       waitShiftValues[winningTileSuit] >>= ronShiftAmount;
 
