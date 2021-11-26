@@ -38,9 +38,7 @@ namespace Spines.Mahjong.Analysis.Shanten5
       var s = LookupSuit[base5Hashes[2]];
       var z = LookupHonor[base5Hashes[3]];
       var b = CalculatePhase1(s, z);
-      // TODO pre calculate difference
-      var sb2 = Sse2.Subtract(Phase2ShuffleB, MeldCountVectors[meldCount]);
-      var b2 = Ssse3.Shuffle(b, sb2);
+      var b2 = Ssse3.Shuffle(b, MeldCountVectors[meldCount]);
 
       var r =  Sse2.And(Sse2.Add(a2, b2), ExcessGroupClearingVectors[meldCount]);
 
@@ -93,7 +91,6 @@ namespace Spines.Mahjong.Analysis.Shanten5
     private static readonly Vector128<byte>[] LookupSuit;
     private static readonly Vector128<byte>[] LookupHonor;
     private static readonly Vector128<byte> Phase2ShuffleA = Vector128.Create(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 255);
-    private static readonly Vector128<byte> Phase2ShuffleB = Vector128.Create(9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 10, 255, 255, 13, 255, 14);
     private static readonly Vector128<byte> KokushiPairSelector = Vector128.Create((byte) 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0);
     private static readonly Vector128<byte> Phase1ShuffleA1 = Vector128.Create((byte)1, 2, 3, 4, 1, 2, 3, 1, 1, 2, 1, 1, 2, 1, 13, 15);
     private static readonly Vector128<byte> Phase1ShuffleB1 = Vector128.Create((byte)8, 7, 6, 5, 7, 6, 5, 1, 6, 5, 5, 3, 2, 2, 13, 15);
@@ -103,14 +100,14 @@ namespace Spines.Mahjong.Analysis.Shanten5
     private static readonly Vector128<byte> Phase1ShuffleAb12 = Vector128.Create(2, 3, 9, 255, 255, 12, 255, 255, 255, 255, 5, 255, 255, 255, 255, 255);
     private static readonly Vector128<byte> Phase1ShuffleAb21 = Vector128.Create(255, 255, 7, 6, 5, 255, 3, 2, 10, 0, 15, 255, 255, 14, 255, 255);
     private static readonly Vector128<byte> Phase1ShuffleAb22 = Vector128.Create(255, 255, 255, 255, 255, 255, 255, 255, 11, 1, 255, 255, 255, 255, 255, 255);
-
+    
     private static readonly Vector128<byte>[] MeldCountVectors =
     {
-      Vector128<byte>.Zero,
-      Vector128.Create((byte)1, 1, 1, 1, 6, 1, 1, 1, 1, 1, 11, 0, 0, 14, 0, 15),
-      Vector128.Create((byte)2, 2, 2, 7, 6, 2, 2, 2, 2, 1, 11, 0, 0, 14, 0, 15),
-      Vector128.Create((byte)3, 3, 8, 7, 6, 3, 3, 3, 2, 1, 11, 0, 0, 14, 0, 15),
-      Vector128.Create((byte)4, 9, 8, 7, 6, 4, 4, 3, 2, 1, 11, 0, 0, 14, 0, 15),
+      Vector128.Create(9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 10, 255, 255, 13, 255, 14),
+      Vector128.Create(8, 7, 6, 5, 255, 3, 2, 1, 0, 255, 255, 255, 255, 255, 255, 255),
+      Vector128.Create(7, 6, 5, 255, 255, 2, 1, 0, 255, 255, 255, 255, 255, 255, 255, 255),
+      Vector128.Create(6, 5, 255, 255, 255, 1, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255),
+      Vector128.Create(5, 255, 255, 255, 255, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255),
     };
 
     private static readonly Vector128<byte>[] ExcessGroupClearingVectors =
