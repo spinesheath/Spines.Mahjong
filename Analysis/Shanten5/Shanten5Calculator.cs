@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 using Spines.Mahjong.Analysis.Resources;
@@ -16,7 +17,13 @@ namespace Spines.Mahjong.Analysis.Shanten5
       LookupHonor = Resource.Vector128Lookup("Shanten5", "honor.dat");
     }
 
-    public int Calculate(int[] tileCounts, int meldCount)
+    public void Ankan(TileType tileType)
+    {
+      _base5Hashes[tileType.SuitId] -= 4 * Base5.Table[tileType.Index];
+      _meldCount += 1;
+    }
+
+    public static int Calculate(int[] tileCounts, int meldCount)
     {
       Span<int> base5Hashes = stackalloc int[4];
       var tileTypeId = 0;
@@ -29,6 +36,101 @@ namespace Spines.Mahjong.Analysis.Shanten5
         }
       }
 
+      return CalculateInternal(base5Hashes, meldCount);
+    }
+
+    public void Chii(Tile handTile0, Tile handTile1)
+    {
+      _base5Hashes[handTile0.TileType.SuitId] -= Base5.Table[handTile0.TileType.Index];
+      _base5Hashes[handTile1.TileType.SuitId] -= Base5.Table[handTile1.TileType.Index];
+      _meldCount += 1;
+    }
+
+    public void Daiminkan(TileType tileType)
+    {
+      _base5Hashes[tileType.SuitId] -= 3 * Base5.Table[tileType.Index];
+      _meldCount += 1;
+    }
+
+    public void Discard(Tile tile)
+    {
+      _base5Hashes[tile.TileType.SuitId] -= Base5.Table[tile.TileType.Index];
+    }
+
+    public void Draw(Tile tile)
+    {
+      _base5Hashes[tile.TileType.SuitId] += Base5.Table[tile.TileType.Index];
+    }
+
+    public void Haipai(IEnumerable<Tile> tiles)
+    {
+      foreach (var tile in tiles)
+      {
+        _base5Hashes[tile.TileType.SuitId] += Base5.Table[tile.TileType.Index];
+      }
+    }
+
+    public void Pon(TileType tileType)
+    {
+      _base5Hashes[tileType.SuitId] -= 2 * Base5.Table[tileType.Index];
+      _meldCount += 1;
+    }
+
+    public int Shanten()
+    {
+      return CalculateInternal(_base5Hashes, _meldCount);
+    }
+
+    public void Shouminkan(TileType tileType)
+    {
+      _base5Hashes[tileType.SuitId] -= Base5.Table[tileType.Index];
+    }
+
+    private static readonly Vector128<byte>[] LookupSuit;
+    private static readonly Vector128<byte>[] LookupHonor;
+    private static readonly Vector128<byte> Phase2ShuffleA = Vector128.Create(255, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 255);
+    private static readonly Vector128<byte> KokushiPairSelector = Vector128.Create((byte) 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0);
+    private static readonly Vector128<byte> Phase1ShuffleA1 = Vector128.Create((byte) 1, 2, 3, 4, 1, 2, 3, 1, 1, 2, 1, 1, 2, 1, 13, 15);
+    private static readonly Vector128<byte> Phase1ShuffleB1 = Vector128.Create((byte) 8, 7, 6, 5, 7, 6, 5, 1, 6, 5, 5, 3, 2, 2, 13, 15);
+    private static readonly Vector128<byte> Phase1ShuffleA2 = Vector128.Create(5, 6, 7, 8, 5, 6, 7, 255, 5, 6, 5, 3, 255, 2, 255, 255);
+    private static readonly Vector128<byte> Phase1ShuffleB2 = Vector128.Create(4, 3, 2, 1, 3, 2, 1, 255, 2, 1, 1, 1, 255, 1, 255, 255);
+    private static readonly Vector128<byte> Phase1ShuffleAb11 = Vector128.Create(0, 1, 8, 10, 255, 11, 13, 7, 255, 255, 4, 6, 255, 255, 14, 15);
+    private static readonly Vector128<byte> Phase1ShuffleAb12 = Vector128.Create(2, 3, 9, 255, 255, 12, 255, 255, 255, 255, 5, 255, 255, 255, 255, 255);
+    private static readonly Vector128<byte> Phase1ShuffleAb21 = Vector128.Create(255, 255, 7, 6, 5, 255, 3, 2, 10, 0, 15, 255, 255, 14, 255, 255);
+    private static readonly Vector128<byte> Phase1ShuffleAb22 = Vector128.Create(255, 255, 255, 255, 255, 255, 255, 255, 11, 1, 255, 255, 255, 255, 255, 255);
+
+    private static readonly Vector128<byte>[] MeldCountVectors =
+    {
+      Vector128.Create(9, 8, 7, 6, 5, 4, 3, 2, 1, 255, 10, 255, 255, 13, 255, 14),
+      Vector128.Create(8, 7, 6, 5, 255, 3, 2, 1, 255, 255, 255, 255, 255, 255, 255, 255),
+      Vector128.Create(7, 6, 5, 255, 255, 2, 1, 255, 255, 255, 255, 255, 255, 255, 255, 255),
+      Vector128.Create(6, 5, 255, 255, 255, 1, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255),
+      Vector128.Create(5, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255)
+    };
+
+    private static readonly Vector128<byte>[] ExcessGroupClearingVectors =
+    {
+      Vector128.Create((byte) 255),
+      Vector128.Create(255, 255, 255, 255, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0),
+      Vector128.Create(255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0),
+      Vector128.Create(255, 255, 0, 0, 0, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+      Vector128.Create(255, 0, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    };
+
+    private static readonly Vector128<byte>[] InversionVectors =
+    {
+      Vector128.Create(14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 7, 255, 255, 14, 254, 254),
+      Vector128.Create(14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 255, 255, 255, 255, 254, 255),
+      Vector128.Create(14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 255, 255, 255, 255, 254, 255),
+      Vector128.Create(14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 255, 255, 255, 255, 254, 255),
+      Vector128.Create(14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 255, 255, 255, 255, 255, 255)
+    };
+
+    private readonly int[] _base5Hashes = new int[4];
+    private int _meldCount;
+
+    private static int CalculateInternal(Span<int> base5Hashes, int meldCount)
+    {
       var m = LookupSuit[base5Hashes[0]];
       var p = LookupSuit[base5Hashes[1]];
       var a = CalculatePhase1(m, p);
@@ -40,7 +142,7 @@ namespace Spines.Mahjong.Analysis.Shanten5
       var b = CalculatePhase1(s, z);
       var b2 = Ssse3.Shuffle(b, MeldCountVectors[meldCount]);
 
-      var r =  Sse2.And(Sse2.Add(a2, b2), ExcessGroupClearingVectors[meldCount]);
+      var r = Sse2.And(Sse2.Add(a2, b2), ExcessGroupClearingVectors[meldCount]);
 
       var r1 = Sse2.Subtract(InversionVectors[meldCount], r);
       var r3 = Sse2.ShiftRightLogical(r1.AsInt16(), 8);
@@ -50,20 +152,21 @@ namespace Spines.Mahjong.Analysis.Shanten5
       var k4 = k3.AsByte();
       var r5 = Sse2.Subtract(r4, k4);
       var r6 = Sse41.MinHorizontal(r5.AsUInt16());
-      var r7 = (byte)Sse2.ConvertToInt32(r6.AsInt32());
+      var r7 = (byte) Sse2.ConvertToInt32(r6.AsInt32());
       return r7 - 1 - 3 * meldCount;
     }
 
     /// <summary>
-    /// Combines the vectors into a single one with the same layout: values for (0,0), (0,1) ... (1,3), (1,4) with (pair,groups)
+    /// Combines the vectors into a single one with the same layout: values for (0,0), (0,1) ... (1,3), (1,4) with
+    /// (pair,groups)
     /// </summary>
     private static Vector128<byte> CalculatePhase1(Vector128<byte> a, Vector128<byte> b)
     {
       // first calculate all the sums, then merge them down with repeated vertical max
-      
+
       var va1 = Ssse3.Shuffle(a, Phase1ShuffleA1);
       var vb1 = Ssse3.Shuffle(b, Phase1ShuffleB1);
-      
+
       var vab1 = Sse2.Add(va1, vb1);
 
       var va2 = Ssse3.Shuffle(a, Phase1ShuffleA2);
@@ -83,45 +186,5 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
       return Sse2.Max(Sse2.Max(a, b), Sse2.Max(vab31, vab32));
     }
-
-    private static readonly Vector128<byte>[] LookupSuit;
-    private static readonly Vector128<byte>[] LookupHonor;
-    private static readonly Vector128<byte> Phase2ShuffleA = Vector128.Create(255, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 255);
-    private static readonly Vector128<byte> KokushiPairSelector = Vector128.Create((byte) 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0);
-    private static readonly Vector128<byte> Phase1ShuffleA1 = Vector128.Create((byte)1, 2, 3, 4, 1, 2, 3, 1, 1, 2, 1, 1, 2, 1, 13, 15);
-    private static readonly Vector128<byte> Phase1ShuffleB1 = Vector128.Create((byte)8, 7, 6, 5, 7, 6, 5, 1, 6, 5, 5, 3, 2, 2, 13, 15);
-    private static readonly Vector128<byte> Phase1ShuffleA2 = Vector128.Create(5, 6, 7, 8, 5, 6, 7, 255, 5, 6, 5, 3, 255, 2, 255, 255);
-    private static readonly Vector128<byte> Phase1ShuffleB2 = Vector128.Create(4, 3, 2, 1, 3, 2, 1, 255, 2, 1, 1, 1, 255, 1, 255, 255);
-    private static readonly Vector128<byte> Phase1ShuffleAb11 = Vector128.Create(0, 1, 8, 10, 255, 11, 13, 7, 255, 255, 4, 6, 255, 255, 14, 15);
-    private static readonly Vector128<byte> Phase1ShuffleAb12 = Vector128.Create(2, 3, 9, 255, 255, 12, 255, 255, 255, 255, 5, 255, 255, 255, 255, 255);
-    private static readonly Vector128<byte> Phase1ShuffleAb21 = Vector128.Create(255, 255, 7, 6, 5, 255, 3, 2, 10, 0, 15, 255, 255, 14, 255, 255);
-    private static readonly Vector128<byte> Phase1ShuffleAb22 = Vector128.Create(255, 255, 255, 255, 255, 255, 255, 255, 11, 1, 255, 255, 255, 255, 255, 255);
-    
-    private static readonly Vector128<byte>[] MeldCountVectors =
-    {
-      Vector128.Create(9, 8, 7, 6, 5, 4, 3, 2, 1, 255, 10, 255, 255, 13, 255, 14),
-      Vector128.Create(8, 7, 6, 5, 255, 3, 2, 1, 255, 255, 255, 255, 255, 255, 255, 255),
-      Vector128.Create(7, 6, 5, 255, 255, 2, 1, 255, 255, 255, 255, 255, 255, 255, 255, 255),
-      Vector128.Create(6, 5, 255, 255, 255, 1, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255),
-      Vector128.Create(5, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255),
-    };
-
-    private static readonly Vector128<byte>[] ExcessGroupClearingVectors =
-    {
-      Vector128.Create((byte)255),
-      Vector128.Create(255, 255, 255, 255, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0),
-      Vector128.Create(255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0),
-      Vector128.Create(255, 255, 0, 0, 0, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-      Vector128.Create(255, 0, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-    };
-
-    private static readonly Vector128<byte>[] InversionVectors =
-    {
-      Vector128.Create(14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 7, 255, 255, 14, 254, 254),
-      Vector128.Create(14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 255, 255, 255, 255, 254, 255),
-      Vector128.Create(14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 255, 255, 255, 255, 254, 255),
-      Vector128.Create(14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 255, 255, 255, 255, 254, 255),
-      Vector128.Create(14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 255, 255, 255, 255, 255, 255),
-    };
   }
 }

@@ -64,7 +64,7 @@ namespace Spines.Mahjong.Analysis.Tests
       var parser = new ShorthandParser(hand);
       var counts = parser.Concealed.ToArray();
 
-      var s = new Shanten5Calculator().Calculate(counts, (byte)parser.Melds.Count());
+      var s = Shanten5Calculator.Calculate(counts, (byte)parser.Melds.Count());
 
       Assert.Equal(expected, s);
     }
