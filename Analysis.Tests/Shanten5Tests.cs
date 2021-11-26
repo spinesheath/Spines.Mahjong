@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System.IO;
+using System.Linq;
+using Spines.Mahjong.Analysis.Replay;
 using Spines.Mahjong.Analysis.Shanten5;
 using Xunit;
 
@@ -6,6 +8,21 @@ namespace Spines.Mahjong.Analysis.Tests
 {
   public class Shanten5Tests
   {
+    [Fact]
+    public void BundlesWithVisitor()
+    {
+      var files = BundlesFolders.SelectMany(Directory.EnumerateFiles);
+      var visitor = new Shanten5EvaluatingVisitor();
+      foreach (var file in files)
+      {
+        using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
+        ReplayParser.Parse(fileStream, visitor);
+      }
+
+      Assert.Equal(0, visitor.ErrorCount);
+      Assert.Equal(1, visitor.EvaluationCount);
+    }
+
     [Theory]
     [InlineData("123456789m12344p", -1)]
     [InlineData("123456789m1234p", 0)]
@@ -41,6 +58,8 @@ namespace Spines.Mahjong.Analysis.Tests
     //[InlineData("115599m1155p1111Z", 2)]
     [InlineData("268m333678p33s77z", 1)]
     //[InlineData("268m333678p33s777Z", 0)]
+
+    [InlineData("11369m139p1s12234z", 3)]
     public void JustSomeHand(string hand, int expected)
     {
       var parser = new ShorthandParser(hand);
@@ -50,5 +69,12 @@ namespace Spines.Mahjong.Analysis.Tests
 
       Assert.Equal(expected, s);
     }
+
+    private static readonly string[] BundlesFolders = new[]
+    {
+      @"C:\tenhou\compressed\2014\yonma\bundles",
+      @"C:\tenhou\compressed\2015\yonma\bundles",
+      @"C:\tenhou\compressed\2016\yonma\bundles"
+    };
   }
 }

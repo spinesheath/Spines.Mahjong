@@ -35,12 +35,16 @@ namespace Spines.Mahjong.Analysis.Shanten5
       var a = CalculatePhase1(m, p);
       var b = CalculatePhase1(s, z);
 
+      // TODO chiitoi is adding up with kokushi pair, fix that in lookup table and this shuffle can be removed
+      var sa = Vector128.Create(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 255);
+      var a2 = Ssse3.Shuffle(a, sa);
+
       var sb = Vector128.Create(9, 8, 7, 6, 5, 4, 3, 2, 1, 255, 10, 255, 255, 13, 255, 14);
       var b2 = Ssse3.Shuffle(b, sb);
 
       // TODO meldCount
 
-      var r = Sse2.Add(a, b2);
+      var r = Sse2.Add(a2, b2);
 
       var neg = Vector128.Create(14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 7, 255, 255, 14, 254, 254);
       var r1 = Sse2.Subtract(neg, r);
