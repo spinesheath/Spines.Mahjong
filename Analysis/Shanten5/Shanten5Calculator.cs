@@ -81,9 +81,7 @@ namespace Spines.Mahjong.Analysis.Shanten5
       var vab31 = Ssse3.Shuffle(xab2, Phase1ShuffleAb21);
       var vab32 = Ssse3.Shuffle(xab2, Phase1ShuffleAb22);
 
-      var xab3 = Sse2.Max(vab31, vab32);
-      
-      return Sse2.Max(b, Sse2.Max(a, xab3));
+      return Sse2.Max(Sse2.Max(a, b), Sse2.Max(vab31, vab32));
     }
 
     private static readonly Vector128<byte>[] LookupSuit;
