@@ -117,6 +117,8 @@ namespace Spines.Mahjong.Analysis.Tests
       {
         ErrorCount += 1;
       }
+
+      EvaluationCount += 1;
     }
 
     public void Shouminkan(int who, int fromWho, Tile calledTile, Tile addedTile, Tile handTile0, Tile handTile1)

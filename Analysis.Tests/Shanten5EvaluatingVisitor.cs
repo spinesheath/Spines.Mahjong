@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Spines.Mahjong.Analysis.Replay;
 using Spines.Mahjong.Analysis.Shanten5;
@@ -10,7 +11,13 @@ namespace Spines.Mahjong.Analysis.Tests
 
     public int ErrorCount { get; private set; }
 
-    private readonly int[][] _tileCounts = new int[4][];
+    private readonly int[][] _tileCounts = 
+    {
+      new int[34],
+      new int[34],
+      new int[34],
+      new int[34]
+    };
 
     private readonly int[] _meldCounts = new int[4];
 
@@ -22,10 +29,10 @@ namespace Spines.Mahjong.Analysis.Tests
 
     public void Seed(TileType roundWind, int honba, int riichiSticks, int dice0, int dice1, Tile doraIndicator)
     {
-      _tileCounts[0] = new int[34];
-      _tileCounts[1] = new int[34];
-      _tileCounts[2] = new int[34];
-      _tileCounts[3] = new int[34];
+      Array.Clear(_tileCounts[0], 0, _tileCounts[0].Length);
+      Array.Clear(_tileCounts[1], 0, _tileCounts[1].Length);
+      Array.Clear(_tileCounts[2], 0, _tileCounts[2].Length);
+      Array.Clear(_tileCounts[3], 0, _tileCounts[3].Length);
       _meldCounts[0] = 0;
       _meldCounts[1] = 0;
       _meldCounts[2] = 0;
@@ -39,7 +46,7 @@ namespace Spines.Mahjong.Analysis.Tests
       {
         tileCounts[tile.TileType.TileTypeId] += 1;
       }
-      
+
       var shanten = Calculator.Calculate(tileCounts, _meldCounts[seatIndex]);
 
       if (shanten > 6 || shanten < 0)
@@ -53,11 +60,6 @@ namespace Spines.Mahjong.Analysis.Tests
     public void Draw(int seatIndex, Tile tile)
     {
       var meldCount = _meldCounts[seatIndex];
-      if (meldCount > 0)
-      {
-        return;
-      }
-
       var tileCounts = _tileCounts[seatIndex];
       var before = Calculator.Calculate(tileCounts, meldCount);
       tileCounts[tile.TileType.TileTypeId] += 1;
@@ -74,11 +76,6 @@ namespace Spines.Mahjong.Analysis.Tests
     public void Discard(int seatIndex, Tile tile)
     {
       var meldCount = _meldCounts[seatIndex];
-      if (meldCount > 0)
-      {
-        return;
-      }
-
       var tileCounts = _tileCounts[seatIndex];
       var before = Calculator.Calculate(tileCounts, meldCount);
       tileCounts[tile.TileType.TileTypeId] -= 1;
@@ -94,26 +91,83 @@ namespace Spines.Mahjong.Analysis.Tests
 
     public void Chii(int who, int fromWho, Tile calledTile, Tile handTile0, Tile handTile1)
     {
-      _meldCounts[who] += 1;
+      var meldCount = _meldCounts[who] += 1;
+
+      var tileCounts = _tileCounts[who];
+      tileCounts[handTile0.TileType.TileTypeId] -= 1;
+      tileCounts[handTile1.TileType.TileTypeId] -= 1;
+      var shanten = Calculator.Calculate(tileCounts, meldCount);
+
+      if (shanten > 6 || shanten < -1)
+      {
+        ErrorCount += 1;
+      }
+
+      EvaluationCount += 1;
     }
 
     public void Pon(int who, int fromWho, Tile calledTile, Tile handTile0, Tile handTile1)
     {
-      _meldCounts[who] += 1;
+      var meldCount = _meldCounts[who] += 1;
+
+      var tileCounts = _tileCounts[who];
+      tileCounts[handTile0.TileType.TileTypeId] -= 2;
+      var shanten = Calculator.Calculate(tileCounts, meldCount);
+
+      if (shanten > 6 || shanten < -1)
+      {
+        ErrorCount += 1;
+      }
+
+      EvaluationCount += 1;
     }
 
     public void Daiminkan(int who, int fromWho, Tile calledTile, Tile handTile0, Tile handTile1, Tile handTile2)
     {
-      _meldCounts[who] += 1;
+      var meldCount = _meldCounts[who] += 1;
+
+      var tileCounts = _tileCounts[who];
+      tileCounts[handTile0.TileType.TileTypeId] -= 3;
+      var shanten = Calculator.Calculate(tileCounts, meldCount);
+
+      if (shanten > 6 || shanten < -1)
+      {
+        ErrorCount += 1;
+      }
+
+      EvaluationCount += 1;
     }
 
     public void Shouminkan(int who, int fromWho, Tile calledTile, Tile addedTile, Tile handTile0, Tile handTile1)
     {
+      var meldCount = _meldCounts[who];
+      var tileCounts = _tileCounts[who];
+      var before = Calculator.Calculate(tileCounts, meldCount);
+      tileCounts[addedTile.TileType.TileTypeId] -= 1;
+      var shanten = Calculator.Calculate(tileCounts, meldCount);
+
+      if (shanten < before || shanten > before + 1)
+      {
+        ErrorCount += 1;
+      }
+
+      EvaluationCount += 1;
     }
 
     public void Ankan(int who, TileType tileType)
     {
-      _meldCounts[who] += 1;
+      var meldCount = _meldCounts[who] += 1;
+
+      var tileCounts = _tileCounts[who];
+      tileCounts[tileType.TileTypeId] -= 4;
+      var shanten = Calculator.Calculate(tileCounts, meldCount);
+
+      if (shanten > 6 || shanten < -1)
+      {
+        ErrorCount += 1;
+      }
+
+      EvaluationCount += 1;
     }
   }
 }

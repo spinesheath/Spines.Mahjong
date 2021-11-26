@@ -69,7 +69,7 @@ namespace Spines.Mahjong.Analysis.Tests
       Assert.Equal(expected, s);
     }
 
-    private static readonly string[] BundlesFolders = new[]
+    private static readonly string[] BundlesFolders = 
     {
       @"C:\tenhou\compressed\2014\yonma\bundles",
       @"C:\tenhou\compressed\2015\yonma\bundles",
