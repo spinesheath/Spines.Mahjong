@@ -21,6 +21,8 @@ namespace Spines.Mahjong.Analysis.Shanten5
     {
       _base5Hashes[tileType.SuitId] -= 4 * Base5.Table[tileType.Index];
       _meldCount += 1;
+
+      UpdateAb(tileType.SuitId);
     }
 
     public static int Calculate(int[] tileCounts, int meldCount)
@@ -36,7 +38,7 @@ namespace Spines.Mahjong.Analysis.Shanten5
         }
       }
 
-      return CalculateInternal(base5Hashes, meldCount);
+      return CalculateInternal(meldCount, CalculateA(base5Hashes), CalculateB(base5Hashes));
     }
 
     public void Chii(Tile handTile0, Tile handTile1)
@@ -44,22 +46,30 @@ namespace Spines.Mahjong.Analysis.Shanten5
       _base5Hashes[handTile0.TileType.SuitId] -= Base5.Table[handTile0.TileType.Index];
       _base5Hashes[handTile1.TileType.SuitId] -= Base5.Table[handTile1.TileType.Index];
       _meldCount += 1;
+
+      UpdateAb(handTile0.TileType.SuitId);
     }
 
     public void Daiminkan(TileType tileType)
     {
       _base5Hashes[tileType.SuitId] -= 3 * Base5.Table[tileType.Index];
       _meldCount += 1;
+
+      UpdateAb(tileType.SuitId);
     }
 
-    public void Discard(Tile tile)
+    public void Discard(TileType tileType)
     {
-      _base5Hashes[tile.TileType.SuitId] -= Base5.Table[tile.TileType.Index];
+      _base5Hashes[tileType.SuitId] -= Base5.Table[tileType.Index];
+
+      UpdateAb(tileType.SuitId);
     }
 
-    public void Draw(Tile tile)
+    public void Draw(TileType tileType)
     {
-      _base5Hashes[tile.TileType.SuitId] += Base5.Table[tile.TileType.Index];
+      _base5Hashes[tileType.SuitId] += Base5.Table[tileType.Index];
+
+      UpdateAb(tileType.SuitId);
     }
 
     public void Haipai(IEnumerable<Tile> tiles)
@@ -68,22 +78,29 @@ namespace Spines.Mahjong.Analysis.Shanten5
       {
         _base5Hashes[tile.TileType.SuitId] += Base5.Table[tile.TileType.Index];
       }
+
+      _a = CalculateA(_base5Hashes);
+      _b = CalculateB(_base5Hashes);
     }
 
     public void Pon(TileType tileType)
     {
       _base5Hashes[tileType.SuitId] -= 2 * Base5.Table[tileType.Index];
       _meldCount += 1;
+
+      UpdateAb(tileType.SuitId);
     }
 
     public int Shanten()
     {
-      return CalculateInternal(_base5Hashes, _meldCount);
+      return CalculateInternal(_meldCount, _a, _b);
     }
 
     public void Shouminkan(TileType tileType)
     {
       _base5Hashes[tileType.SuitId] -= Base5.Table[tileType.Index];
+
+      UpdateAb(tileType.SuitId);
     }
 
     private static readonly Vector128<byte>[] LookupSuit;
@@ -127,22 +144,26 @@ namespace Spines.Mahjong.Analysis.Shanten5
     };
 
     private readonly int[] _base5Hashes = new int[4];
+    private Vector128<byte> _a;
+    private Vector128<byte> _b;
     private int _meldCount;
 
-    private static int CalculateInternal(Span<int> base5Hashes, int meldCount)
+    private void UpdateAb(int suitId)
     {
-      var m = LookupSuit[base5Hashes[0]];
-      var p = LookupSuit[base5Hashes[1]];
-      var a = CalculatePhase1(m, p);
-      // TODO chiitoi is adding up with kokushi pair, fix that in lookup table and this shuffle can be removed
-      var a2 = Ssse3.Shuffle(a, Phase2ShuffleA);
+      if (suitId < 2)
+      {
+        _a = CalculateA(_base5Hashes);
+      }
+      else
+      {
+        _b = CalculateB(_base5Hashes);
+      }
+    }
 
-      var s = LookupSuit[base5Hashes[2]];
-      var z = LookupHonor[base5Hashes[3]];
-      var b = CalculatePhase1(s, z);
+    private static int CalculateInternal(int meldCount, Vector128<byte> a, Vector128<byte> b)
+    {
       var b2 = Ssse3.Shuffle(b, MeldCountVectors[meldCount]);
-
-      var r = Sse2.And(Sse2.Add(a2, b2), ExcessGroupClearingVectors[meldCount]);
+      var r = Sse2.And(Sse2.Add(a, b2), ExcessGroupClearingVectors[meldCount]);
 
       var r1 = Sse2.Subtract(InversionVectors[meldCount], r);
       var r3 = Sse2.ShiftRightLogical(r1.AsInt16(), 8);
@@ -154,6 +175,24 @@ namespace Spines.Mahjong.Analysis.Shanten5
       var r6 = Sse41.MinHorizontal(r5.AsUInt16());
       var r7 = (byte) Sse2.ConvertToInt32(r6.AsInt32());
       return r7 - 1 - 3 * meldCount;
+    }
+
+    private static Vector128<byte> CalculateB(Span<int> base5Hashes)
+    {
+      var s = LookupSuit[base5Hashes[2]];
+      var z = LookupHonor[base5Hashes[3]];
+      var b = CalculatePhase1(s, z);
+      return b;
+    }
+
+    private static Vector128<byte> CalculateA(Span<int> base5Hashes)
+    {
+      var m = LookupSuit[base5Hashes[0]];
+      var p = LookupSuit[base5Hashes[1]];
+      var a = CalculatePhase1(m, p);
+      // TODO chiitoi is adding up with kokushi pair, fix that in lookup table and this shuffle can be removed
+      var a2 = Ssse3.Shuffle(a, Phase2ShuffleA);
+      return a2;
     }
 
     /// <summary>

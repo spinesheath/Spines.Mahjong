@@ -40,7 +40,7 @@ namespace Spines.Mahjong.Analysis.Tests
     public void Draw(int seatIndex, Tile tile)
     {
       var before = _calculators[seatIndex].Shanten();
-      _calculators[seatIndex].Draw(tile);
+      _calculators[seatIndex].Draw(tile.TileType);
       var shanten = _calculators[seatIndex].Shanten();
 
       if (shanten > before || shanten < before - 1)
@@ -54,7 +54,7 @@ namespace Spines.Mahjong.Analysis.Tests
     public void Discard(int seatIndex, Tile tile)
     {
       var before = _calculators[seatIndex].Shanten();
-      _calculators[seatIndex].Discard(tile);
+      _calculators[seatIndex].Discard(tile.TileType);
       var shanten = _calculators[seatIndex].Shanten();
 
       if (shanten < before || shanten > before + 1)
