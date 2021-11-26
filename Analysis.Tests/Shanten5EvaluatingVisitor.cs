@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using System.Linq;
 using Spines.Mahjong.Analysis.Replay;
-using Spines.Mahjong.Analysis.Shanten;
 using Spines.Mahjong.Analysis.Shanten5;
 
 namespace Spines.Mahjong.Analysis.Tests

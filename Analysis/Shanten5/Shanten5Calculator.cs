@@ -14,6 +14,24 @@ namespace Spines.Mahjong.Analysis.Shanten5
       LookupSuit = Resource.Vector128Lookup("Shanten5", "suit.dat");
       LookupHonor = Resource.Vector128Lookup("Shanten5", "honor.dat");
     }
+    
+    private static readonly Vector128<byte>[] MeldCountVectors = 
+    {
+      Vector128<byte>.Zero,
+      Vector128.Create((byte)1, 1, 1, 1, 6, 1, 1, 1, 1, 1, 11, 0, 0, 14, 0, 15),
+      Vector128.Create((byte)2, 2, 2, 7, 6, 2, 2, 2, 2, 1, 11, 0, 0, 14, 0, 15),
+      Vector128.Create((byte)3, 3, 8, 7, 6, 3, 3, 3, 2, 1, 11, 0, 0, 14, 0, 15),
+      Vector128.Create((byte)4, 9, 8, 7, 6, 4, 4, 3, 2, 1, 11, 0, 0, 14, 0, 15),
+    };
+
+    private static readonly Vector128<byte>[] ExcessGroupClearingVectors =
+    {
+      Vector128.Create((byte)255),
+      Vector128.Create(255, 255, 255, 255, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0),
+      Vector128.Create(255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0),
+      Vector128.Create(255, 255, 0, 0, 0, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+      Vector128.Create(255, 0, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    };
 
     public int Calculate(int[] tileCounts, int meldCount)
     {
@@ -39,14 +57,13 @@ namespace Spines.Mahjong.Analysis.Shanten5
       var sa = Vector128.Create(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 255);
       var a2 = Ssse3.Shuffle(a, sa);
 
-      var sb = Vector128.Create(9, 8, 7, 6, 5, 4, 3, 2, 1, 255, 10, 255, 255, 13, 255, 14);
-      var b2 = Ssse3.Shuffle(b, sb);
+      var sb = Vector128.Create(9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 10, 255, 255, 13, 255, 14);
+      var sb2 = Sse2.Subtract(sb, MeldCountVectors[meldCount]);
+      var b2 = Ssse3.Shuffle(b, sb2);
 
-      // TODO meldCount
+      var r =  Sse2.And(Sse2.Add(a2, b2), ExcessGroupClearingVectors[meldCount]);
 
-      var r = Sse2.Add(a2, b2);
-
-      var neg = Vector128.Create(14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 7, 255, 255, 14, 254, 254);
+      var neg = Vector128.Create(14, 14, 14, 14, 14, 14, 14, 14, 14, 14, (byte)(7 + 7 * meldCount), 255, 255, 14, 254, 254);
       var r1 = Sse2.Subtract(neg, r);
       var r3 = Sse2.ShiftRightLogical(r1.AsInt16(), 8);
       var r4 = Sse2.Min(r1, r3.AsByte());
@@ -57,7 +74,7 @@ namespace Spines.Mahjong.Analysis.Shanten5
       var r5 = Sse2.Subtract(r4, k4);
       var r6 = Sse41.MinHorizontal(r5.AsUInt16());
       var r7 = (byte)Sse2.ConvertToInt32(r6.AsInt32());
-      return r7 - 1;
+      return r7 - 1 - 3 * meldCount;
     }
 
     /// <summary>
