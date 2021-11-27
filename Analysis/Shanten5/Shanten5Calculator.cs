@@ -126,7 +126,8 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
     private static readonly Vector128<byte>[] InversionVectors =
     {
-      Vector128.Create(14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 7, 255, 255, 14, 254, 254), // 254 is used for calculating kokushi pair count
+      // 254 is used for calculating kokushi pair count. If pair present there will be a 1 in the lowest bit which is then selected and subtracted.
+      Vector128.Create(14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 7, 255, 255, 14, 254, 254),
       Vector128.Create(11, 11, 11, 11, 255, 11, 11, 11, 11, 255, 255, 255, 255, 255, 255, 255),
       Vector128.Create(8, 8, 8, 255, 255, 8, 8, 8, 255, 255, 255, 255, 255, 255, 255, 255),
       Vector128.Create(5, 5, 255, 255, 255, 5, 5, 255, 255, 255, 255, 255, 255, 255, 255, 255),
