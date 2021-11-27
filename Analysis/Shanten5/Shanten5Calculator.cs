@@ -124,22 +124,13 @@ namespace Spines.Mahjong.Analysis.Shanten5
       Vector128.Create(5, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255)
     };
 
-    private static readonly Vector128<byte>[] ExcessGroupClearingVectors =
-    {
-      Vector128.Create((byte) 255),
-      Vector128.Create(255, 255, 255, 255, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0),
-      Vector128.Create(255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0),
-      Vector128.Create(255, 255, 0, 0, 0, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-      Vector128.Create(255, 0, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-    };
-
     private static readonly Vector128<byte>[] InversionVectors =
     {
       Vector128.Create(14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 7, 255, 255, 14, 254, 254), // 254 is used for calculating kokushi pair count
-      Vector128.Create(11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 255, 255, 255, 255, 255, 255),
-      Vector128.Create(8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 255, 255, 255, 255, 255, 255),
-      Vector128.Create(5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 255, 255, 255, 255, 255, 255),
-      Vector128.Create(2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 255, 255, 255, 255, 255, 255)
+      Vector128.Create(11, 11, 11, 11, 255, 11, 11, 11, 11, 255, 255, 255, 255, 255, 255, 255),
+      Vector128.Create(8, 8, 8, 255, 255, 8, 8, 8, 255, 255, 255, 255, 255, 255, 255, 255),
+      Vector128.Create(5, 5, 255, 255, 255, 5, 5, 255, 255, 255, 255, 255, 255, 255, 255, 255),
+      Vector128.Create(2, 255, 255, 255, 255, 2, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255)
     };
 
     private readonly int[] _base5Hashes = new int[4];
@@ -162,8 +153,7 @@ namespace Spines.Mahjong.Analysis.Shanten5
     private static int CalculateInternal(int meldCount, Vector128<byte> a, Vector128<byte> b)
     {
       var b2 = Ssse3.Shuffle(b, MeldCountVectors[meldCount]);
-      var r = Sse2.And(Sse2.Add(a, b2), ExcessGroupClearingVectors[meldCount]);
-
+      var r = Sse2.Add(a, b2);
       var r1 = Sse2.Subtract(InversionVectors[meldCount], r);
       var r3 = Sse2.ShiftRightLogical(r1.AsInt16(), 8);
       var r4 = Sse2.Min(r1, r3.AsByte());

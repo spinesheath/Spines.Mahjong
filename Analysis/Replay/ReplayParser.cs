@@ -12,7 +12,7 @@ namespace Spines.Mahjong.Analysis.Replay
 {
   public static class ReplayParser
   {
-    public static void Parse(FileStream file, IReplayVisitor visitor)
+    public static void Parse(Stream file, IReplayVisitor visitor)
     {
       var meldBuffer = new byte[6];
       var haipaiBuffer = new byte[13];
