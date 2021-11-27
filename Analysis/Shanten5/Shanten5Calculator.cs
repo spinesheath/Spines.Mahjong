@@ -136,10 +136,10 @@ namespace Spines.Mahjong.Analysis.Shanten5
     private static readonly Vector128<byte>[] InversionVectors =
     {
       Vector128.Create(14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 7, 255, 255, 14, 254, 254), // 254 is used for calculating kokushi pair count
-      Vector128.Create(14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 255, 255, 255, 255, 255, 255),
-      Vector128.Create(14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 255, 255, 255, 255, 255, 255),
-      Vector128.Create(14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 255, 255, 255, 255, 255, 255),
-      Vector128.Create(14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 255, 255, 255, 255, 255, 255)
+      Vector128.Create(11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 255, 255, 255, 255, 255, 255),
+      Vector128.Create(8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 255, 255, 255, 255, 255, 255),
+      Vector128.Create(5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 255, 255, 255, 255, 255, 255),
+      Vector128.Create(2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 255, 255, 255, 255, 255, 255)
     };
 
     private readonly int[] _base5Hashes = new int[4];
@@ -173,7 +173,7 @@ namespace Spines.Mahjong.Analysis.Shanten5
       var r5 = Sse2.Subtract(r4, k4);
       var r6 = Sse41.MinHorizontal(r5.AsUInt16());
       var r7 = (byte) Sse2.ConvertToInt32(r6.AsInt32());
-      return r7 - 1 - 3 * meldCount;
+      return r7 - 1;
     }
 
     private static Vector128<byte> CalculateB(Span<int> base5Hashes)
