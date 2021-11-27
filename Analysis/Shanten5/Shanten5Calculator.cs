@@ -105,7 +105,6 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
     private static readonly Vector128<byte>[] LookupSuit;
     private static readonly Vector128<byte>[] LookupHonor;
-    private static readonly Vector128<byte> Phase2ShuffleA = Vector128.Create(255, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 255);
     private static readonly Vector128<byte> KokushiPairSelector = Vector128.Create((byte) 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0);
     private static readonly Vector128<byte> Phase1ShuffleA1 = Vector128.Create((byte) 1, 2, 3, 4, 1, 2, 3, 1, 1, 2, 1, 1, 2, 1, 13, 15);
     private static readonly Vector128<byte> Phase1ShuffleB1 = Vector128.Create((byte) 8, 7, 6, 5, 7, 6, 5, 1, 6, 5, 5, 3, 2, 2, 13, 15);
@@ -190,9 +189,8 @@ namespace Spines.Mahjong.Analysis.Shanten5
       var m = LookupSuit[base5Hashes[0]];
       var p = LookupSuit[base5Hashes[1]];
       var a = CalculatePhase1(m, p);
-      // TODO chiitoi is adding up with kokushi pair, fix that in lookup table and this shuffle can be removed
-      var a2 = Ssse3.Shuffle(a, Phase2ShuffleA);
-      return a2;
+      //// TODO chiitoi is adding up with kokushi pair, fix that in lookup table and this insert can be removed
+      return Sse41.Insert(a, 0, 15);
     }
 
     /// <summary>
