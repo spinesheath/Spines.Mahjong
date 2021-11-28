@@ -2,7 +2,7 @@
   "profiles": {
     "CompressedReplayCreator": {
       "commandName": "Project",
-      "commandLineArgs": "\"C:\\tenhou\\2016\" \"C:\\tenhou\\compressed\\2016\""
+      "commandLineArgs": "\"C:\\tenhou\\2016\" \"C:\\tenhou\\compressed2\\2016\""
     }
   }
 }

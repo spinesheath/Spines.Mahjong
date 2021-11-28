@@ -11,9 +11,10 @@ namespace CompressedReplayCreator
   internal class ReplayConverter
   {
     /// <summary>
-    /// Returns the player count.
+    /// Compresses the replay from xml into actions.
     /// </summary>
-    public static int Compress(XmlReader xml, FileStream actions, StreamWriter metadata)
+    /// <returns>The player count</returns>
+    public static int Compress(XmlReader xml, Stream actions)
     {
       string? queuedDraw = null;
       var playerCount = 4;
@@ -28,12 +29,10 @@ namespace CompressedReplayCreator
 
         var name = xml.LocalName;
 
-        if (queuedDraw != null && (name[1..] != queuedDraw[1..] || queuedDraw[0] - 'T' == name[0] - 'D'))
+        if (queuedDraw != null && (name[1..] != queuedDraw[1..] || queuedDraw[0] - 'T' != name[0] - 'D'))
         {
           var playerId = queuedDraw[0] - 'T';
-          actions.WriteByte((byte)Node.Draw);
-          actions.WriteByte((byte)playerId);
-          actions.WriteByte(ToByte(queuedDraw[1..]));
+          WriteDraw(actions, playerId, ToByte(queuedDraw[1..]));
           queuedDraw = null;
         }
 
@@ -45,13 +44,11 @@ namespace CompressedReplayCreator
           case "TAIKYOKU":
           case "BYE":
           {
-            DumpToMetadata(xml, metadata);
             break;
           }
           case "GO":
           {
             string? type = null;
-            string? lobby = null;
 
             while (xml.MoveToNextAttribute())
             {
@@ -61,11 +58,10 @@ namespace CompressedReplayCreator
               }
               else if (xml.LocalName == "lobby")
               {
-                lobby = xml.Value;
               }
               else
               {
-                throw new NotImplementedException("unknown attribute in GO");
+                throw new InvalidDataException("unknown attribute in GO");
               }
             }
 
@@ -76,10 +72,7 @@ namespace CompressedReplayCreator
 
             var flags = (GameTypeFlag)ToInt(type);
             playerCount = flags.HasFlag(GameTypeFlag.Sanma) ? 3 : 4;
-            actions.WriteByte((byte)Node.Go);
-            actions.WriteByte((byte)flags);
-            metadata.WriteLine($"GO.type={type}");
-            metadata.WriteLine($"GO.lobby={lobby}");
+            WriteGo(actions, flags);
             break;
           }
           case "DORA":
@@ -92,15 +85,14 @@ namespace CompressedReplayCreator
             WriteReach(xml, actions);
             break;
           }
-
           case "RYUUKYOKU":
           {
-            WriteRyuukyoku(xml, actions, metadata);
+            WriteRyuukyoku(xml, actions);
             break;
           }
           case "AGARI":
           {
-            WriteAgari(xml, actions, metadata);
+            WriteAgari(xml, actions);
             break;
           }
           case "INIT":
@@ -115,27 +107,24 @@ namespace CompressedReplayCreator
           }
           default:
           {
-            var drawId = name[0] - 'T';
-            if (drawId >= 0 && drawId < 4)
+            var drawPlayerId = name[0] - 'T';
+            if (drawPlayerId >= 0 && drawPlayerId < 4)
             {
               queuedDraw = name;
               continue;
             }
 
-            var discardId = name[0] - 'D';
-            if (discardId >= 0 && discardId < 4)
+            var discardPlayerId = name[0] - 'D';
+            if (discardPlayerId >= 0 && discardPlayerId < 4)
             {
-              if (queuedDraw != null && name[1..] == queuedDraw[1..] && queuedDraw[0] - 'T' == discardId)
+              var tileTypeId = ToByte(name[1..]);
+              if (queuedDraw != null && name[1..] == queuedDraw[1..] && queuedDraw[0] - 'T' == discardPlayerId)
               {
-                actions.WriteByte((byte)Node.Tsumogiri);
-                actions.WriteByte((byte)discardId);
-                actions.WriteByte(ToByte(name[1..]));
+                WriteTsumogiri(actions, discardPlayerId, tileTypeId);
               }
               else
               {
-                actions.WriteByte((byte)Node.Discard);
-                actions.WriteByte((byte)discardId);
-                actions.WriteByte(ToByte(name[1..]));
+                WriteDiscard(actions, discardPlayerId, tileTypeId);
               }
 
               queuedDraw = null;
@@ -143,7 +132,7 @@ namespace CompressedReplayCreator
               continue;
             }
 
-            throw new NotImplementedException($"unknown element {xml.LocalName}");
+            throw new InvalidDataException($"unknown element {xml.LocalName}");
           }
         }
       }
@@ -151,7 +140,34 @@ namespace CompressedReplayCreator
       return playerCount;
     }
 
-    private static void WriteDora(XmlReader xml, FileStream actions)
+    private static void WriteDiscard(Stream actions, int discardPlayerId, byte tileTypeId)
+    {
+      actions.WriteByte((byte) Node.Discard);
+      actions.WriteByte((byte) discardPlayerId);
+      actions.WriteByte(tileTypeId);
+    }
+
+    private static void WriteTsumogiri(Stream actions, int playerId, byte tileTypeId)
+    {
+      actions.WriteByte((byte) Node.Tsumogiri);
+      actions.WriteByte((byte) playerId);
+      actions.WriteByte(tileTypeId);
+    }
+
+    private static void WriteGo(Stream actions, GameTypeFlag flags)
+    {
+      actions.WriteByte((byte) Node.Go);
+      actions.WriteByte((byte) flags);
+    }
+
+    private static void WriteDraw(Stream actions, int playerId, byte tileTypeId)
+    {
+      actions.WriteByte((byte) Node.Draw);
+      actions.WriteByte((byte) playerId);
+      actions.WriteByte(tileTypeId);
+    }
+
+    private static void WriteDora(XmlReader xml, Stream actions)
     {
       string? hai = null;
 
@@ -163,7 +179,7 @@ namespace CompressedReplayCreator
         }
         else
         {
-          throw new NotImplementedException("unknown attribute in DORA");
+          throw new InvalidDataException("unknown attribute in DORA");
         }
       }
 
@@ -176,7 +192,7 @@ namespace CompressedReplayCreator
       actions.WriteByte(ToByte(hai));
     }
 
-    private static void WriteReach(XmlReader xml, FileStream actions)
+    private static void WriteReach(XmlReader xml, Stream actions)
     {
       string? who = null;
       string? step = null;
@@ -197,7 +213,7 @@ namespace CompressedReplayCreator
         }
         else
         {
-          throw new NotImplementedException("unknown attribute in REACH");
+          throw new InvalidDataException("unknown attribute in REACH");
         }
       }
 
@@ -218,11 +234,11 @@ namespace CompressedReplayCreator
       }
       else
       {
-        throw new NotImplementedException("unknown step in REACH");
+        throw new InvalidDataException("unknown step in REACH");
       }
     }
 
-    private static void WriteNaki(XmlReader xml, FileStream actions)
+    private static void WriteNaki(XmlReader xml, Stream actions)
     {
       string? who = null;
       string? m = null;
@@ -239,7 +255,7 @@ namespace CompressedReplayCreator
         }
         else
         {
-          throw new NotImplementedException("unknown attribute in GO");
+          throw new InvalidDataException("unknown attribute in GO");
         }
       }
 
@@ -251,7 +267,7 @@ namespace CompressedReplayCreator
       WriteMeld(actions, who, xml.Value);
     }
 
-    private static void WriteInit(XmlReader xml, FileStream actions, int playerCount)
+    private static void WriteInit(XmlReader xml, Stream actions, int playerCount)
     {
       string? seed = null;
       string? ten = null;
@@ -279,7 +295,7 @@ namespace CompressedReplayCreator
         }
         else
         {
-          throw new NotImplementedException("unknown attribute in INIT");
+          throw new InvalidDataException("unknown attribute in INIT");
         }
       }
 
@@ -301,7 +317,7 @@ namespace CompressedReplayCreator
       }
     }
 
-    private static void WriteAgari(XmlReader xml, FileStream actions, StreamWriter metadata)
+    private static void WriteAgari(XmlReader xml, Stream actions)
     {
       string? ba = null;
       string? hai = null;
@@ -373,11 +389,10 @@ namespace CompressedReplayCreator
         }
         else if (xml.LocalName == "owari")
         {
-          metadata.WriteLine($"AGARI.owari={xml.Value}");
         }
         else
         {
-          throw new NotImplementedException("unknown attribute in AGARI");
+          throw new InvalidDataException("unknown attribute in AGARI");
         }
       }
 
@@ -433,7 +448,7 @@ namespace CompressedReplayCreator
       actions.Write(ToInts(sc).SelectMany(BitConverter.GetBytes).ToArray());
     }
 
-    private static void WriteRyuukyoku(XmlReader xml, FileStream actions, StreamWriter metadata)
+    private static void WriteRyuukyoku(XmlReader xml, Stream actions)
     {
       string? ba = null;
       string? sc = null;
@@ -472,11 +487,10 @@ namespace CompressedReplayCreator
         }
         else if (xml.LocalName == "owari")
         {
-          metadata.WriteLine($"RYUUKYOKU.owari={xml.Value}");
         }
         else
         {
-          throw new NotImplementedException("unknown attribute in RYUUKYOKU");
+          throw new InvalidDataException("unknown attribute in RYUUKYOKU");
         }
       }
 
@@ -504,7 +518,7 @@ namespace CompressedReplayCreator
       }
     }
 
-    private static void WriteMeld(FileStream actions, string who, string meldCode)
+    private static void WriteMeld(Stream actions, string who, string meldCode)
     {
       var decoder = new MeldDecoder(meldCode);
       var playerId = ToByte(who);
@@ -573,18 +587,6 @@ namespace CompressedReplayCreator
         actions.WriteByte(0); // padding so all melds have the same length
         actions.WriteByte(0); // padding so all melds have the same length
 
-      }
-    }
-
-    private static void DumpToMetadata(XmlReader xml, StreamWriter metadata)
-    {
-      var nodeName = xml.LocalName;
-      while (xml.MoveToNextAttribute())
-      {
-        var attributeName = xml.LocalName;
-        var attributeValue = xml.Value;
-
-        metadata.WriteLine($"{nodeName}.{attributeName}={attributeValue}");
       }
     }
 

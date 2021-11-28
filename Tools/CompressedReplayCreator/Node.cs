@@ -20,5 +20,7 @@
     Dora = 15, // 1 byte tileId
     CallRiichi = 16, // 1 byte who
     PayRiichi = 17, // 1 byte who
+
+    NextBlock = 32
   }
 }

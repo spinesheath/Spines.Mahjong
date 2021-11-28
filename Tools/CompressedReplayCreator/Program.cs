@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Xml;
 
 namespace CompressedReplayCreator
@@ -71,24 +72,20 @@ namespace CompressedReplayCreator
         using var xmlReader = XmlReader.Create(fileName, xmlReaderSettings);
         var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
         var actionsFileName = Path.Combine(_targetDirectory, fileNameWithoutExtension + ".actions");
-        var metadataFileName = Path.Combine(_targetDirectory, fileNameWithoutExtension + ".meta");
 
         int playerCount;
         using (var actionsFile = File.Create(actionsFileName))
-        using (var metadataFile = File.CreateText(metadataFileName))
         {
-          playerCount = ReplayConverter.Compress(xmlReader, actionsFile, metadataFile);
+          playerCount = ReplayConverter.Compress(xmlReader, actionsFile);
         }
 
         if (playerCount == 3)
         {
           File.Move(actionsFileName, Path.Combine(_sanmaActionsDirectory, fileNameWithoutExtension + ".actions"));
-          File.Move(metadataFileName, Path.Combine(_sanmaMetadataDirectory, fileNameWithoutExtension + ".meta"));
         }
         else if (playerCount == 4)
         {
           File.Move(actionsFileName, Path.Combine(_yonmaActionsDirectory, fileNameWithoutExtension + ".actions"));
-          File.Move(metadataFileName, Path.Combine(_yonmaMetadataDirectory, fileNameWithoutExtension + ".meta"));
         }
 
         count += 1;
