@@ -18,41 +18,6 @@ namespace Spines.Mahjong.Analysis.Tests
     }
 
     [Fact]
-    public void BundleUkeIre()
-    {
-      var sum = 0;
-
-      var loadStatics = new HandCalculator();
-      loadStatics.Init(Enumerable.Range(0, 13).Select(TileType.FromTileTypeId));
-      sum += loadStatics.Shanten < 100 ? 0 : 1;
-
-      var files = Directory.EnumerateFiles(BundlesFolders[0]);
-      foreach (var file in files)
-      {
-        using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
-        var r = ReplayParser.Parse(fileStream, true);
-        sum += r;
-      }
-
-      Assert.Equal(1, sum);
-    }
-
-    [Fact]
-    public void ParseBundles()
-    {
-      var sum = 0;
-      var files = BundlesFolders.SelectMany(Directory.EnumerateFiles);
-      foreach (var file in files)
-      {
-        using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
-        var r = ReplayParser.Parse(fileStream, false);
-        sum += r;
-      }
-
-      Assert.Equal(1, sum);
-    }
-
-    [Fact]
     public void BundlesWithVisitor()
     {
       var files = BundlesFolders.SelectMany(Directory.EnumerateFiles);
@@ -65,37 +30,6 @@ namespace Spines.Mahjong.Analysis.Tests
       
       Assert.Equal(0, visitor.ErrorCount);
       Assert.Equal(1, visitor.EvaluationCount);
-    }
-
-    [Fact]
-    public void ParseCompressed()
-    {
-      var sum = 0;
-      var files = Directory.EnumerateFiles(CompressedReplaysFolder);
-      foreach (var file in files)
-      {
-        using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
-        var r = ReplayParser.Parse(fileStream, false);
-        sum += r;
-      }
-
-      Assert.Equal(1, sum);
-    }
-
-    [Fact]
-    public void ParseWithXmlReader()
-    {
-      var sum = 0;
-      var xmlReaderSettings = new XmlReaderSettings { NameTable = null };
-      var files = Directory.EnumerateFiles(ReplaysFolder).Take(60000);
-      foreach (var file in files)
-      {
-        using var xmlReader = XmlReader.Create(file, xmlReaderSettings);
-        var r = ReplayParser.Parse(xmlReader);
-        sum += r;
-      }
-
-      Assert.Equal(1, sum);
     }
 
     [Theory]
@@ -217,12 +151,12 @@ namespace Spines.Mahjong.Analysis.Tests
     }
 
     private const string ReplaysFolder = @"C:\tenhou\2014";
-    private const string CompressedReplaysFolder = @"C:\tenhou\compressed\2014\yonma\actions";
     private static readonly string[] BundlesFolders = new[]
     {
-      @"C:\tenhou\compressed\2014\yonma\bundles",
-      @"C:\tenhou\compressed\2015\yonma\bundles",
-      @"C:\tenhou\compressed\2016\yonma\bundles"
+      @"C:\tenhou\compressed2\2016\yonma",
+      //@"C:\tenhou\compressed\2014\yonma\bundles",
+      //@"C:\tenhou\compressed\2015\yonma\bundles",
+      //@"C:\tenhou\compressed\2016\yonma\bundles"
     };
   }
 }

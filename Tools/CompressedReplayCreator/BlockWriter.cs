@@ -8,6 +8,9 @@ namespace CompressedReplayCreator
 {
   internal class BlockWriter
   {
+    private int _indexInBlock = 0;
+    private const int BlockSize = 1024;
+
     public BlockWriter(Stream stream)
     {
       _stream = stream;
@@ -64,10 +67,21 @@ namespace CompressedReplayCreator
       _stream.WriteByte(who);
     }
 
-    public void Discard(int discardPlayerId, byte tileId)
+    private void InsertBlock(int nextItemSize)
+    {
+      if (_indexInBlock + nextItemSize + 1 > BlockSize)
+      {
+        _stream.WriteByte((byte) Node.NextBlock);
+        _stream.Write(new byte[BlockSize - nextItemSize]);
+        _indexInBlock = 0;
+      }
+
+      _indexInBlock += nextItemSize;
+    }
+
+    public void Discard(byte tileId)
     {
       _stream.WriteByte((byte) Node.Discard);
-      _stream.WriteByte((byte) discardPlayerId);
       _stream.WriteByte(tileId);
     }
 
@@ -77,10 +91,9 @@ namespace CompressedReplayCreator
       _stream.WriteByte(tileId);
     }
 
-    public void Draw(int playerId, byte tileId)
+    public void Draw(byte tileId)
     {
       _stream.WriteByte((byte) Node.Draw);
-      _stream.WriteByte((byte) playerId);
       _stream.WriteByte(tileId);
     }
 
@@ -161,10 +174,9 @@ namespace CompressedReplayCreator
       }
     }
 
-    public void Tsumogiri(int playerId, byte tileId)
+    public void Tsumogiri(byte tileId)
     {
       _stream.WriteByte((byte) Node.Tsumogiri);
-      _stream.WriteByte((byte) playerId);
       _stream.WriteByte(tileId);
     }
 

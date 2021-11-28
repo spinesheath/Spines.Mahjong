@@ -33,8 +33,7 @@ namespace CompressedReplayCreator
 
         if (queuedDraw != null && (name[1..] != queuedDraw[1..] || queuedDraw[0] - 'T' != name[0] - 'D'))
         {
-          var playerId = queuedDraw[0] - 'T';
-          writer.Draw(playerId, ToByte(queuedDraw[1..]));
+          writer.Draw(ToByte(queuedDraw[1..]));
           queuedDraw = null;
         }
 
@@ -122,11 +121,11 @@ namespace CompressedReplayCreator
               var tileTypeId = ToByte(name[1..]);
               if (queuedDraw != null && name[1..] == queuedDraw[1..] && queuedDraw[0] - 'T' == discardPlayerId)
               {
-                writer.Tsumogiri(discardPlayerId, tileTypeId);
+                writer.Tsumogiri(tileTypeId);
               }
               else
               {
-                writer.Discard(discardPlayerId, tileTypeId);
+                writer.Discard(tileTypeId);
               }
 
               queuedDraw = null;
