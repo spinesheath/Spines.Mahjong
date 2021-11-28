@@ -19,6 +19,8 @@ namespace CompressedReplayCreator
       string? queuedDraw = null;
       var playerCount = 4;
 
+      var writer = new BlockWriter(actions);
+
       while (!xml.EOF)
       {
         xml.Read();
@@ -32,7 +34,7 @@ namespace CompressedReplayCreator
         if (queuedDraw != null && (name[1..] != queuedDraw[1..] || queuedDraw[0] - 'T' != name[0] - 'D'))
         {
           var playerId = queuedDraw[0] - 'T';
-          WriteDraw(actions, playerId, ToByte(queuedDraw[1..]));
+          writer.Draw(playerId, ToByte(queuedDraw[1..]));
           queuedDraw = null;
         }
 
@@ -72,37 +74,37 @@ namespace CompressedReplayCreator
 
             var flags = (GameTypeFlag)ToInt(type);
             playerCount = flags.HasFlag(GameTypeFlag.Sanma) ? 3 : 4;
-            WriteGo(actions, flags);
+            writer.Go(flags);
             break;
           }
           case "DORA":
           {
-            WriteDora(xml, actions);
+            WriteDora(xml, writer);
             break;
           }
           case "REACH":
           {
-            WriteReach(xml, actions);
+            WriteReach(xml, writer);
             break;
           }
           case "RYUUKYOKU":
           {
-            WriteRyuukyoku(xml, actions);
+            WriteRyuukyoku(xml, writer);
             break;
           }
           case "AGARI":
           {
-            WriteAgari(xml, actions);
+            WriteAgari(xml, writer);
             break;
           }
           case "INIT":
           {
-            WriteInit(xml, actions, playerCount);
+            WriteInit(xml, writer, playerCount);
             break;
           }
           case "N":
           {
-            WriteNaki(xml, actions);
+            WriteNaki(xml, writer);
             break;
           }
           default:
@@ -120,11 +122,11 @@ namespace CompressedReplayCreator
               var tileTypeId = ToByte(name[1..]);
               if (queuedDraw != null && name[1..] == queuedDraw[1..] && queuedDraw[0] - 'T' == discardPlayerId)
               {
-                WriteTsumogiri(actions, discardPlayerId, tileTypeId);
+                writer.Tsumogiri(discardPlayerId, tileTypeId);
               }
               else
               {
-                WriteDiscard(actions, discardPlayerId, tileTypeId);
+                writer.Discard(discardPlayerId, tileTypeId);
               }
 
               queuedDraw = null;
@@ -140,34 +142,7 @@ namespace CompressedReplayCreator
       return playerCount;
     }
 
-    private static void WriteDiscard(Stream actions, int discardPlayerId, byte tileTypeId)
-    {
-      actions.WriteByte((byte) Node.Discard);
-      actions.WriteByte((byte) discardPlayerId);
-      actions.WriteByte(tileTypeId);
-    }
-
-    private static void WriteTsumogiri(Stream actions, int playerId, byte tileTypeId)
-    {
-      actions.WriteByte((byte) Node.Tsumogiri);
-      actions.WriteByte((byte) playerId);
-      actions.WriteByte(tileTypeId);
-    }
-
-    private static void WriteGo(Stream actions, GameTypeFlag flags)
-    {
-      actions.WriteByte((byte) Node.Go);
-      actions.WriteByte((byte) flags);
-    }
-
-    private static void WriteDraw(Stream actions, int playerId, byte tileTypeId)
-    {
-      actions.WriteByte((byte) Node.Draw);
-      actions.WriteByte((byte) playerId);
-      actions.WriteByte(tileTypeId);
-    }
-
-    private static void WriteDora(XmlReader xml, Stream actions)
+    private static void WriteDora(XmlReader xml, BlockWriter writer)
     {
       string? hai = null;
 
@@ -188,11 +163,10 @@ namespace CompressedReplayCreator
         throw new FormatException("missing attributes in DORA");
       }
 
-      actions.WriteByte((byte)Node.Dora);
-      actions.WriteByte(ToByte(hai));
+      writer.Dora(ToByte(hai));
     }
 
-    private static void WriteReach(XmlReader xml, Stream actions)
+    private static void WriteReach(XmlReader xml, BlockWriter writer)
     {
       string? who = null;
       string? step = null;
@@ -224,13 +198,11 @@ namespace CompressedReplayCreator
 
       if (step == "1")
       {
-        actions.WriteByte((byte)Node.CallRiichi);
-        actions.WriteByte(ToByte(who));
+        writer.CallRiichi(ToByte(who));
       }
       else if (step == "2")
       {
-        actions.WriteByte((byte)Node.PayRiichi);
-        actions.WriteByte(ToByte(who));
+        writer.PayRiichi(ToByte(who));
       }
       else
       {
@@ -238,7 +210,7 @@ namespace CompressedReplayCreator
       }
     }
 
-    private static void WriteNaki(XmlReader xml, Stream actions)
+    private static void WriteNaki(XmlReader xml, BlockWriter writer)
     {
       string? who = null;
       string? m = null;
@@ -264,10 +236,10 @@ namespace CompressedReplayCreator
         throw new FormatException("missing attributes in N");
       }
 
-      WriteMeld(actions, who, xml.Value);
+      writer.Meld(ToByte(who), xml.Value);
     }
 
-    private static void WriteInit(XmlReader xml, Stream actions, int playerCount)
+    private static void WriteInit(XmlReader xml, BlockWriter writer, int playerCount)
     {
       string? seed = null;
       string? ten = null;
@@ -304,20 +276,10 @@ namespace CompressedReplayCreator
         throw new FormatException("missing attributes in INIT");
       }
 
-      actions.WriteByte((byte)Node.Init);
-      actions.Write(ToBytes(seed));
-      actions.Write(ToInts(ten).SelectMany(BitConverter.GetBytes).ToArray());
-      actions.WriteByte(ToByte(oya));
-
-      for (var i = 0; i < playerCount; i++)
-      {
-        actions.WriteByte((byte)Node.Haipai);
-        actions.WriteByte((byte)i);
-        actions.Write(ToBytes(hai[i]));
-      }
+      writer.Init(ToBytes(seed), ToInts(ten), ToByte(oya), hai.Select(ToBytes).ToArray(), playerCount);
     }
 
-    private static void WriteAgari(XmlReader xml, Stream actions)
+    private static void WriteAgari(XmlReader xml, BlockWriter writer)
     {
       string? ba = null;
       string? hai = null;
@@ -401,59 +363,28 @@ namespace CompressedReplayCreator
         throw new FormatException("missing attributes in AGARI");
       }
 
-      if (who == fromWho)
-      {
-        actions.WriteByte((byte)Node.Tsumo);
-      }
-      else
-      {
-        actions.WriteByte((byte)Node.Ron);
-      }
-
-      actions.Write(ToBytes(ba));
-      var haiBytes = ToBytes(hai);
-      actions.WriteByte((byte)haiBytes.Length);
-      actions.Write(haiBytes);
-      if (m != null)
-      {
-        var meldCodes = m.Split(",");
-        actions.WriteByte((byte)meldCodes.Length);
-        foreach (var meldCode in meldCodes)
-        {
-          WriteMeld(actions, who, meldCode);
-        }
-      }
-      else
-      {
-        actions.WriteByte(0);
-      }
-
-      actions.WriteByte(ToByte(machi));
-      actions.Write(ToInts(ten).SelectMany(BitConverter.GetBytes).ToArray());
-      var yakuBytes = ToBytes(yaku ?? "");
-      actions.WriteByte((byte)yakuBytes.Length);
-      actions.Write(yakuBytes);
-      var yakumanBytes = ToBytes(yakuman ?? "");
-      actions.WriteByte((byte)yakumanBytes.Length);
-      actions.Write(yakumanBytes);
-      var doraHaiBytes = ToBytes(doraHai);
-      actions.WriteByte((byte)doraHaiBytes.Length);
-      actions.Write(doraHaiBytes);
-      var doraHaiUraBytes = ToBytes(doraHaiUra ?? "");
-      actions.WriteByte((byte)doraHaiUraBytes.Length);
-      actions.Write(doraHaiUraBytes);
-      actions.WriteByte(ToByte(who));
-      actions.WriteByte(ToByte(fromWho));
-      actions.WriteByte(ToByte(paoWho ?? who));
-      actions.Write(ToInts(sc).SelectMany(BitConverter.GetBytes).ToArray());
+      writer.Agari(
+        ToByte(who), 
+        ToByte(fromWho), 
+        ToByte(paoWho ?? who),
+        ToBytes(ba),
+        ToBytes(hai),
+        ToInts(sc),
+        ToInts(ten),
+        ToByte(machi),
+        ToBytes(yaku ?? ""),
+        ToBytes(yakuman ?? ""),
+        ToBytes(doraHai),
+        ToBytes(doraHaiUra ?? ""),
+        m);
     }
 
-    private static void WriteRyuukyoku(XmlReader xml, Stream actions)
+    private static void WriteRyuukyoku(XmlReader xml, BlockWriter writer)
     {
       string? ba = null;
       string? sc = null;
       string? type = null;
-      var hai = new string[4];
+      var tenpai = new bool[4];
 
       while (xml.MoveToNextAttribute())
       {
@@ -467,19 +398,19 @@ namespace CompressedReplayCreator
         }
         else if (xml.LocalName == "hai0")
         {
-          hai[0] = xml.Value;
+          tenpai[0] = true;
         }
         else if (xml.LocalName == "hai1")
         {
-          hai[1] = xml.Value;
+          tenpai[1] = true;
         }
         else if (xml.LocalName == "hai2")
         {
-          hai[2] = xml.Value;
+          tenpai[2] = true;
         }
         else if (xml.LocalName == "hai3")
         {
-          hai[3] = xml.Value;
+          tenpai[3] = true;
         }
         else if (xml.LocalName == "type")
         {
@@ -494,103 +425,16 @@ namespace CompressedReplayCreator
         }
       }
 
-      if (ba == null || sc == null || hai == null)
+      if (ba == null || sc == null)
       {
         throw new FormatException("missing attributes in RYUUKYOKU");
       }
 
-      actions.WriteByte((byte)Node.Ryuukyoku);
-
-      actions.Write(ToBytes(ba));
-      actions.Write(ToInts(sc).SelectMany(BitConverter.GetBytes).ToArray());
-      if (type == null)
-      {
-        actions.WriteByte((byte)RyuukyokuType.Exhaustive.Id);
-      }
-      else
-      {
-        actions.WriteByte((byte)RyuukyokuType.FromName(type).Id);
-      }
-
-      for (var i = 0; i < 4; i++)
-      {
-        actions.WriteByte(string.IsNullOrEmpty(hai[0]) ? (byte)0 : (byte)1);
-      }
+      var ryuukyokuType = type == null ? RyuukyokuType.Exhaustive : RyuukyokuType.FromName(type);
+      writer.Ryuukyoku(ryuukyokuType, ToBytes(ba), ToInts(sc), tenpai);
     }
 
-    private static void WriteMeld(Stream actions, string who, string meldCode)
-    {
-      var decoder = new MeldDecoder(meldCode);
-      var playerId = ToByte(who);
-      var calledFromPlayerId = (playerId + decoder.CalledFromPlayerOffset) % 4;
-      if (decoder.MeldType == MeldType.Shuntsu)
-      {
-        actions.WriteByte((byte)Node.Chii);
-        actions.WriteByte(playerId);
-        actions.WriteByte((byte)calledFromPlayerId);
-        actions.WriteByte((byte)decoder.CalledTile);
-        var tilesFromHand = decoder.Tiles.Except(new[] { decoder.CalledTile }).ToList();
-        actions.WriteByte((byte)tilesFromHand[0]);
-        actions.WriteByte((byte)tilesFromHand[1]);
-        actions.WriteByte(0); // padding so all melds have the same length
-      }
-      else if (decoder.MeldType == MeldType.Koutsu)
-      {
-        actions.WriteByte((byte)Node.Pon);
-        actions.WriteByte(playerId);
-        actions.WriteByte((byte)calledFromPlayerId);
-        actions.WriteByte((byte)decoder.CalledTile);
-        var tilesFromHand = decoder.Tiles.Except(new[] { decoder.CalledTile }).ToList();
-        actions.WriteByte((byte)tilesFromHand[0]);
-        actions.WriteByte((byte)tilesFromHand[1]);
-        actions.WriteByte(0); // padding so all melds have the same length
-      }
-      else if (decoder.MeldType == MeldType.CalledKan)
-      {
-        actions.WriteByte((byte)Node.Daiminkan);
-        actions.WriteByte(playerId);
-        actions.WriteByte((byte)calledFromPlayerId);
-        actions.WriteByte((byte)decoder.CalledTile);
-        var tilesFromHand = decoder.Tiles.Except(new[] { decoder.CalledTile }).ToList();
-        actions.WriteByte((byte)tilesFromHand[0]);
-        actions.WriteByte((byte)tilesFromHand[1]);
-        actions.WriteByte((byte)tilesFromHand[2]);
-      }
-      else if (decoder.MeldType == MeldType.AddedKan)
-      {
-        actions.WriteByte((byte)Node.Shouminkan);
-        actions.WriteByte(playerId);
-        actions.WriteByte((byte)calledFromPlayerId);
-        actions.WriteByte((byte)decoder.CalledTile);
-        actions.WriteByte((byte)decoder.AddedTile);
-        var tilesFromHand = decoder.Tiles.Except(new[] { decoder.CalledTile, decoder.AddedTile }).ToList();
-        actions.WriteByte((byte)tilesFromHand[0]);
-        actions.WriteByte((byte)tilesFromHand[1]);
-      }
-      else if (decoder.MeldType == MeldType.ClosedKan)
-      {
-        actions.WriteByte((byte)Node.Ankan);
-        actions.WriteByte(playerId);
-        actions.WriteByte(playerId); // padding so all melds have the same length
-        actions.WriteByte((byte)decoder.Tiles[0]);
-        actions.WriteByte((byte)decoder.Tiles[1]);
-        actions.WriteByte((byte)decoder.Tiles[2]);
-        actions.WriteByte((byte)decoder.Tiles[3]);
-      }
-      else
-      {
-        actions.WriteByte((byte)Node.Nuki);
-        actions.WriteByte(playerId);
-        actions.WriteByte(playerId); // padding so all melds have the same length
-        actions.WriteByte((byte)decoder.Tiles[0]);
-        actions.WriteByte(0); // padding so all melds have the same length
-        actions.WriteByte(0); // padding so all melds have the same length
-        actions.WriteByte(0); // padding so all melds have the same length
-
-      }
-    }
-
-    private static IEnumerable<int> ToInts(string value)
+    private static IEnumerable<int> ToInts(string? value)
     {
       return value?.Split(',').Select(ToInt) ?? Enumerable.Empty<int>();
     }

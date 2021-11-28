@@ -12,10 +12,8 @@ namespace CompressedReplayCreator
   {
     private static string _sourceDirectory = "";
     private static string _targetDirectory = "";
-    private static string _sanmaActionsDirectory = "";
-    private static string _yonmaActionsDirectory = "";
-    private static string _sanmaMetadataDirectory = "";
-    private static string _yonmaMetadataDirectory = "";
+    private static string _sanmaDirectory = "";
+    private static string _yonmaDirectory = "";
 
     static void Main(string[] args)
     {
@@ -36,28 +34,16 @@ namespace CompressedReplayCreator
         return;
       }
 
-      _sanmaActionsDirectory = Path.Combine(_targetDirectory, "sanma", "actions");
-      if (!Directory.Exists(_sanmaActionsDirectory))
+      _sanmaDirectory = Path.Combine(_targetDirectory, "sanma");
+      if (!Directory.Exists(_sanmaDirectory))
       {
-        Directory.CreateDirectory(_sanmaActionsDirectory);
+        Directory.CreateDirectory(_sanmaDirectory);
       }
 
-      _yonmaActionsDirectory = Path.Combine(_targetDirectory, "yonma", "actions");
-      if (!Directory.Exists(_yonmaActionsDirectory))
+      _yonmaDirectory = Path.Combine(_targetDirectory, "yonma");
+      if (!Directory.Exists(_yonmaDirectory))
       {
-        Directory.CreateDirectory(_yonmaActionsDirectory);
-      }
-
-      _sanmaMetadataDirectory = Path.Combine(_targetDirectory, "sanma", "meta");
-      if (!Directory.Exists(_sanmaMetadataDirectory))
-      {
-        Directory.CreateDirectory(_sanmaMetadataDirectory);
-      }
-
-      _yonmaMetadataDirectory = Path.Combine(_targetDirectory, "yonma", "meta");
-      if (!Directory.Exists(_yonmaMetadataDirectory))
-      {
-        Directory.CreateDirectory(_yonmaMetadataDirectory);
+        Directory.CreateDirectory(_yonmaDirectory);
       }
 
       Convert();
@@ -67,7 +53,7 @@ namespace CompressedReplayCreator
     {
       var count = 0;
       var xmlReaderSettings = new XmlReaderSettings { NameTable = null };
-      foreach (var fileName in Directory.EnumerateFiles(_sourceDirectory))
+      foreach (var fileName in Directory.EnumerateFiles(_sourceDirectory).Take(10))
       {
         using var xmlReader = XmlReader.Create(fileName, xmlReaderSettings);
         var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
@@ -81,11 +67,11 @@ namespace CompressedReplayCreator
 
         if (playerCount == 3)
         {
-          File.Move(actionsFileName, Path.Combine(_sanmaActionsDirectory, fileNameWithoutExtension + ".actions"));
+          File.Move(actionsFileName, Path.Combine(_sanmaDirectory, fileNameWithoutExtension + ".actions"));
         }
         else if (playerCount == 4)
         {
-          File.Move(actionsFileName, Path.Combine(_yonmaActionsDirectory, fileNameWithoutExtension + ".actions"));
+          File.Move(actionsFileName, Path.Combine(_yonmaDirectory, fileNameWithoutExtension + ".actions"));
         }
 
         count += 1;
