@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
 using Spines.Mahjong.Analysis.Score;
 using Spines.Mahjong.Analysis.State;
@@ -12,8 +11,7 @@ namespace Spines.Mahjong.Analysis.Replay
   {
     public static void Parse(Stream file, IReplayVisitor visitor)
     {
-      var meldBuffer = new byte[6];
-      var haipaiBuffer = new byte[13];
+      var haipai = new Tile[13];
       var playerCount = 4;
       var activePlayerId = 0;
 
@@ -24,7 +22,6 @@ namespace Spines.Mahjong.Analysis.Replay
 #if DEBUG
       var log = new StringBuilder();
 #endif
-
 
       while (maxIndex > indexInBlock)
       {
@@ -73,20 +70,24 @@ namespace Spines.Mahjong.Analysis.Replay
             break;
           case 1: // INIT seed: 6 bytes, ten: playerCount*4 bytes, oya: 1 byte
           {
-            var buffer = new byte[6 + 4 * playerCount + 1];
-            Array.Copy(block, indexInBlock, buffer, 0, buffer.Length);
-            indexInBlock += buffer.Length;
+            var roundWind = TileType.FromTileTypeId(27 + block[indexInBlock++] / 4);
+            var honba = block[indexInBlock++];
+            var riichiSticks = block[indexInBlock++];
+            var dice0 = block[indexInBlock++];
+            var dice1 = block[indexInBlock++];
+            var doraIndicator = Tile.FromTileId(block[indexInBlock++]);
 
             var scores = new int[playerCount];
             for (var i = 0; i < playerCount; i++)
             {
-              scores[i] = BitConverter.ToInt32(buffer, i * 4 + 6) * 100;
+              scores[i] = BitConverter.ToInt32(block, indexInBlock) * 100;
+              indexInBlock += 4;
             }
 
-            var roundWind = TileType.FromTileTypeId(27 + buffer[0] / 4);
-            visitor.Seed(roundWind, buffer[1], buffer[2], buffer[3], buffer[4], Tile.FromTileId(buffer[5]));
+            activePlayerId = block[indexInBlock++];
+
+            visitor.Seed(roundWind, honba, riichiSticks, dice0, dice1, doraIndicator);
             visitor.Scores(scores);
-            activePlayerId = buffer[^1];
             visitor.Oya(activePlayerId);
 #if DEBUG
             log.AppendLine("init");
@@ -96,10 +97,12 @@ namespace Spines.Mahjong.Analysis.Replay
           case 2: // INIT haipai 1 byte playerId, 13 bytes tileIds
           {
             var playerId = block[indexInBlock++];
-            Array.Copy(block, indexInBlock, haipaiBuffer, 0, haipaiBuffer.Length);
-            indexInBlock += haipaiBuffer.Length;
-            var tiles = haipaiBuffer.Select(b => Tile.FromTileId(b));
-            visitor.Haipai(playerId, tiles);
+            for (var i = 0; i < 13; i++)
+            {
+              haipai[i] = Tile.FromTileId(block[indexInBlock++]);
+            }
+            
+            visitor.Haipai(playerId, haipai);
 #if DEBUG
             log.AppendLine("haipai");
 #endif
@@ -135,6 +138,7 @@ namespace Spines.Mahjong.Analysis.Replay
             visitor.Discard(activePlayerId, tile);
 
             activePlayerId = (activePlayerId + 1) % 4;
+
 #if DEBUG
             log.AppendLine("tsumogiri");
 #endif
@@ -142,13 +146,13 @@ namespace Spines.Mahjong.Analysis.Replay
           }
           case 6: //Chii: 1 byte who, 1 byte fromWho, 1 byte called tileId, 2 bytes tileIds from hand, 1 byte 0 (padding)
           {
-            Array.Copy(block, indexInBlock, meldBuffer, 0, meldBuffer.Length);
-            indexInBlock += meldBuffer.Length;
-            var who = meldBuffer[0];
-            var fromWho = meldBuffer[1];
-            var calledTile = Tile.FromTileId(meldBuffer[2]);
-            var handTile0 = Tile.FromTileId(meldBuffer[3]);
-            var handTile1 = Tile.FromTileId(meldBuffer[4]);
+            var who = block[indexInBlock++];
+            var fromWho = block[indexInBlock++];
+            var calledTile = Tile.FromTileId(block[indexInBlock++]);
+            var handTile0 = Tile.FromTileId(block[indexInBlock++]);
+            var handTile1 = Tile.FromTileId(block[indexInBlock++]);
+            indexInBlock++;
+
             visitor.Chii(who, fromWho, calledTile, handTile0, handTile1);
 
 #if DEBUG
@@ -159,13 +163,13 @@ namespace Spines.Mahjong.Analysis.Replay
           }
           case 7: //Pon: 1 byte who, 1 byte fromWho, 1 byte called tileId, 2 bytes tileIds from hand, 1 byte 0 (padding)
           {
-            Array.Copy(block, indexInBlock, meldBuffer, 0, meldBuffer.Length);
-            indexInBlock += meldBuffer.Length;
-            var who = meldBuffer[0];
-            var fromWho = meldBuffer[1];
-            var calledTile = Tile.FromTileId(meldBuffer[2]);
-            var handTile0 = Tile.FromTileId(meldBuffer[3]);
-            var handTile1 = Tile.FromTileId(meldBuffer[4]);
+            var who = block[indexInBlock++];
+            var fromWho = block[indexInBlock++];
+            var calledTile = Tile.FromTileId(block[indexInBlock++]);
+            var handTile0 = Tile.FromTileId(block[indexInBlock++]);
+            var handTile1 = Tile.FromTileId(block[indexInBlock++]);
+            indexInBlock++;
+
             visitor.Pon(who, fromWho, calledTile, handTile0, handTile1);
 #if DEBUG
             Debug.Assert(activePlayerId != who || (fromWho + 1) % 4 == activePlayerId);
@@ -176,14 +180,13 @@ namespace Spines.Mahjong.Analysis.Replay
           }
           case 8: //Daiminkan: 1 byte who, 1 byte fromWho, 1 byte called tileId, 3 bytes tileIds from hand
           {
-            Array.Copy(block, indexInBlock, meldBuffer, 0, meldBuffer.Length);
-            indexInBlock += meldBuffer.Length;
-            var who = meldBuffer[0];
-            var fromWho = meldBuffer[1];
-            var calledTile = Tile.FromTileId(meldBuffer[2]);
-            var handTile0 = Tile.FromTileId(meldBuffer[3]);
-            var handTile1 = Tile.FromTileId(meldBuffer[4]);
-            var handTile2 = Tile.FromTileId(meldBuffer[5]);
+            var who = block[indexInBlock++];
+            var fromWho = block[indexInBlock++];
+            var calledTile = Tile.FromTileId(block[indexInBlock++]);
+            var handTile0 = Tile.FromTileId(block[indexInBlock++]);
+            var handTile1 = Tile.FromTileId(block[indexInBlock++]);
+            var handTile2 = Tile.FromTileId(block[indexInBlock++]);
+
             visitor.Daiminkan(who, fromWho, calledTile, handTile0, handTile1, handTile2);
 #if DEBUG
             Debug.Assert(activePlayerId != who || (fromWho + 1) % 4 == activePlayerId);
@@ -194,14 +197,13 @@ namespace Spines.Mahjong.Analysis.Replay
           }
           case 9: //Shouminkan: 1 byte who, 1 byte fromWho, 1 byte called tileId, 1 byte added tileId, 2 bytes tileIds from hand
           {
-            Array.Copy(block, indexInBlock, meldBuffer, 0, meldBuffer.Length);
-            indexInBlock += meldBuffer.Length;
-            var who = meldBuffer[0];
-            var fromWho = meldBuffer[1];
-            var calledTile = Tile.FromTileId(meldBuffer[2]);
-            var addedTile = Tile.FromTileId(meldBuffer[3]);
-            var handTile0 = Tile.FromTileId(meldBuffer[4]);
-            var handTile1 = Tile.FromTileId(meldBuffer[5]);
+            var who = block[indexInBlock++];
+            var fromWho = block[indexInBlock++];
+            var calledTile = Tile.FromTileId(block[indexInBlock++]);
+            var addedTile = Tile.FromTileId(block[indexInBlock++]);
+            var handTile0 = Tile.FromTileId(block[indexInBlock++]);
+            var handTile1 = Tile.FromTileId(block[indexInBlock++]);
+
             visitor.Shouminkan(who, fromWho, calledTile, addedTile, handTile0, handTile1);
             
 #if DEBUG
@@ -212,10 +214,13 @@ namespace Spines.Mahjong.Analysis.Replay
           }
           case 10: //Ankan: 1 byte who, 1 byte who (padding), 4 bytes tileIds from hand
           {
-            Array.Copy(block, indexInBlock, meldBuffer, 0, meldBuffer.Length);
-            indexInBlock += meldBuffer.Length;
-            var who = meldBuffer[0];
-            var tileType = TileType.FromTileId(meldBuffer[2]);
+            var who = block[indexInBlock++];
+            indexInBlock++;
+            var tileType = TileType.FromTileId(block[indexInBlock++]);
+            indexInBlock++;
+            indexInBlock++;
+            indexInBlock++;
+
             visitor.Ankan(who, tileType);
             
 #if DEBUG
@@ -226,10 +231,12 @@ namespace Spines.Mahjong.Analysis.Replay
           }
           case 11: //Nuki: 1 byte who, 1 byte who (padding), 1 byte tileId, 3 bytes 0 (padding)
           {
-            Array.Copy(block, indexInBlock, meldBuffer, 0, meldBuffer.Length);
-            indexInBlock += meldBuffer.Length;
-            var who = meldBuffer[0];
-            var tile = Tile.FromTileId(meldBuffer[2]);
+            var who = block[indexInBlock++];
+            indexInBlock++;
+            var tile = Tile.FromTileId(block[indexInBlock++]);
+            indexInBlock++;
+            indexInBlock++;
+            indexInBlock++;
             visitor.Nuki(who, tile);
             
 #if DEBUG
@@ -239,188 +246,95 @@ namespace Spines.Mahjong.Analysis.Replay
             break;
           }
           case 12: //Ron
+          case 13: //Tsumo
           {
-            var honbaAndRiichiSticksBuffer = new byte[2];
-            Array.Copy(block, indexInBlock, honbaAndRiichiSticksBuffer, 0, honbaAndRiichiSticksBuffer.Length);
-            indexInBlock += honbaAndRiichiSticksBuffer.Length;
+            var honba = block[indexInBlock++];
+            var riichiSticks = block[indexInBlock++];
 
             var haiLength = block[indexInBlock++];
-            var haiBuffer = new byte[haiLength];
-            Array.Copy(block, indexInBlock, haiBuffer, 0, haiBuffer.Length);
-            indexInBlock += haiBuffer.Length;
+            indexInBlock += haiLength;
 
             var meldCount = block[indexInBlock++];
-            var ronMeldBuffer = new byte[meldCount * 7];
-            Array.Copy(block, indexInBlock, ronMeldBuffer, 0, ronMeldBuffer.Length);
-            indexInBlock += ronMeldBuffer.Length;
+            var isOpen = HasOpenMeld(block, indexInBlock);
+            indexInBlock += meldCount * 7;
 
             var machi = Tile.FromTileId(block[indexInBlock++]); // machi
 
-            var tenBuffer = new byte[3 * 4];
-            Array.Copy(block, indexInBlock, tenBuffer, 0, tenBuffer.Length);
-            indexInBlock += tenBuffer.Length;
-            var fu = BitConverter.ToInt32(tenBuffer, 0);
-            var score = BitConverter.ToInt32(tenBuffer, 4);
-            var limitKind = BitConverter.ToInt32(tenBuffer, 8); // limit kind: 1 for mangan, ... 5 for yakuman
+            var fu = BitConverter.ToInt32(block, indexInBlock);
+            var score = BitConverter.ToInt32(block, indexInBlock + 4);
+            var limitKind = BitConverter.ToInt32(block, indexInBlock + 8); // limit kind: 1 for mangan, ... 5 for yakuman
+            indexInBlock += 12;
 
             var yakuLength = block[indexInBlock++];
-            var yakuBuffer = new byte[yakuLength];
-            Array.Copy(block, indexInBlock, yakuBuffer, 0, yakuBuffer.Length);
-            indexInBlock += yakuBuffer.Length;
+            var yakuOffset = indexInBlock;
+            indexInBlock += yakuLength;
 
             var yakumanLength = block[indexInBlock++];
-            var yakumanBuffer = new byte[yakumanLength];
-            Array.Copy(block, indexInBlock, yakumanBuffer, 0, yakumanBuffer.Length);
-            indexInBlock += yakumanBuffer.Length;
+            var yakumanOffset = indexInBlock;
+            indexInBlock += yakumanLength;
 
-            var yaku = ToYakuEnum(yakuBuffer, yakumanBuffer, ronMeldBuffer);
+            var yaku = ToYakuEnum(block, yakuOffset, yakuLength, yakumanOffset, yakumanLength, isOpen);
 
             var doraHaiLength = block[indexInBlock++];
-            var doraBuffer = new byte[doraHaiLength];
-            Array.Copy(block, indexInBlock, doraBuffer, 0, doraBuffer.Length);
-            indexInBlock += doraBuffer.Length;
-            var dora = doraBuffer.Select(i => Tile.FromTileId(i));
+            indexInBlock += doraHaiLength;
 
             var doraHaiUraLength = block[indexInBlock++];
-            var uraDoraBuffer = new byte[doraHaiUraLength];
-            Array.Copy(block, indexInBlock, uraDoraBuffer, 0, uraDoraBuffer.Length);
-            indexInBlock += uraDoraBuffer.Length;
-            var uraDora = uraDoraBuffer.Select(i => Tile.FromTileId(i));
+            indexInBlock += doraHaiUraLength;
 
-            var who = block[indexInBlock++]; // who
-            var fromWho = block[indexInBlock++]; // fromWho
-            var paoWho = block[indexInBlock++]; // paoWho
-
-            var scoreBuffer = new byte[2 * 4 * playerCount];
-            Array.Copy(block, indexInBlock, scoreBuffer, 0, scoreBuffer.Length);
-            indexInBlock += scoreBuffer.Length;
+            var who = block[indexInBlock++];
+            var fromWho = block[indexInBlock++];
+            var paoWho = block[indexInBlock++];
+            
             var scores = new int[playerCount];
-            for (var i = 0; i < playerCount; i++)
-            {
-              scores[i] = BitConverter.ToInt32(scoreBuffer, i * 8);
-            }
-
             var scoreChanges = new int[playerCount];
             for (var i = 0; i < playerCount; i++)
             {
-              scoreChanges[i] = BitConverter.ToInt32(scoreBuffer, i * 8 + 4);
+              scores[i] = BitConverter.ToInt32(block, indexInBlock);
+              indexInBlock += 4;
+              scoreChanges[i] = BitConverter.ToInt32(block, indexInBlock);
+              indexInBlock += 4;
             }
 
             var payment = new PaymentInformation(fu, score, scoreChanges, yaku);
 
-            visitor.Ron(who, fromWho, payment);
-#if DEBUG
-            Debug.Assert(activePlayerId != who || (fromWho + 1) % 4 == activePlayerId);
-            log.AppendLine("ron");
-#endif
-            break;
-          }
-          case 13: //Tsumo
-          {
-            var honbaAndRiichiSticksBuffer = new byte[2];
-            Array.Copy(block, indexInBlock, honbaAndRiichiSticksBuffer, 0, honbaAndRiichiSticksBuffer.Length);
-            indexInBlock += honbaAndRiichiSticksBuffer.Length;
-
-            var haiLength = block[indexInBlock++];
-            var haiBuffer = new byte[haiLength];
-            Array.Copy(block, indexInBlock, haiBuffer, 0, haiBuffer.Length);
-            indexInBlock += haiBuffer.Length;
-
-            var meldCount = block[indexInBlock++];
-            var tsumoMeldBuffer = new byte[meldCount * 7];
-            Array.Copy(block, indexInBlock, tsumoMeldBuffer, 0, tsumoMeldBuffer.Length);
-            indexInBlock += tsumoMeldBuffer.Length;
-
-            var machi = block[indexInBlock++]; // machi
-
-            var tenBuffer = new byte[3 * 4];
-            Array.Copy(block, indexInBlock, tenBuffer, 0, tenBuffer.Length);
-            indexInBlock += tenBuffer.Length;
-            var fu = BitConverter.ToInt32(tenBuffer, 0);
-            var score = BitConverter.ToInt32(tenBuffer, 4);
-            var limitKind = BitConverter.ToInt32(tenBuffer, 8); // limit kind: 1 for mangan, ... 5 for yakuman
-
-            var yakuLength = block[indexInBlock++];
-            var yakuBuffer = new byte[yakuLength];
-            Array.Copy(block, indexInBlock, yakuBuffer, 0, yakuBuffer.Length);
-            indexInBlock += yakuBuffer.Length;
-
-            var yakumanLength = block[indexInBlock++];
-            var yakumanBuffer = new byte[yakumanLength];
-            Array.Copy(block, indexInBlock, yakumanBuffer, 0, yakumanBuffer.Length);
-            indexInBlock += yakumanBuffer.Length;
-
-            var yaku = ToYakuEnum(yakuBuffer, yakumanBuffer, tsumoMeldBuffer);
-
-            var doraHaiLength = block[indexInBlock++];
-            var doraBuffer = new byte[doraHaiLength];
-            Array.Copy(block, indexInBlock, doraBuffer, 0, doraBuffer.Length);
-            indexInBlock += doraBuffer.Length;
-            var dora = doraBuffer.Select(i => Tile.FromTileId(i));
-
-            var doraHaiUraLength = block[indexInBlock++];
-            var uraDoraBuffer = new byte[doraHaiUraLength];
-            Array.Copy(block, indexInBlock, uraDoraBuffer, 0, uraDoraBuffer.Length);
-            indexInBlock += uraDoraBuffer.Length;
-            var uraDora = uraDoraBuffer.Select(i => Tile.FromTileId(i));
-
-            var who = block[indexInBlock++]; // who
-            var fromWho = block[indexInBlock++]; // fromWho
-            var paoWho = block[indexInBlock++]; // paoWho
-
-            var scoreBuffer = new byte[2 * 4 * playerCount];
-            Array.Copy(block, indexInBlock, scoreBuffer, 0, scoreBuffer.Length);
-            indexInBlock += scoreBuffer.Length;
-            var scores = new int[playerCount];
-            for (var i = 0; i < playerCount; i++)
+            if (action == 12)
             {
-              scores[i] = BitConverter.ToInt32(scoreBuffer, i * 8);
+              visitor.Ron(who, fromWho, payment);
+#if DEBUG
+              Debug.Assert(activePlayerId != who || (fromWho + 1) % 4 == activePlayerId);
+              log.AppendLine("ron");
+#endif
+            }
+            else
+            {
+              visitor.Tsumo(who, payment);
+#if DEBUG
+              Debug.Assert(activePlayerId == who);
+              log.AppendLine("tsumo");
+#endif
             }
 
-            var scoreChanges = new int[playerCount];
-            for (var i = 0; i < playerCount; i++)
-            {
-              scoreChanges[i] = BitConverter.ToInt32(scoreBuffer, i * 8 + 4);
-            }
-
-            var payment = new PaymentInformation(fu, score, scoreChanges, yaku);
-
-            visitor.Tsumo(who, payment);
-#if DEBUG
-            Debug.Assert(activePlayerId == who);
-            log.AppendLine("tsumo");
-#endif
             break;
           }
           case 14: //Ryuukyoku: 2 byte ba, 2*4*playerCount byte score, 1 byte ryuukyokuType, 4 byte tenpaiState
           {
-            var buffer = new byte[2 + 2 * 4 * playerCount + 1 + 4];
-            Array.Copy(block, indexInBlock, buffer, 0, buffer.Length);
-            indexInBlock += buffer.Length;
-
-            var honba = buffer[0];
-            var riichiSticks = buffer[1];
+            var honba = block[indexInBlock++];
+            var riichiSticks = block[indexInBlock++];
 
             var scores = new int[playerCount];
-            for (var i = 0; i < playerCount; i++)
-            {
-              scores[i] = BitConverter.ToInt32(buffer, i * 8 + 2);
-            }
-
             var scoreChanges = new int[playerCount];
             for (var i = 0; i < playerCount; i++)
             {
-              scores[i] = BitConverter.ToInt32(buffer, i * 8 + 6);
+              scores[i] = BitConverter.ToInt32(block, indexInBlock);
+              indexInBlock += 4;
+              scoreChanges[i] = BitConverter.ToInt32(block, indexInBlock);
+              indexInBlock += 4;
             }
 
-            var ryuukyokuType = (RyuukyokuType) buffer[2 + 2 * 4 * playerCount];
+            var ryuukyokuType = (RyuukyokuType) block[indexInBlock++];
 
-            var isTenpai = new bool[playerCount];
-            for (var i = 0; i < playerCount; i++)
-            {
-              isTenpai[i] = buffer[2 + 2 * 4 * playerCount + 1 + i] != 0;
-            }
-
+            indexInBlock += 4; // tenpai states
+            
             visitor.Ryuukyoku(ryuukyokuType, honba, riichiSticks, scores, scoreChanges);
 #if DEBUG
             log.AppendLine("ryuukyoku");
@@ -460,35 +374,34 @@ namespace Spines.Mahjong.Analysis.Replay
           }
           default:
           {
-            throw new NotImplementedException("Have to handle each value to read away the data");
+            throw new InvalidDataException("Have to handle each value to read away the data");
           }
         }
       }
     }
 
-    private static Yaku ToYakuEnum(byte[] yakuBuffer, byte[] yakumanBuffer, byte[] meldBuffer)
+    private static Yaku ToYakuEnum(byte[] block, int yakuOffset, int yakuLength, int yakumanOffset, int yakumanLength, bool isOpen)
     {
-      var isOpen = HasOpenMeld(meldBuffer);
       var lookup = isOpen ? TenhouYakuIdToOpenYaku : TenhouYakuIdToClosedYaku;
       var result = Yaku.None;
-      for (var i = 0; i < yakuBuffer.Length; i += 2)
+      for (var i = 0; i < yakuLength; i += 2)
       {
-        result |= lookup[yakuBuffer[i]];
+        result |= lookup[block[yakuOffset + i]];
       }
 
-      for (var i = 0; i < yakumanBuffer.Length; i++)
+      for (var i = 0; i < yakumanLength; i++)
       {
-        result |= lookup[yakumanBuffer[i]];
+        result |= lookup[block[yakumanOffset + i]];
       }
 
       return result;
     }
 
-    private static bool HasOpenMeld(byte[] meldBuffer)
+    private static bool HasOpenMeld(byte[] meldBuffer, int offset)
     {
       for (var i = 0; i < meldBuffer.Length; i += 7)
       {
-        if (meldBuffer[i] != 10)
+        if (meldBuffer[offset + i] != 10)
         {
           return true;
         }
