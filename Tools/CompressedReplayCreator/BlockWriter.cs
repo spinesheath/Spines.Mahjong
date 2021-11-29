@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Spines.Mahjong.Analysis.Replay;
@@ -75,10 +76,7 @@ namespace CompressedReplayCreator
       _stream.WriteByte(paoWho);
       _stream.Write(scores.SelectMany(BitConverter.GetBytes).ToArray());
 
-      if (_indexInBlock != _stream.Length % 1024)
-      {
-
-      }
+      Debug.Assert(_indexInBlock == _stream.Length % 1024);
     }
 
     public void CallRiichi(byte who)
@@ -87,11 +85,8 @@ namespace CompressedReplayCreator
 
       _stream.WriteByte((byte) Node.CallRiichi);
       _stream.WriteByte(who);
-
-      if (_indexInBlock != _stream.Length % 1024)
-      {
-
-      }
+      
+      Debug.Assert(_indexInBlock == _stream.Length % 1024);
     }
 
     public void Discard(byte tileId)
@@ -101,10 +96,7 @@ namespace CompressedReplayCreator
       _stream.WriteByte((byte) Node.Discard);
       _stream.WriteByte(tileId);
 
-      if (_indexInBlock != _stream.Length % 1024)
-      {
-
-      }
+      Debug.Assert(_indexInBlock == _stream.Length % 1024);
     }
 
     public void Dora(byte tileId)
@@ -114,10 +106,7 @@ namespace CompressedReplayCreator
       _stream.WriteByte((byte) Node.Dora);
       _stream.WriteByte(tileId);
 
-      if (_indexInBlock != _stream.Length % 1024)
-      {
-
-      }
+      Debug.Assert(_indexInBlock == _stream.Length % 1024);
     }
 
     public void Draw(byte tileId)
@@ -127,10 +116,7 @@ namespace CompressedReplayCreator
       _stream.WriteByte((byte) Node.Draw);
       _stream.WriteByte(tileId);
 
-      if (_indexInBlock != _stream.Length % 1024)
-      {
-
-      }
+      Debug.Assert(_indexInBlock == _stream.Length % 1024);
     }
 
     public void Go(GameTypeFlag flags)
@@ -140,10 +126,7 @@ namespace CompressedReplayCreator
       _stream.WriteByte((byte) Node.Go);
       _stream.WriteByte((byte) flags);
 
-      if (_indexInBlock != _stream.Length % 1024)
-      {
-
-      }
+      Debug.Assert(_indexInBlock == _stream.Length % 1024);
     }
 
     public void Init(byte[] seed, IEnumerable<int> ten, byte oya, byte[][] hai, int playerCount)
@@ -166,10 +149,7 @@ namespace CompressedReplayCreator
         _stream.Write(hai[i]);
       }
 
-      if (_indexInBlock != _stream.Length % 1024)
-      {
-
-      }
+      Debug.Assert(_indexInBlock == _stream.Length % 1024);
     }
 
     public void Meld(byte who, string meldCode)
@@ -178,10 +158,7 @@ namespace CompressedReplayCreator
 
       MeldInternal(who, meldCode);
 
-      if (_indexInBlock != _stream.Length % 1024)
-      {
-
-      }
+      Debug.Assert(_indexInBlock == _stream.Length % 1024);
     }
 
     private void MeldInternal(byte who, string meldCode)
@@ -226,10 +203,7 @@ namespace CompressedReplayCreator
       _stream.WriteByte((byte) Node.PayRiichi);
       _stream.WriteByte(who);
 
-      if (_indexInBlock != _stream.Length % 1024)
-      {
-
-      }
+      Debug.Assert(_indexInBlock == _stream.Length % 1024);
     }
 
     public void Ryuukyoku(RyuukyokuType type, byte[] ba, IEnumerable<int> scores, bool[] tenpai, int playerCount)
@@ -249,10 +223,7 @@ namespace CompressedReplayCreator
         _stream.WriteByte(tenpai[i] ? (byte) 0 : (byte) 1);
       }
 
-      if (_indexInBlock != _stream.Length % 1024)
-      {
-
-      }
+      Debug.Assert(_indexInBlock == _stream.Length % 1024);
     }
 
     public void Tsumogiri(byte tileId)
@@ -261,11 +232,8 @@ namespace CompressedReplayCreator
 
       _stream.WriteByte((byte) Node.Tsumogiri);
       _stream.WriteByte(tileId);
-      
-      if (_indexInBlock != _stream.Length % 1024)
-      {
 
-      }
+      Debug.Assert(_indexInBlock == _stream.Length % 1024);
     }
 
     private const int BlockSize = 1024;

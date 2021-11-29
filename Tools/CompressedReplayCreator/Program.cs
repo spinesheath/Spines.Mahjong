@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Xml;
 
 namespace CompressedReplayCreator
@@ -53,7 +52,7 @@ namespace CompressedReplayCreator
     {
       var count = 0;
       var xmlReaderSettings = new XmlReaderSettings { NameTable = null };
-      foreach (var fileName in Directory.EnumerateFiles(_sourceDirectory).Take(10))
+      foreach (var fileName in Directory.EnumerateFiles(_sourceDirectory))
       {
         using var xmlReader = XmlReader.Create(fileName, xmlReaderSettings);
         var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
