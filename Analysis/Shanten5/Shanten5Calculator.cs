@@ -191,6 +191,7 @@ namespace Spines.Mahjong.Analysis.Shanten5
     private static Vector128<byte> CalculatePhase1(Vector128<byte> a, Vector128<byte> b)
     {
       // first calculate all the sums, then merge them down with repeated vertical max
+      // TODO load kokushi with and without pair from file, then combine into 2 values here, then same reverse/add as for regular shape in phase 2
 
       var va1 = Ssse3.Shuffle(a, Phase1ShuffleA1);
       var vb1 = Ssse3.Shuffle(b, Phase1ShuffleB1);
