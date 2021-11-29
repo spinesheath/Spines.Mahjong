@@ -16,7 +16,7 @@
     Nuki = 11, // 1 byte who, 1 byte who (padding), 1 byte tileId, 3 bytes 0 (padding)
     Ron = 12, // 1 byte who, 1 byte fromWho
     Tsumo = 13, // 1 byte who
-    Ryuukyoku = 14,
+    Ryuukyoku = 14, //2 byte ba, 2*4*playerCount byte score, 1 byte ryuukyokuType, 4 byte tenpaiState
     Dora = 15, // 1 byte tileId
     CallRiichi = 16, // 1 byte who
     PayRiichi = 17, // 1 byte who

@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Xml;
 using Spines.Mahjong.Analysis.Replay;
 using Spines.Mahjong.Analysis.Shanten;
 using Xunit;
@@ -149,8 +148,7 @@ namespace Spines.Mahjong.Analysis.Tests
 
       Assert.Equal(1, actual);
     }
-
-    private const string ReplaysFolder = @"C:\tenhou\2014";
+    
     private static readonly string[] BundlesFolders = new[]
     {
       @"C:\tenhou\compressed2\2016\yonma",

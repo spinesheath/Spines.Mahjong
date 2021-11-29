@@ -1,6 +1,8 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Spines.Mahjong.Analysis.Score;
 using Spines.Mahjong.Analysis.State;
 
@@ -15,36 +17,66 @@ namespace Spines.Mahjong.Analysis.Replay
       var playerCount = 4;
       var activePlayerId = 0;
 
-      while (true)
+      var indexInBlock = 0;
+      var block = new byte[1024];
+      var maxIndex = file.Read(block);
+
+#if DEBUG
+      var log = new StringBuilder();
+#endif
+
+
+      while (maxIndex > indexInBlock)
       {
-        var action = file.ReadByte();
-        if (action == -1)
+        var action = block[indexInBlock++];
+        if (action == 32)
+        {
+          maxIndex = file.Read(block);
+          indexInBlock = 0;
+
+#if DEBUG
+          log.AppendLine("block");
+#endif
+          continue;
+        }
+        
+        if (action == 255)
         {
           visitor.End();
+#if DEBUG
+          log.AppendLine("end bundle");
+#endif
           return;
         }
         if (action == 127)
         {
           visitor.EndMatch();
+#if DEBUG
+          log.AppendLine("end match");
+#endif
           continue;
         }
 
         switch (action)
         {
           case 0: // GO flags: 1 byte
-            var flags = (GameTypeFlag)file.ReadByte();
+            var flags = (GameTypeFlag) block[indexInBlock++];
             if (flags.HasFlag(GameTypeFlag.Sanma))
             {
               playerCount = 3;
             }
 
             visitor.GameType(flags);
+#if DEBUG
+            log.AppendLine("go");
+#endif
             break;
           case 1: // INIT seed: 6 bytes, ten: playerCount*4 bytes, oya: 1 byte
           {
             var buffer = new byte[6 + 4 * playerCount + 1];
-            file.Read(buffer);
-            
+            Array.Copy(block, indexInBlock, buffer, 0, buffer.Length);
+            indexInBlock += buffer.Length;
+
             var scores = new int[playerCount];
             for (var i = 0; i < playerCount; i++)
             {
@@ -56,47 +88,62 @@ namespace Spines.Mahjong.Analysis.Replay
             visitor.Scores(scores);
             activePlayerId = buffer[^1];
             visitor.Oya(activePlayerId);
+#if DEBUG
+            log.AppendLine("init");
+#endif
             break;
           }
           case 2: // INIT haipai 1 byte playerId, 13 bytes tileIds
           {
-            var playerId = file.ReadByte();
-            file.Read(haipaiBuffer);
+            var playerId = block[indexInBlock++];
+            Array.Copy(block, indexInBlock, haipaiBuffer, 0, haipaiBuffer.Length);
+            indexInBlock += haipaiBuffer.Length;
             var tiles = haipaiBuffer.Select(b => Tile.FromTileId(b));
             visitor.Haipai(playerId, tiles);
+#if DEBUG
+            log.AppendLine("haipai");
+#endif
             break;
           }
           case 3: // Draw: 1 byte playerId, 1 byte tileId
           {
-            var tileId = file.ReadByte();
+            var tileId = block[indexInBlock++];
             var tile = Tile.FromTileId(tileId);
             visitor.Draw(activePlayerId, tile);
+#if DEBUG
+            log.AppendLine("draw");
+#endif
             break;
           }
           case 4: // Discard: 1 byte playerId, 1 byte tileId
           {
-            var tileId = file.ReadByte();
+            var tileId = block[indexInBlock++];
             var tile = Tile.FromTileId(tileId);
             visitor.Discard(activePlayerId, tile);
 
             activePlayerId = (activePlayerId + 1) % 4;
-
+#if DEBUG
+            log.AppendLine("discard");
+#endif
             break;
           }
           case 5: // Tsumogiri: 1 byte playerId, 1 byte tileId
           {
-            var tileId = file.ReadByte();
+            var tileId = block[indexInBlock++];
             var tile = Tile.FromTileId(tileId);
             visitor.Draw(activePlayerId, tile);
             visitor.Discard(activePlayerId, tile);
 
             activePlayerId = (activePlayerId + 1) % 4;
-
+#if DEBUG
+            log.AppendLine("tsumogiri");
+#endif
             break;
           }
           case 6: //Chii: 1 byte who, 1 byte fromWho, 1 byte called tileId, 2 bytes tileIds from hand, 1 byte 0 (padding)
           {
-            file.Read(meldBuffer);
+            Array.Copy(block, indexInBlock, meldBuffer, 0, meldBuffer.Length);
+            indexInBlock += meldBuffer.Length;
             var who = meldBuffer[0];
             var fromWho = meldBuffer[1];
             var calledTile = Tile.FromTileId(meldBuffer[2]);
@@ -104,55 +151,51 @@ namespace Spines.Mahjong.Analysis.Replay
             var handTile1 = Tile.FromTileId(meldBuffer[4]);
             visitor.Chii(who, fromWho, calledTile, handTile0, handTile1);
 
-            if (activePlayerId != who)
-            {
-
-            }
-
+#if DEBUG
+            Debug.Assert(activePlayerId == who);
+            log.AppendLine("chii");
+#endif
             break;
           }
           case 7: //Pon: 1 byte who, 1 byte fromWho, 1 byte called tileId, 2 bytes tileIds from hand, 1 byte 0 (padding)
           {
-            file.Read(meldBuffer);
+            Array.Copy(block, indexInBlock, meldBuffer, 0, meldBuffer.Length);
+            indexInBlock += meldBuffer.Length;
             var who = meldBuffer[0];
             var fromWho = meldBuffer[1];
-
-            if (activePlayerId == who && (fromWho + 1) % 4 != activePlayerId)
-            {
-
-            }
-
-            activePlayerId = who;
-
             var calledTile = Tile.FromTileId(meldBuffer[2]);
             var handTile0 = Tile.FromTileId(meldBuffer[3]);
             var handTile1 = Tile.FromTileId(meldBuffer[4]);
             visitor.Pon(who, fromWho, calledTile, handTile0, handTile1);
+#if DEBUG
+            Debug.Assert(activePlayerId != who || (fromWho + 1) % 4 == activePlayerId);
+            log.AppendLine("pon");
+#endif
+            activePlayerId = who;
             break;
           }
           case 8: //Daiminkan: 1 byte who, 1 byte fromWho, 1 byte called tileId, 3 bytes tileIds from hand
           {
-            file.Read(meldBuffer);
+            Array.Copy(block, indexInBlock, meldBuffer, 0, meldBuffer.Length);
+            indexInBlock += meldBuffer.Length;
             var who = meldBuffer[0];
             var fromWho = meldBuffer[1];
-
-            if (activePlayerId == who && (fromWho + 1) % 4 != activePlayerId)
-            {
-
-            }
-
-            activePlayerId = who;
-
             var calledTile = Tile.FromTileId(meldBuffer[2]);
             var handTile0 = Tile.FromTileId(meldBuffer[3]);
             var handTile1 = Tile.FromTileId(meldBuffer[4]);
             var handTile2 = Tile.FromTileId(meldBuffer[5]);
             visitor.Daiminkan(who, fromWho, calledTile, handTile0, handTile1, handTile2);
+#if DEBUG
+            Debug.Assert(activePlayerId != who || (fromWho + 1) % 4 == activePlayerId);
+            log.AppendLine("daiminkan");
+#endif
+            activePlayerId = who;
             break;
           }
           case 9: //Shouminkan: 1 byte who, 1 byte fromWho, 1 byte called tileId, 1 byte added tileId, 2 bytes tileIds from hand
           {
-            file.Read(meldBuffer);
+            Array.Copy(block, indexInBlock, meldBuffer, 0, meldBuffer.Length);
+            indexInBlock += meldBuffer.Length;
             var who = meldBuffer[0];
             var fromWho = meldBuffer[1];
             var calledTile = Tile.FromTileId(meldBuffer[2]);
@@ -160,94 +203,97 @@ namespace Spines.Mahjong.Analysis.Replay
             var handTile0 = Tile.FromTileId(meldBuffer[4]);
             var handTile1 = Tile.FromTileId(meldBuffer[5]);
             visitor.Shouminkan(who, fromWho, calledTile, addedTile, handTile0, handTile1);
-
-            if (activePlayerId != who)
-            {
-
-            }
-
+            
+#if DEBUG
+            Debug.Assert(activePlayerId == who);
+            log.AppendLine("shouminkan");
+#endif
             break;
           }
           case 10: //Ankan: 1 byte who, 1 byte who (padding), 4 bytes tileIds from hand
           {
-            file.Read(meldBuffer);
+            Array.Copy(block, indexInBlock, meldBuffer, 0, meldBuffer.Length);
+            indexInBlock += meldBuffer.Length;
             var who = meldBuffer[0];
             var tileType = TileType.FromTileId(meldBuffer[2]);
             visitor.Ankan(who, tileType);
-
-            if (activePlayerId != who)
-            {
-
-            }
-
+            
+#if DEBUG
+            Debug.Assert(activePlayerId == who);
+            log.AppendLine("ankan");
+#endif
             break;
           }
           case 11: //Nuki: 1 byte who, 1 byte who (padding), 1 byte tileId, 3 bytes 0 (padding)
           {
-            file.Read(meldBuffer);
+            Array.Copy(block, indexInBlock, meldBuffer, 0, meldBuffer.Length);
+            indexInBlock += meldBuffer.Length;
             var who = meldBuffer[0];
             var tile = Tile.FromTileId(meldBuffer[2]);
             visitor.Nuki(who, tile);
-
-            if (activePlayerId != who)
-            {
-
-            }
-
+            
+#if DEBUG
+            Debug.Assert(activePlayerId == who);
+            log.AppendLine("nuki");
+#endif
             break;
           }
           case 12: //Ron
           {
             var honbaAndRiichiSticksBuffer = new byte[2];
-            file.Read(honbaAndRiichiSticksBuffer); // ba
+            Array.Copy(block, indexInBlock, honbaAndRiichiSticksBuffer, 0, honbaAndRiichiSticksBuffer.Length);
+            indexInBlock += honbaAndRiichiSticksBuffer.Length;
 
-            var haiLength = file.ReadByte();
+            var haiLength = block[indexInBlock++];
             var haiBuffer = new byte[haiLength];
-            file.Read(haiBuffer);
+            Array.Copy(block, indexInBlock, haiBuffer, 0, haiBuffer.Length);
+            indexInBlock += haiBuffer.Length;
 
-            var meldCount = file.ReadByte();
+            var meldCount = block[indexInBlock++];
             var ronMeldBuffer = new byte[meldCount * 7];
-            file.Read(ronMeldBuffer);
+            Array.Copy(block, indexInBlock, ronMeldBuffer, 0, ronMeldBuffer.Length);
+            indexInBlock += ronMeldBuffer.Length;
 
-            var machi = Tile.FromTileId(file.ReadByte()); // machi
+            var machi = Tile.FromTileId(block[indexInBlock++]); // machi
 
             var tenBuffer = new byte[3 * 4];
-            file.Read(tenBuffer); // ten
+            Array.Copy(block, indexInBlock, tenBuffer, 0, tenBuffer.Length);
+            indexInBlock += tenBuffer.Length;
             var fu = BitConverter.ToInt32(tenBuffer, 0);
             var score = BitConverter.ToInt32(tenBuffer, 4);
             var limitKind = BitConverter.ToInt32(tenBuffer, 8); // limit kind: 1 for mangan, ... 5 for yakuman
 
-            var yakuLength = file.ReadByte();
+            var yakuLength = block[indexInBlock++];
             var yakuBuffer = new byte[yakuLength];
-            file.Read(yakuBuffer);
+            Array.Copy(block, indexInBlock, yakuBuffer, 0, yakuBuffer.Length);
+            indexInBlock += yakuBuffer.Length;
 
-            var yakumanLength = file.ReadByte();
+            var yakumanLength = block[indexInBlock++];
             var yakumanBuffer = new byte[yakumanLength];
-            file.Read(yakumanBuffer);
+            Array.Copy(block, indexInBlock, yakumanBuffer, 0, yakumanBuffer.Length);
+            indexInBlock += yakumanBuffer.Length;
 
             var yaku = ToYakuEnum(yakuBuffer, yakumanBuffer, ronMeldBuffer);
 
-            var doraHaiLength = file.ReadByte();
+            var doraHaiLength = block[indexInBlock++];
             var doraBuffer = new byte[doraHaiLength];
-            file.Read(doraBuffer);
+            Array.Copy(block, indexInBlock, doraBuffer, 0, doraBuffer.Length);
+            indexInBlock += doraBuffer.Length;
             var dora = doraBuffer.Select(i => Tile.FromTileId(i));
 
-            var doraHaiUraLength = file.ReadByte();
+            var doraHaiUraLength = block[indexInBlock++];
             var uraDoraBuffer = new byte[doraHaiUraLength];
-            file.Read(uraDoraBuffer);
+            Array.Copy(block, indexInBlock, uraDoraBuffer, 0, uraDoraBuffer.Length);
+            indexInBlock += uraDoraBuffer.Length;
             var uraDora = uraDoraBuffer.Select(i => Tile.FromTileId(i));
 
-            var who = file.ReadByte(); // who
-            var fromWho = file.ReadByte(); // fromWho
-            var paoWho = file.ReadByte(); // paoWho
-
-            if (activePlayerId == who && (fromWho + 1) % 4 != activePlayerId)
-            {
-
-            }
+            var who = block[indexInBlock++]; // who
+            var fromWho = block[indexInBlock++]; // fromWho
+            var paoWho = block[indexInBlock++]; // paoWho
 
             var scoreBuffer = new byte[2 * 4 * playerCount];
-            file.Read(scoreBuffer); // sc
+            Array.Copy(block, indexInBlock, scoreBuffer, 0, scoreBuffer.Length);
+            indexInBlock += scoreBuffer.Length;
             var scores = new int[playerCount];
             for (var i = 0; i < playerCount; i++)
             {
@@ -263,61 +309,68 @@ namespace Spines.Mahjong.Analysis.Replay
             var payment = new PaymentInformation(fu, score, scoreChanges, yaku);
 
             visitor.Ron(who, fromWho, payment);
-
+#if DEBUG
+            Debug.Assert(activePlayerId != who || (fromWho + 1) % 4 == activePlayerId);
+            log.AppendLine("ron");
+#endif
             break;
           }
           case 13: //Tsumo
           {
             var honbaAndRiichiSticksBuffer = new byte[2];
-            file.Read(honbaAndRiichiSticksBuffer); // ba
-            
-            var haiLength = file.ReadByte();
-            var haiBuffer = new byte[haiLength];
-            file.Read(haiBuffer);
-            
-            var meldCount = file.ReadByte();
-            var tsumoMeldBuffer = new byte[meldCount * 7];
-            file.Read(tsumoMeldBuffer);
+            Array.Copy(block, indexInBlock, honbaAndRiichiSticksBuffer, 0, honbaAndRiichiSticksBuffer.Length);
+            indexInBlock += honbaAndRiichiSticksBuffer.Length;
 
-            var machi = file.ReadByte(); // machi
+            var haiLength = block[indexInBlock++];
+            var haiBuffer = new byte[haiLength];
+            Array.Copy(block, indexInBlock, haiBuffer, 0, haiBuffer.Length);
+            indexInBlock += haiBuffer.Length;
+
+            var meldCount = block[indexInBlock++];
+            var tsumoMeldBuffer = new byte[meldCount * 7];
+            Array.Copy(block, indexInBlock, tsumoMeldBuffer, 0, tsumoMeldBuffer.Length);
+            indexInBlock += tsumoMeldBuffer.Length;
+
+            var machi = block[indexInBlock++]; // machi
 
             var tenBuffer = new byte[3 * 4];
-            file.Read(tenBuffer); // ten
+            Array.Copy(block, indexInBlock, tenBuffer, 0, tenBuffer.Length);
+            indexInBlock += tenBuffer.Length;
             var fu = BitConverter.ToInt32(tenBuffer, 0);
             var score = BitConverter.ToInt32(tenBuffer, 4);
             var limitKind = BitConverter.ToInt32(tenBuffer, 8); // limit kind: 1 for mangan, ... 5 for yakuman
 
-            var yakuLength = file.ReadByte();
+            var yakuLength = block[indexInBlock++];
             var yakuBuffer = new byte[yakuLength];
-            file.Read(yakuBuffer);
+            Array.Copy(block, indexInBlock, yakuBuffer, 0, yakuBuffer.Length);
+            indexInBlock += yakuBuffer.Length;
 
-            var yakumanLength = file.ReadByte();
+            var yakumanLength = block[indexInBlock++];
             var yakumanBuffer = new byte[yakumanLength];
-            file.Read(yakumanBuffer);
+            Array.Copy(block, indexInBlock, yakumanBuffer, 0, yakumanBuffer.Length);
+            indexInBlock += yakumanBuffer.Length;
 
             var yaku = ToYakuEnum(yakuBuffer, yakumanBuffer, tsumoMeldBuffer);
 
-            var doraHaiLength = file.ReadByte();
+            var doraHaiLength = block[indexInBlock++];
             var doraBuffer = new byte[doraHaiLength];
-            file.Read(doraBuffer);
+            Array.Copy(block, indexInBlock, doraBuffer, 0, doraBuffer.Length);
+            indexInBlock += doraBuffer.Length;
             var dora = doraBuffer.Select(i => Tile.FromTileId(i));
 
-            var doraHaiUraLength = file.ReadByte();
+            var doraHaiUraLength = block[indexInBlock++];
             var uraDoraBuffer = new byte[doraHaiUraLength];
-            file.Read(uraDoraBuffer);
+            Array.Copy(block, indexInBlock, uraDoraBuffer, 0, uraDoraBuffer.Length);
+            indexInBlock += uraDoraBuffer.Length;
             var uraDora = uraDoraBuffer.Select(i => Tile.FromTileId(i));
 
-            var who = file.ReadByte(); // who
-            var fromWho = file.ReadByte(); // fromWho
-            var paoWho = file.ReadByte(); // paoWho
-
-            if (activePlayerId != who)
-            {
-
-            }
+            var who = block[indexInBlock++]; // who
+            var fromWho = block[indexInBlock++]; // fromWho
+            var paoWho = block[indexInBlock++]; // paoWho
 
             var scoreBuffer = new byte[2 * 4 * playerCount];
-            file.Read(scoreBuffer); // sc
+            Array.Copy(block, indexInBlock, scoreBuffer, 0, scoreBuffer.Length);
+            indexInBlock += scoreBuffer.Length;
             var scores = new int[playerCount];
             for (var i = 0; i < playerCount; i++)
             {
@@ -333,13 +386,17 @@ namespace Spines.Mahjong.Analysis.Replay
             var payment = new PaymentInformation(fu, score, scoreChanges, yaku);
 
             visitor.Tsumo(who, payment);
-
+#if DEBUG
+            Debug.Assert(activePlayerId == who);
+            log.AppendLine("tsumo");
+#endif
             break;
           }
           case 14: //Ryuukyoku: 2 byte ba, 2*4*playerCount byte score, 1 byte ryuukyokuType, 4 byte tenpaiState
           {
             var buffer = new byte[2 + 2 * 4 * playerCount + 1 + 4];
-            file.Read(buffer);
+            Array.Copy(block, indexInBlock, buffer, 0, buffer.Length);
+            indexInBlock += buffer.Length;
 
             var honba = buffer[0];
             var riichiSticks = buffer[1];
@@ -365,36 +422,40 @@ namespace Spines.Mahjong.Analysis.Replay
             }
 
             visitor.Ryuukyoku(ryuukyokuType, honba, riichiSticks, scores, scoreChanges);
+#if DEBUG
+            log.AppendLine("ryuukyoku");
+#endif
             break;
           }
           case 15: //Dora: 1 byte tileId
           {
-            var tileId = file.ReadByte();
+            var tileId = block[indexInBlock++];
             visitor.Dora(Tile.FromTileId(tileId));
+#if DEBUG
+            log.AppendLine("dora");
+#endif
             break;
           }
           case 16: //CallRiichi: 1 byte who
           {
-            var who = file.ReadByte();
-
-            if (activePlayerId != who)
-            {
-
-            }
-
+            var who = block[indexInBlock++];
             visitor.DeclareRiichi(who);
+
+#if DEBUG
+            Debug.Assert(activePlayerId == who);
+            log.AppendLine("riichi");
+#endif
             break;
           }
           case 17: //PayRiichi: 1 byte who
           {
-            var who = file.ReadByte();
-
-            if (activePlayerId != (who + 1) % 4)
-            {
-
-            }
-
+            var who = block[indexInBlock++];
             visitor.PayRiichi(who);
+
+#if DEBUG
+            Debug.Assert(activePlayerId == (who + 1) % 4);
+            log.AppendLine("pay");
+#endif
             break;
           }
           default:

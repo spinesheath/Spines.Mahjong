@@ -88,12 +88,12 @@ namespace CompressedReplayCreator
           }
           case "RYUUKYOKU":
           {
-            WriteRyuukyoku(xml, writer);
+            WriteRyuukyoku(xml, writer, playerCount);
             break;
           }
           case "AGARI":
           {
-            WriteAgari(xml, writer);
+            WriteAgari(xml, writer, playerCount);
             break;
           }
           case "INIT":
@@ -278,7 +278,7 @@ namespace CompressedReplayCreator
       writer.Init(ToBytes(seed), ToInts(ten), ToByte(oya), hai.Select(ToBytes).ToArray(), playerCount);
     }
 
-    private static void WriteAgari(XmlReader xml, BlockWriter writer)
+    private static void WriteAgari(XmlReader xml, BlockWriter writer, int playerCount)
     {
       string? ba = null;
       string? hai = null;
@@ -375,10 +375,11 @@ namespace CompressedReplayCreator
         ToBytes(yakuman ?? ""),
         ToBytes(doraHai),
         ToBytes(doraHaiUra ?? ""),
-        m);
+        m,
+        playerCount);
     }
 
-    private static void WriteRyuukyoku(XmlReader xml, BlockWriter writer)
+    private static void WriteRyuukyoku(XmlReader xml, BlockWriter writer, int playerCount)
     {
       string? ba = null;
       string? sc = null;
@@ -430,7 +431,7 @@ namespace CompressedReplayCreator
       }
 
       var ryuukyokuType = type == null ? RyuukyokuType.Exhaustive : RyuukyokuType.FromName(type);
-      writer.Ryuukyoku(ryuukyokuType, ToBytes(ba), ToInts(sc), tenpai);
+      writer.Ryuukyoku(ryuukyokuType, ToBytes(ba), ToInts(sc), tenpai, playerCount);
     }
 
     private static IEnumerable<int> ToInts(string? value)
