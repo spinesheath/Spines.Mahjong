@@ -7,15 +7,19 @@ using Spines.Mahjong.Analysis.Replay;
 
 namespace CompressedReplayCreator
 {
-  internal class BlockWriter
+  internal sealed class BundleWriter : IDisposable
   {
-    public BlockWriter(Stream stream)
+    public BundleWriter(string directory, int blockSize, int bundleSize)
     {
-      _stream = stream;
+      _directory = directory;
+      _blockSize = blockSize;
+      _bundleSize = bundleSize;
+
+      _stream = File.Create(Path.Combine(_directory, "0.bundle"));
     }
 
     public void Agari(byte who, byte fromWho, byte paoWho, byte[] ba, byte[] hai, IEnumerable<int> scores, IEnumerable<int> ten, byte machi,
-      byte[] yaku, byte[] yakuman, byte[] dora, byte[] uraDora, string? meldCodes, int playerCount)
+      byte[] yaku, byte[] yakuman, byte[] dora, byte[] uraDora, string? meldCodes)
     {
       var meldCount = meldCodes?.Split(",").Length ?? 0;
       InsertBlock(
@@ -33,7 +37,7 @@ namespace CompressedReplayCreator
         1 + // who
         1 + // fromWho
         1 + // paoWho
-        2 * 4 * playerCount); // score
+        2 * 4 * 4); // score
 
       if (who == fromWho)
       {
@@ -85,7 +89,7 @@ namespace CompressedReplayCreator
 
       _stream.WriteByte((byte) Node.CallRiichi);
       _stream.WriteByte(who);
-      
+
       Debug.Assert(_indexInBlock == _stream.Length % 1024);
     }
 
@@ -121,6 +125,8 @@ namespace CompressedReplayCreator
 
     public void Go(GameTypeFlag flags)
     {
+      StartNewReplay();
+
       InsertBlock(2);
 
       _stream.WriteByte((byte) Node.Go);
@@ -129,24 +135,33 @@ namespace CompressedReplayCreator
       Debug.Assert(_indexInBlock == _stream.Length % 1024);
     }
 
-    public void Init(byte[] seed, IEnumerable<int> ten, byte oya, byte[][] hai, int playerCount)
+    public void Init(byte[] seed, IEnumerable<int> ten, byte oya, byte[][] hai)
     {
-      // seed: 6 bytes, ten: playerCount*4 bytes, oya: 1 byte
-      InsertBlock(1 + 6 + 4 * playerCount + 1);
+      // seed: 6 bytes, ten: 4*4 bytes, oya: 1 byte
+      InsertBlock(1 + 6 + 4 * 4 + 1);
 
       _stream.WriteByte((byte) Node.Init);
       _stream.Write(seed);
       _stream.Write(ten.SelectMany(BitConverter.GetBytes).ToArray());
       _stream.WriteByte(oya);
 
-      for (var i = 0; i < playerCount; i++)
+      for (var i = 0; i < 4; i++)
       {
         // 1 byte id, 1 byte playerId, 13 bytes tileIds
         InsertBlock(1 + 1 + 13);
 
         _stream.WriteByte((byte) Node.Haipai);
         _stream.WriteByte((byte) i);
-        _stream.Write(hai[i]);
+        if (hai[i].Length == 0)
+        {
+          Debug.Assert(i == 3);
+          _stream.Write(new byte[13]);
+        }
+        else
+        {
+          Debug.Assert(hai[i].Length == 13);
+          _stream.Write(hai[i]);
+        }
       }
 
       Debug.Assert(_indexInBlock == _stream.Length % 1024);
@@ -159,6 +174,95 @@ namespace CompressedReplayCreator
       MeldInternal(who, meldCode);
 
       Debug.Assert(_indexInBlock == _stream.Length % 1024);
+    }
+
+    public void PayRiichi(byte who)
+    {
+      InsertBlock(2);
+
+      _stream.WriteByte((byte) Node.PayRiichi);
+      _stream.WriteByte(who);
+
+      Debug.Assert(_indexInBlock == _stream.Length % 1024);
+    }
+
+    public void Ryuukyoku(RyuukyokuType type, byte[] ba, IEnumerable<int> scores, bool[] tenpai)
+    {
+      //1 byte id, 2 byte ba, 2*4*4 byte score, 1 byte ryuukyokuType, 4 byte tenpaiState
+      InsertBlock(1 + 2 + 8 * 4 + 1 + 4);
+
+      _stream.WriteByte((byte) Node.Ryuukyoku);
+
+      _stream.Write(ba);
+      _stream.Write(scores.SelectMany(BitConverter.GetBytes).ToArray());
+
+      _stream.WriteByte((byte) type.Id);
+
+      for (var i = 0; i < 4; i++)
+      {
+        _stream.WriteByte(tenpai[i] ? (byte) 0 : (byte) 1);
+      }
+
+      Debug.Assert(_indexInBlock == _stream.Length % 1024);
+    }
+
+    public void Tsumogiri(byte tileId)
+    {
+      InsertBlock(2);
+
+      _stream.WriteByte((byte) Node.Tsumogiri);
+      _stream.WriteByte(tileId);
+
+      Debug.Assert(_indexInBlock == _stream.Length % 1024);
+    }
+
+    public void Dispose()
+    {
+      _stream.Dispose();
+    }
+
+    private readonly int _blockSize;
+    private readonly int _bundleSize;
+    private readonly string _directory;
+    private int _bundleIndex;
+    private int _indexInBlock;
+    private int _replayInBundleCount;
+    private Stream _stream;
+
+    private void StartNewReplay()
+    {
+      if (_replayInBundleCount == _bundleSize)
+      {
+        _bundleIndex += 1;
+        _stream.Dispose();
+        _stream = File.Create(Path.Combine(_directory, $"{_bundleIndex}.bundle"));
+        _indexInBlock = 0;
+        _replayInBundleCount = 0;
+      }
+      else
+      {
+        InsertBlock(1);
+        _stream.WriteByte((byte) Node.NextReplay);
+      }
+
+      _replayInBundleCount += 1;
+    }
+
+    private void InsertBlock(int nextItemSize)
+    {
+      if (_stream == null)
+      {
+        throw new InvalidOperationException("sanma/yonma not decided");
+      }
+
+      if (_indexInBlock + nextItemSize + 1 > _blockSize)
+      {
+        _stream.WriteByte((byte) Node.NextBlock);
+        _stream.Write(new byte[_blockSize - _indexInBlock - 1]);
+        _indexInBlock = 0;
+      }
+
+      _indexInBlock += nextItemSize;
     }
 
     private void MeldInternal(byte who, string meldCode)
@@ -194,62 +298,6 @@ namespace CompressedReplayCreator
       {
         Meld(Node.Nuki, playerId, playerId, decoder.Tiles[0], 0, 0, 0);
       }
-    }
-
-    public void PayRiichi(byte who)
-    {
-      InsertBlock(2);
-
-      _stream.WriteByte((byte) Node.PayRiichi);
-      _stream.WriteByte(who);
-
-      Debug.Assert(_indexInBlock == _stream.Length % 1024);
-    }
-
-    public void Ryuukyoku(RyuukyokuType type, byte[] ba, IEnumerable<int> scores, bool[] tenpai, int playerCount)
-    {
-      //1 byte id, 2 byte ba, 2*4*playerCount byte score, 1 byte ryuukyokuType, 4 byte tenpaiState
-      InsertBlock(1 + 2 + 8 * playerCount + 1 + 4);
-
-      _stream.WriteByte((byte) Node.Ryuukyoku);
-
-      _stream.Write(ba);
-      _stream.Write(scores.SelectMany(BitConverter.GetBytes).ToArray());
-
-      _stream.WriteByte((byte) type.Id);
-
-      for (var i = 0; i < 4; i++)
-      {
-        _stream.WriteByte(tenpai[i] ? (byte) 0 : (byte) 1);
-      }
-
-      Debug.Assert(_indexInBlock == _stream.Length % 1024);
-    }
-
-    public void Tsumogiri(byte tileId)
-    {
-      InsertBlock(2);
-
-      _stream.WriteByte((byte) Node.Tsumogiri);
-      _stream.WriteByte(tileId);
-
-      Debug.Assert(_indexInBlock == _stream.Length % 1024);
-    }
-
-    private const int BlockSize = 1024;
-    private readonly Stream _stream;
-    private int _indexInBlock;
-
-    private void InsertBlock(int nextItemSize)
-    {
-      if (_indexInBlock + nextItemSize + 1 > BlockSize)
-      {
-        _stream.WriteByte((byte) Node.NextBlock);
-        _stream.Write(new byte[BlockSize - _indexInBlock - 1]);
-        _indexInBlock = 0;
-      }
-
-      _indexInBlock += nextItemSize;
     }
 
     private void Meld(Node type, byte who, int fromWho, int tile0, int tile1, int tile2, int tile3)
