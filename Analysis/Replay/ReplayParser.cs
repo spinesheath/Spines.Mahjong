@@ -1,9 +1,12 @@
 using System;
-using System.Diagnostics;
 using System.IO;
-using System.Text;
 using Spines.Mahjong.Analysis.Score;
 using Spines.Mahjong.Analysis.State;
+
+#if DEBUG
+using System.Diagnostics;
+using System.Text;
+#endif
 
 namespace Spines.Mahjong.Analysis.Replay
 {
@@ -12,6 +15,9 @@ namespace Spines.Mahjong.Analysis.Replay
     public static void Parse(Stream file, IReplayVisitor visitor)
     {
       var haipai = new Tile[13];
+      var scores = new int[4];
+      var scoreChanges = new int[4];
+
       var playerCount = 4;
       var activePlayerId = 0;
 
@@ -76,8 +82,7 @@ namespace Spines.Mahjong.Analysis.Replay
             var dice0 = block[indexInBlock++];
             var dice1 = block[indexInBlock++];
             var doraIndicator = Tile.FromTileId(block[indexInBlock++]);
-
-            var scores = new int[playerCount];
+            
             for (var i = 0; i < playerCount; i++)
             {
               scores[i] = BitConverter.ToInt32(block, indexInBlock) * 100;
@@ -285,8 +290,6 @@ namespace Spines.Mahjong.Analysis.Replay
             var fromWho = block[indexInBlock++];
             var paoWho = block[indexInBlock++];
             
-            var scores = new int[playerCount];
-            var scoreChanges = new int[playerCount];
             for (var i = 0; i < playerCount; i++)
             {
               scores[i] = BitConverter.ToInt32(block, indexInBlock);
@@ -321,8 +324,6 @@ namespace Spines.Mahjong.Analysis.Replay
             var honba = block[indexInBlock++];
             var riichiSticks = block[indexInBlock++];
 
-            var scores = new int[playerCount];
-            var scoreChanges = new int[playerCount];
             for (var i = 0; i < playerCount; i++)
             {
               scores[i] = BitConverter.ToInt32(block, indexInBlock);
