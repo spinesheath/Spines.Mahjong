@@ -10,19 +10,6 @@ namespace Spines.Mahjong.Analysis.Tests
   public class ScoreTests
   {
     [Fact]
-    public void BundlesWithClassicVisitor()
-    {
-      var files = Bundles.All.SelectMany(Directory.EnumerateFiles);
-      var visitor = new ClassicScoreCalculatingVisitor();
-      foreach (var file in files)
-      {
-        ReplayParser.Parse(file, visitor);
-      }
-
-      Assert.Equal(0, visitor.FailureCount);
-    }
-
-    [Fact]
     public void BundlesWithVisitor()
     {
       var files = Bundles.All.SelectMany(Directory.EnumerateFiles);
@@ -39,7 +26,7 @@ namespace Spines.Mahjong.Analysis.Tests
     [InlineData("789p111222333s44z", 0, 3, "4z", Yaku.Iipeikou | Yaku.ClosedChanta)]
     [InlineData("111m111789p999s44z", 0, 3, "4z", Yaku.ClosedChanta | Yaku.Sanankou)]
     [InlineData("111m111999s44z789P", 0, 3, "4z", Yaku.OpenChanta | Yaku.Sanankou)]
-    [InlineData("111222333m111s44z", 0, 0, "1s", Yaku.Toitoihou | Yaku.Sanankou)]
+    [InlineData("111222333m111s44z", 0, 0, "1s", Yaku.Toitoi | Yaku.Sanankou)]
     [InlineData("11m99p11778899s44z", 0, 0, "9s", Yaku.Chiitoitsu)]
     [InlineData("112233m55s2222M2222S", 0, 0, "2s", Yaku.Iipeikou)]
     [InlineData("111222333m234s44z", 0, 0, "2s", Yaku.Sanankou)]
@@ -48,7 +35,7 @@ namespace Spines.Mahjong.Analysis.Tests
     [InlineData("111222333m12399p", 0, 0, "2p", Yaku.ClosedJunchan | Yaku.Iipeikou)]
     [InlineData("111222333m99p123P", 0, 0, "9p", Yaku.Sanankou)]
     [InlineData("123p11s789S555Z777Z", 0, 0, "2p", Yaku.Haku | Yaku.Chun | Yaku.OpenChanta)]
-    [InlineData("789m789p11789s888M", 0, 0, "7s", Yaku.OpenSanshokuDoujun)]
+    [InlineData("789m789p11789s888M", 0, 0, "7s", Yaku.OpenDoujun)]
     [InlineData("999m99p111999s123P", 0, 0, "9p", Yaku.Sanankou | Yaku.OpenJunchan)]
     [InlineData("123456789m12344p", 0, 0, "4p", Yaku.ClosedIttsuu)]
     [InlineData("123456789m44p123P", 0, 0, "4p", Yaku.OpenIttsuu)]
@@ -65,21 +52,21 @@ namespace Spines.Mahjong.Analysis.Tests
     [InlineData("11333344445555m", 0, 0, "1m", Yaku.Ryanpeikou | Yaku.ClosedChinitsu)]
     [InlineData("11123444m111p111s", 0, 0, "1m", Yaku.Sanankou)]
     [InlineData("33345666m666p666s", 0, 0, "6m", Yaku.Sanankou | Yaku.ClosedTanyao)]
-    [InlineData("11123444m111p111s", 0, 0, "2m", Yaku.Sanankou | Yaku.SanshokuDoukou)]
-    [InlineData("11123444m111p111s", 0, 0, "4m", Yaku.Sanankou | Yaku.SanshokuDoukou)]
-    [InlineData("33345666m666p666s", 0, 0, "3m", Yaku.Sanankou | Yaku.SanshokuDoukou | Yaku.ClosedTanyao)]
-    [InlineData("11122333m111p111s", 0, 0, "1m", Yaku.SanshokuDoukou | Yaku.Toitoihou | Yaku.Sanankou)]
-    [InlineData("11122233399m111p", 0, 0, "1m", Yaku.Sanankou | Yaku.Toitoihou)]
-    [InlineData("11777888999m111p", 0, 0, "9m", Yaku.Sanankou | Yaku.Toitoihou)]
-    [InlineData("11222m222p222s222z", 0, 0, "2z", Yaku.Sanankou | Yaku.Toitoihou | Yaku.SanshokuDoukou)]
-    [InlineData("11777888999m111P", 0, 0, "7m", Yaku.Toitoihou)]
-    [InlineData("11777888999m222P", 0, 0, "7m", Yaku.Toitoihou)]
+    [InlineData("11123444m111p111s", 0, 0, "2m", Yaku.Sanankou | Yaku.Doukou)]
+    [InlineData("11123444m111p111s", 0, 0, "4m", Yaku.Sanankou | Yaku.Doukou)]
+    [InlineData("33345666m666p666s", 0, 0, "3m", Yaku.Sanankou | Yaku.Doukou | Yaku.ClosedTanyao)]
+    [InlineData("11122333m111p111s", 0, 0, "1m", Yaku.Doukou | Yaku.Toitoi | Yaku.Sanankou)]
+    [InlineData("11122233399m111p", 0, 0, "1m", Yaku.Sanankou | Yaku.Toitoi)]
+    [InlineData("11777888999m111p", 0, 0, "9m", Yaku.Sanankou | Yaku.Toitoi)]
+    [InlineData("11222m222p222s222z", 0, 0, "2z", Yaku.Sanankou | Yaku.Toitoi | Yaku.Doukou)]
+    [InlineData("11777888999m111P", 0, 0, "7m", Yaku.Toitoi)]
+    [InlineData("11777888999m222P", 0, 0, "7m", Yaku.Toitoi)]
     [InlineData("11m111Z222Z333Z444Z", 0, 0, "1m", Yaku.Daisuushii)]
     [InlineData("111m11333444z222Z", 0, 0, "1m", Yaku.Shousuushii)]
     [InlineData("111222333m11z123M", 0, 0, "1z", Yaku.Sanankou | Yaku.OpenHonitsu)]
     [InlineData("11122266z333Z555Z", 0, 0, "1z", Yaku.Tsuuiisou)]
-    [InlineData("234m23455p234789s", 0, 0, "4p", Yaku.Pinfu | Yaku.ClosedSanshokuDoujun)]
-    [InlineData("66778899m678p678s", 0, 0, "6m", Yaku.Pinfu | Yaku.ClosedSanshokuDoujun | Yaku.Iipeikou)]
+    [InlineData("234m23455p234789s", 0, 0, "4p", Yaku.Pinfu | Yaku.ClosedDoujun)]
+    [InlineData("66778899m678p678s", 0, 0, "6m", Yaku.Pinfu | Yaku.ClosedDoujun | Yaku.Iipeikou)]
     public void SomeHandByRon(string handString, int roundWind, int seatWind, string discardString, Yaku expectedYaku)
     {
       var discard = TileType.FromString(discardString);

@@ -231,10 +231,10 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.Daisangen |
       Yaku.Shousuushii |
       Yaku.Daisuushii |
-      Yaku.ClosedSanshokuDoujun |
-      Yaku.OpenSanshokuDoujun |
-      Yaku.SanshokuDoukou |
-      Yaku.Toitoihou |
+      Yaku.ClosedDoujun |
+      Yaku.OpenDoujun |
+      Yaku.Doukou |
+      Yaku.Toitoi |
       Yaku.ClosedHonitsu |
       Yaku.ClosedChinitsu |
       Yaku.OpenHonitsu |
@@ -249,7 +249,7 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.Chiitoitsu |
       Yaku.Ryanpeikou |
       Yaku.KokushiMusou |
-      Yaku.KokushiMusouJuusanMen |
+      Yaku.KokushiMusouJuusanmen |
       Yaku.Pinfu |
       Yaku.Tsuuiisou |
       Yaku.Chinroutou |
@@ -278,8 +278,8 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.Chiihou |
       Yaku.Tenhou |
       Yaku.RinshanKaihou |
-      Yaku.HouteiRaoyui |
-      Yaku.HaiteiRaoyue;
+      Yaku.Houtei |
+      Yaku.Haitei;
 
     private const Yaku YakumanFilter =
       Yaku.Daisangen |
@@ -288,7 +288,7 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.Suuankou |
       Yaku.SuuankouTanki |
       Yaku.KokushiMusou |
-      Yaku.KokushiMusouJuusanMen |
+      Yaku.KokushiMusouJuusanmen |
       Yaku.Tsuuiisou |
       Yaku.Chinroutou |
       Yaku.Suukantsu |

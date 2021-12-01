@@ -407,8 +407,8 @@ namespace Spines.Mahjong.Analysis.Replay
       Yaku.Ippatsu, // 2
       Yaku.Chankan, // 3
       Yaku.RinshanKaihou, // 4
-      Yaku.HaiteiRaoyue, // 5
-      Yaku.HouteiRaoyui, // 6
+      Yaku.Haitei, // 5
+      Yaku.Houtei, // 6
       Yaku.Pinfu, // 7
       Yaku.OpenTanyao, // 8
       Yaku.Iipeikou, // 9
@@ -427,10 +427,10 @@ namespace Spines.Mahjong.Analysis.Replay
       Yaku.Chiitoitsu, // 22
       Yaku.OpenChanta, // 23
       Yaku.OpenIttsuu, // 24
-      Yaku.OpenSanshokuDoujun, // 25
-      Yaku.SanshokuDoukou, // 26
+      Yaku.OpenDoujun, // 25
+      Yaku.Doukou, // 26
       Yaku.Sankantsu, // 27
-      Yaku.Toitoihou, // 28
+      Yaku.Toitoi, // 28
       Yaku.Sanankou, // 29
       Yaku.Shousangen, // 30
       Yaku.Honroutou, // 31
@@ -450,7 +450,7 @@ namespace Spines.Mahjong.Analysis.Replay
       Yaku.ChuurenPoutou, // 45
       Yaku.JunseiChuurenPoutou, // 46
       Yaku.KokushiMusou, // 47
-      Yaku.KokushiMusouJuusanMen, // 48
+      Yaku.KokushiMusouJuusanmen, // 48
       Yaku.Daisuushii, // 49
       Yaku.Shousuushii, // 50
       Yaku.Suukantsu, // 51
@@ -466,8 +466,8 @@ namespace Spines.Mahjong.Analysis.Replay
       Yaku.Ippatsu, // 2
       Yaku.Chankan, // 3
       Yaku.RinshanKaihou, // 4
-      Yaku.HaiteiRaoyue, // 5
-      Yaku.HouteiRaoyui, // 6
+      Yaku.Haitei, // 5
+      Yaku.Houtei, // 6
       Yaku.Pinfu, // 7
       Yaku.ClosedTanyao, // 8
       Yaku.Iipeikou, // 9
@@ -486,10 +486,10 @@ namespace Spines.Mahjong.Analysis.Replay
       Yaku.Chiitoitsu, // 22
       Yaku.ClosedChanta, // 23
       Yaku.ClosedIttsuu, // 24
-      Yaku.ClosedSanshokuDoujun, // 25
-      Yaku.SanshokuDoukou, // 26
+      Yaku.ClosedDoujun, // 25
+      Yaku.Doukou, // 26
       Yaku.Sankantsu, // 27
-      Yaku.Toitoihou, // 28
+      Yaku.Toitoi, // 28
       Yaku.Sanankou, // 29
       Yaku.Shousangen, // 30
       Yaku.Honroutou, // 31
@@ -509,7 +509,7 @@ namespace Spines.Mahjong.Analysis.Replay
       Yaku.ChuurenPoutou, // 45
       Yaku.JunseiChuurenPoutou, // 46
       Yaku.KokushiMusou, // 47
-      Yaku.KokushiMusouJuusanMen, // 48
+      Yaku.KokushiMusouJuusanmen, // 48
       Yaku.Daisuushii, // 49
       Yaku.Shousuushii, // 50
       Yaku.Suukantsu, // 51

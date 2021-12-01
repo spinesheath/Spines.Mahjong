@@ -51,5 +51,20 @@
     public const int Sankantsu = 24;
     public const int Suukantsu = 25;
     public const int Ryuuiisou = 32;
+
+    public const int Riichi = 9;
+    public const int DoubleRiichi = 10;
+    public const int Tenhou = 13;
+    public const int Renhou = 18;
+    public const int Ippatsu = 19;
+    public const int Haitei = 41;
+    public const int Houtei = 42;
+    public const int Chankan = 44;
+    public const int RinshanKaihou = 45;
+    public const int Chiihou = 46;
+
+    public const int Dora = 2;
+    public const int AkaDora = 3;
+    public const int UraDora = 12;
   }
 }

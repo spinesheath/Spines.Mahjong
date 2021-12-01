@@ -25,7 +25,7 @@ namespace Spines.Mahjong.Analysis.Score
       Yaku.Suuankou |
       Yaku.SuuankouTanki |
       Yaku.KokushiMusou |
-      Yaku.KokushiMusouJuusanMen |
+      Yaku.KokushiMusouJuusanmen |
       Yaku.Tsuuiisou |
       Yaku.Chinroutou |
       Yaku.Suukantsu |
@@ -37,19 +37,19 @@ namespace Spines.Mahjong.Analysis.Score
       Yaku.JunseiChuurenPoutou;
 
     private const long ScoringFieldYakumanFilter = (long) (
-      ScoringFieldYaku.Daisangen |
-      ScoringFieldYaku.Shousuushii |
-      ScoringFieldYaku.Daisuushii |
-      ScoringFieldYaku.Suuankou |
-      ScoringFieldYaku.SuuankouTanki |
-      ScoringFieldYaku.KokushiMusou |
-      ScoringFieldYaku.KokushiMusouJuusanmen |
-      ScoringFieldYaku.Tsuuiisou |
-      ScoringFieldYaku.Chinroutou |
-      ScoringFieldYaku.Suukantsu |
-      ScoringFieldYaku.Ryuuiisou |
-      ScoringFieldYaku.ChuurenPoutou |
-      ScoringFieldYaku.JunseiChuurenPoutou);
+      Yaku.Daisangen |
+      Yaku.Shousuushii |
+      Yaku.Daisuushii |
+      Yaku.Suuankou |
+      Yaku.SuuankouTanki |
+      Yaku.KokushiMusou |
+      Yaku.KokushiMusouJuusanmen |
+      Yaku.Tsuuiisou |
+      Yaku.Chinroutou |
+      Yaku.Suukantsu |
+      Yaku.Ryuuiisou |
+      Yaku.ChuurenPoutou |
+      Yaku.JunseiChuurenPoutou);
 
     private const Yaku HanMask1 =
       Yaku.MenzenTsumo |
@@ -57,8 +57,8 @@ namespace Spines.Mahjong.Analysis.Score
       Yaku.Ippatsu |
       Yaku.Chankan |
       Yaku.RinshanKaihou |
-      Yaku.HaiteiRaoyue |
-      Yaku.HouteiRaoyui |
+      Yaku.Haitei |
+      Yaku.Houtei |
       Yaku.Pinfu |
       Yaku.OpenTanyao |
       Yaku.ClosedTanyao |
@@ -76,7 +76,7 @@ namespace Spines.Mahjong.Analysis.Score
       Yaku.Chun |
       Yaku.OpenChanta |
       Yaku.OpenIttsuu |
-      Yaku.OpenSanshokuDoujun |
+      Yaku.OpenDoujun |
       Yaku.Ryanpeikou |
       Yaku.ClosedJunchan |
       Yaku.ClosedHonitsu |
@@ -93,7 +93,7 @@ namespace Spines.Mahjong.Analysis.Score
       Yaku.ChuurenPoutou |
       Yaku.JunseiChuurenPoutou |
       Yaku.KokushiMusou |
-      Yaku.KokushiMusouJuusanMen |
+      Yaku.KokushiMusouJuusanmen |
       Yaku.Daisuushii |
       Yaku.Shousuushii |
       Yaku.Suukantsu;
@@ -103,10 +103,10 @@ namespace Spines.Mahjong.Analysis.Score
       Yaku.Chiitoitsu |
       Yaku.ClosedChanta |
       Yaku.ClosedIttsuu |
-      Yaku.ClosedSanshokuDoujun |
-      Yaku.SanshokuDoukou |
+      Yaku.ClosedDoujun |
+      Yaku.Doukou |
       Yaku.Sankantsu |
-      Yaku.Toitoihou |
+      Yaku.Toitoi |
       Yaku.Sanankou |
       Yaku.Shousangen |
       Yaku.Honroutou |
@@ -122,64 +122,64 @@ namespace Spines.Mahjong.Analysis.Score
       Yaku.ClosedChinitsu;
 
     private const long ScoringFieldHanMask1 = (long) (
-      ScoringFieldYaku.MenzenTsumo |
-      ScoringFieldYaku.Pinfu |
-      ScoringFieldYaku.OpenTanyao |
-      ScoringFieldYaku.ClosedTanyao |
-      ScoringFieldYaku.Iipeikou |
-      ScoringFieldYaku.JikazeTon |
-      ScoringFieldYaku.JikazeShaa |
-      ScoringFieldYaku.JikazeNan |
-      ScoringFieldYaku.JikazePei |
-      ScoringFieldYaku.BakazeTon |
-      ScoringFieldYaku.BakazeShaa |
-      ScoringFieldYaku.BakazeNan |
-      ScoringFieldYaku.BakazePei |
-      ScoringFieldYaku.Haku |
-      ScoringFieldYaku.Hatsu |
-      ScoringFieldYaku.Chun |
-      ScoringFieldYaku.OpenChanta |
-      ScoringFieldYaku.OpenIttsuu |
-      ScoringFieldYaku.OpenDoujun |
-      ScoringFieldYaku.Ryanpeikou |
-      ScoringFieldYaku.ClosedJunchan |
-      ScoringFieldYaku.ClosedHonitsu |
-      ScoringFieldYaku.OpenChinitsu |
-      ScoringFieldYaku.Daisangen |
-      ScoringFieldYaku.Suuankou |
-      ScoringFieldYaku.SuuankouTanki |
-      ScoringFieldYaku.Tsuuiisou |
-      ScoringFieldYaku.Ryuuiisou |
-      ScoringFieldYaku.Chinroutou |
-      ScoringFieldYaku.ChuurenPoutou |
-      ScoringFieldYaku.JunseiChuurenPoutou |
-      ScoringFieldYaku.KokushiMusou |
-      ScoringFieldYaku.KokushiMusouJuusanmen |
-      ScoringFieldYaku.Daisuushii |
-      ScoringFieldYaku.Shousuushii |
-      ScoringFieldYaku.Suukantsu);
+      Yaku.MenzenTsumo |
+      Yaku.Pinfu |
+      Yaku.OpenTanyao |
+      Yaku.ClosedTanyao |
+      Yaku.Iipeikou |
+      Yaku.JikazeTon |
+      Yaku.JikazeShaa |
+      Yaku.JikazeNan |
+      Yaku.JikazePei |
+      Yaku.BakazeTon |
+      Yaku.BakazeShaa |
+      Yaku.BakazeNan |
+      Yaku.BakazePei |
+      Yaku.Haku |
+      Yaku.Hatsu |
+      Yaku.Chun |
+      Yaku.OpenChanta |
+      Yaku.OpenIttsuu |
+      Yaku.OpenDoujun |
+      Yaku.Ryanpeikou |
+      Yaku.ClosedJunchan |
+      Yaku.ClosedHonitsu |
+      Yaku.OpenChinitsu |
+      Yaku.Daisangen |
+      Yaku.Suuankou |
+      Yaku.SuuankouTanki |
+      Yaku.Tsuuiisou |
+      Yaku.Ryuuiisou |
+      Yaku.Chinroutou |
+      Yaku.ChuurenPoutou |
+      Yaku.JunseiChuurenPoutou |
+      Yaku.KokushiMusou |
+      Yaku.KokushiMusouJuusanmen |
+      Yaku.Daisuushii |
+      Yaku.Shousuushii |
+      Yaku.Suukantsu);
 
     private const long ScoringFieldHanMask2 = (long) (
-      ScoringFieldYaku.Chiitoitsu |
-      ScoringFieldYaku.ClosedChanta |
-      ScoringFieldYaku.ClosedIttsuu |
-      ScoringFieldYaku.ClosedDoujun |
-      ScoringFieldYaku.Doukou |
-      ScoringFieldYaku.Sankantsu |
-      ScoringFieldYaku.Toitoi |
-      ScoringFieldYaku.Sanankou |
-      ScoringFieldYaku.Shousangen |
-      ScoringFieldYaku.Honroutou |
-      ScoringFieldYaku.Ryanpeikou |
-      ScoringFieldYaku.OpenJunchan |
-      ScoringFieldYaku.ClosedJunchan |
-      ScoringFieldYaku.OpenHonitsu |
-      ScoringFieldYaku.ClosedHonitsu |
-      ScoringFieldYaku.ClosedChinitsu);
+      Yaku.Chiitoitsu |
+      Yaku.ClosedChanta |
+      Yaku.ClosedIttsuu |
+      Yaku.ClosedDoujun |
+      Yaku.Doukou |
+      Yaku.Sankantsu |
+      Yaku.Toitoi |
+      Yaku.Sanankou |
+      Yaku.Shousangen |
+      Yaku.Honroutou |
+      Yaku.Ryanpeikou |
+      Yaku.OpenJunchan |
+      Yaku.ClosedJunchan |
+      Yaku.OpenHonitsu |
+      Yaku.ClosedHonitsu |
+      Yaku.ClosedChinitsu);
 
     private const long ScoringFieldHanMask4 = (long) (
-      ScoringFieldYaku.OpenChinitsu |
-      ScoringFieldYaku.ClosedChinitsu);
+      Yaku.OpenChinitsu |
+      Yaku.ClosedChinitsu);
 
     internal static int CalculateScoringField(long yaku)
     {

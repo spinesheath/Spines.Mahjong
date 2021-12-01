@@ -94,7 +94,7 @@ namespace Spines.Mahjong.Analysis.Score
       Yaku.Suuankou |
       Yaku.SuuankouTanki |
       Yaku.KokushiMusou |
-      Yaku.KokushiMusouJuusanMen |
+      Yaku.KokushiMusouJuusanmen |
       Yaku.Tsuuiisou |
       Yaku.Daisangen |
       Yaku.Suukantsu |
@@ -671,7 +671,7 @@ namespace Spines.Mahjong.Analysis.Score
     {
       if (arrangement.IsKokushi)
       {
-        return arrangement.Pair == _winningTile ? Yaku.KokushiMusouJuusanMen : Yaku.KokushiMusou;
+        return arrangement.Pair == _winningTile ? Yaku.KokushiMusouJuusanmen : Yaku.KokushiMusou;
       }
 
       return Yaku.None;
@@ -767,7 +767,7 @@ namespace Spines.Mahjong.Analysis.Score
         return Yaku.None;
       }
 
-      return Yaku.Toitoihou;
+      return Yaku.Toitoi;
     }
 
     private Yaku Sankantsu()
@@ -794,7 +794,7 @@ namespace Spines.Mahjong.Analysis.Score
 
       if ((suits[0] & suits[1] & suits[2]) != 0)
       {
-        return Yaku.SanshokuDoukou;
+        return Yaku.Doukou;
       }
 
       return Yaku.None;
@@ -819,7 +819,7 @@ namespace Spines.Mahjong.Analysis.Score
 
       if ((suits[0] & suits[1] & suits[2]) != 0)
       {
-        return _isClosed ? Yaku.ClosedSanshokuDoujun : Yaku.OpenSanshokuDoujun;
+        return _isClosed ? Yaku.ClosedDoujun : Yaku.OpenDoujun;
       }
 
       return Yaku.None;
