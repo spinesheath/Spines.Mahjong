@@ -70,9 +70,9 @@ namespace Spines.Mahjong.Analysis.Tests
 
     private static readonly string[] BundlesFolders = 
     {
-      @"C:\tenhou\compressed2\2014\yonma",
-      @"C:\tenhou\compressed2\2015\yonma",
-      @"C:\tenhou\compressed2\2016\yonma"
+      @"C:\tenhou\compressed3\2014\yonma",
+      @"C:\tenhou\compressed3\2015\yonma",
+      @"C:\tenhou\compressed3\2016\yonma"
     };
   }
 }

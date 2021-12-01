@@ -6,10 +6,10 @@ namespace CompressedReplayCreator
 {
   internal sealed class SanmaYonmaBundleWriter : IDisposable
   {
-    public SanmaYonmaBundleWriter(string sanmaPath, string yonmaPath, int blockSize, int bundleSize)
+    public SanmaYonmaBundleWriter(string sanmaPath, string yonmaPath, int bundleSize)
     {
-      _sanma = new BundleWriter(sanmaPath, blockSize, bundleSize);
-      _yonma = new BundleWriter(yonmaPath, blockSize, bundleSize);
+      _sanma = new BundleWriter(sanmaPath, bundleSize);
+      _yonma = new BundleWriter(yonmaPath, bundleSize);
       _current = _yonma;
     }
 

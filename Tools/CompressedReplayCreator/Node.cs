@@ -21,7 +21,6 @@
     CallRiichi = 16, // 1 byte who
     PayRiichi = 17, // 1 byte who
 
-    NextBlock = 32,
     NextReplay = 127
   }
 }

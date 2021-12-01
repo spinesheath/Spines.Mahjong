@@ -23,7 +23,6 @@ namespace Spines.Mahjong.Analysis.Replay
 
       var indexInBlock = 0;
       var block = File.ReadAllBytes(path);
-      var blockIndex = 0;
       var maxIndex = block.Length;
 
 #if DEBUG
@@ -33,17 +32,6 @@ namespace Spines.Mahjong.Analysis.Replay
       while (maxIndex > indexInBlock)
       {
         var action = block[indexInBlock++];
-        if (action == 32)
-        {
-          blockIndex += 1;
-          indexInBlock = blockIndex * 1024;
-
-#if DEBUG
-          log.AppendLine("block");
-#endif
-          continue;
-        }
-        
         if (action == 255)
         {
           visitor.End();

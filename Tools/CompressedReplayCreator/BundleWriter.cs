@@ -9,10 +9,9 @@ namespace CompressedReplayCreator
 {
   internal sealed class BundleWriter : IDisposable
   {
-    public BundleWriter(string directory, int blockSize, int bundleSize)
+    public BundleWriter(string directory, int bundleSize)
     {
       _directory = directory;
-      _blockSize = blockSize;
       _bundleSize = bundleSize;
 
       _stream = File.Create(Path.Combine(_directory, "0.bundle"));
@@ -22,22 +21,21 @@ namespace CompressedReplayCreator
       byte[] yaku, byte[] yakuman, byte[] dora, byte[] uraDora, string? meldCodes)
     {
       var meldCount = meldCodes?.Split(",").Length ?? 0;
-      InsertBlock(
-        1 + // nodeId
-        1 + // honba
-        1 + // riichi
-        1 + hai.Length + // hai
-        1 + meldCount * 7 + // melds
-        1 + // machi
-        3 * 4 + // ten
-        1 + yaku.Length + // yaku
-        1 + yakuman.Length + // yakuman
-        1 + dora.Length + // dora
-        1 + uraDora.Length + // uraDora
-        1 + // who
-        1 + // fromWho
-        1 + // paoWho
-        2 * 4 * 4); // score
+      _indexInBlock += 1 + // nodeId
+                       1 + // honba
+                       1 + // riichi
+                       1 + hai.Length + // hai
+                       1 + meldCount * 7 + // melds
+                       1 + // machi
+                       3 * 4 + // ten
+                       1 + yaku.Length + // yaku
+                       1 + yakuman.Length + // yakuman
+                       1 + dora.Length + // dora
+                       1 + uraDora.Length + // uraDora
+                       1 + // who
+                       1 + // fromWho
+                       1 + // paoWho
+                       2 * 4 * 4; // score
 
       if (who == fromWho)
       {
@@ -85,7 +83,7 @@ namespace CompressedReplayCreator
 
     public void CallRiichi(byte who)
     {
-      InsertBlock(2);
+      _indexInBlock += 2;
 
       _stream.WriteByte((byte) Node.CallRiichi);
       _stream.WriteByte(who);
@@ -95,7 +93,7 @@ namespace CompressedReplayCreator
 
     public void Discard(byte tileId)
     {
-      InsertBlock(2);
+      _indexInBlock += 2;
 
       _stream.WriteByte((byte) Node.Discard);
       _stream.WriteByte(tileId);
@@ -105,7 +103,7 @@ namespace CompressedReplayCreator
 
     public void Dora(byte tileId)
     {
-      InsertBlock(2);
+      _indexInBlock += 2;
 
       _stream.WriteByte((byte) Node.Dora);
       _stream.WriteByte(tileId);
@@ -115,7 +113,7 @@ namespace CompressedReplayCreator
 
     public void Draw(byte tileId)
     {
-      InsertBlock(2);
+      _indexInBlock += 2;
 
       _stream.WriteByte((byte) Node.Draw);
       _stream.WriteByte(tileId);
@@ -127,7 +125,7 @@ namespace CompressedReplayCreator
     {
       StartNewReplay();
 
-      InsertBlock(2);
+      _indexInBlock += 2;
 
       _stream.WriteByte((byte) Node.Go);
       _stream.WriteByte((byte) flags);
@@ -138,7 +136,7 @@ namespace CompressedReplayCreator
     public void Init(byte[] seed, IEnumerable<int> ten, byte oya, byte[][] hai)
     {
       // seed: 6 bytes, ten: 4*4 bytes, oya: 1 byte
-      InsertBlock(1 + 6 + 4 * 4 + 1);
+      _indexInBlock += 1 + 6 + 4 * 4 + 1;
 
       _stream.WriteByte((byte) Node.Init);
       _stream.Write(seed);
@@ -148,7 +146,7 @@ namespace CompressedReplayCreator
       for (var i = 0; i < 4; i++)
       {
         // 1 byte id, 1 byte playerId, 13 bytes tileIds
-        InsertBlock(1 + 1 + 13);
+        _indexInBlock += 1 + 1 + 13;
 
         _stream.WriteByte((byte) Node.Haipai);
         _stream.WriteByte((byte) i);
@@ -169,7 +167,7 @@ namespace CompressedReplayCreator
 
     public void Meld(byte who, string meldCode)
     {
-      InsertBlock(7);
+      _indexInBlock += 7;
 
       MeldInternal(who, meldCode);
 
@@ -178,7 +176,7 @@ namespace CompressedReplayCreator
 
     public void PayRiichi(byte who)
     {
-      InsertBlock(2);
+      _indexInBlock += 2;
 
       _stream.WriteByte((byte) Node.PayRiichi);
       _stream.WriteByte(who);
@@ -189,7 +187,7 @@ namespace CompressedReplayCreator
     public void Ryuukyoku(RyuukyokuType type, byte[] ba, IEnumerable<int> scores, bool[] tenpai)
     {
       //1 byte id, 2 byte ba, 2*4*4 byte score, 1 byte ryuukyokuType, 4 byte tenpaiState
-      InsertBlock(1 + 2 + 8 * 4 + 1 + 4);
+      _indexInBlock += 1 + 2 + 8 * 4 + 1 + 4;
 
       _stream.WriteByte((byte) Node.Ryuukyoku);
 
@@ -208,7 +206,7 @@ namespace CompressedReplayCreator
 
     public void Tsumogiri(byte tileId)
     {
-      InsertBlock(2);
+      _indexInBlock += 2;
 
       _stream.WriteByte((byte) Node.Tsumogiri);
       _stream.WriteByte(tileId);
@@ -220,8 +218,7 @@ namespace CompressedReplayCreator
     {
       _stream.Dispose();
     }
-
-    private readonly int _blockSize;
+    
     private readonly int _bundleSize;
     private readonly string _directory;
     private int _bundleIndex;
@@ -241,28 +238,11 @@ namespace CompressedReplayCreator
       }
       else
       {
-        InsertBlock(1);
+        _indexInBlock += 1;
         _stream.WriteByte((byte) Node.NextReplay);
       }
 
       _replayInBundleCount += 1;
-    }
-
-    private void InsertBlock(int nextItemSize)
-    {
-      if (_stream == null)
-      {
-        throw new InvalidOperationException("sanma/yonma not decided");
-      }
-
-      if (_indexInBlock + nextItemSize + 1 > _blockSize)
-      {
-        _stream.WriteByte((byte) Node.NextBlock);
-        _stream.Write(new byte[_blockSize - _indexInBlock - 1]);
-        _indexInBlock = 0;
-      }
-
-      _indexInBlock += nextItemSize;
     }
 
     private void MeldInternal(byte who, string meldCode)

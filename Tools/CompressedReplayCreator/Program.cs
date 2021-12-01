@@ -50,7 +50,7 @@ namespace CompressedReplayCreator
 
     public static void Convert()
     {
-      using var bundleWriter = new SanmaYonmaBundleWriter(_sanmaDirectory, _yonmaDirectory, 1024, 1000);
+      using var bundleWriter = new SanmaYonmaBundleWriter(_sanmaDirectory, _yonmaDirectory, 1000);
 
       var count = 0;
       var xmlReaderSettings = new XmlReaderSettings { NameTable = null };
