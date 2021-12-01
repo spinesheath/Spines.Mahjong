@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Runtime.Intrinsics;
-using System.Runtime.Intrinsics.X86;
 using Xunit;
 
 namespace Spines.Mahjong.Analysis.Tests
@@ -182,57 +180,6 @@ namespace Spines.Mahjong.Analysis.Tests
       }
 
       Assert.Equal(Math.Sign(expectedSign), Math.Sign(w));
-    }
-
-    [Fact]
-    public void Shanten5Experiments()
-    {
-      // 123456789m147p1s  2-shanten
-      // (0,0), (0,1), (0,2), (0,3), (0,4), (1,0), (1,1), (1,2), (1,3), (1,4)
-      var m = new byte[] { 0, 3, 6, 9, 9, 1, 4, 7, 9, 9 };
-      var p = new byte[] { 0, 1, 2, 3, 3, 1, 2, 3, 3, 3 };
-      var s = new byte[] { 0, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
-      var z = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-
-      var vm = Vector128.Create(0, m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], 0, 0, 0, 0, 0, 0);
-      var vp = Vector128.Create(0, p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], 0, 0, 0, 0, 0, 0);
-
-      var sm1 = Vector128.Create(1, 2, 3, 4, 1, 2, 3, 1, 1, 2, 1, 1, 2, 1, 255, 255);
-      var vm1 = Ssse3.Shuffle(vm, sm1);
-      var sp1 = Vector128.Create(8, 7, 6, 5, 7, 6, 5, 1, 6, 5, 5, 3, 2, 2, 255, 255);
-      var vp1 = Ssse3.Shuffle(vp, sp1);
-
-      var vmp1 = Sse2.Add(vm1, vp1);
-
-      var sm2 = Vector128.Create(5, 6, 7, 8, 5, 6, 7, 255, 5, 6, 5, 3, 255, 2, 255, 255);
-      var vm2 = Ssse3.Shuffle(vm, sm2);
-      var sp2 = Vector128.Create(4, 3, 2, 1, 3, 2, 1, 255, 2, 1, 1, 1, 255, 1, 255, 255);
-      var vp2 = Ssse3.Shuffle(vp, sp2);
-
-      var vmp2 = Sse2.Add(vm2, vp2);
-      
-      var xmp1 = Sse2.Max(vmp1, vmp2);
-
-      var smp11 = Vector128.Create(0, 1, 8, 10, 255, 11, 13, 7, 255, 255, 4, 6, 255, 255, 255, 255);
-      var smp12 = Vector128.Create(2, 3, 9, 255, 255, 12, 255, 255, 255, 255, 5, 255, 255, 255, 255, 255);
-
-      var vmp21 = Ssse3.Shuffle(xmp1, smp11);
-      var vmp22 = Ssse3.Shuffle(xmp1, smp12);
-
-      var xmp2 = Sse2.Max(vmp21, vmp22);
-
-      var smp21 = Vector128.Create(255, 255, 7, 6, 5, 255, 3, 2, 10, 0, 255, 255, 255, 255, 255, 255);
-      var smp22 = Vector128.Create(255, 255, 255, 255, 255, 255, 255, 255, 11, 1, 255, 255, 255, 255, 255, 255);
-
-      var vmp31 = Ssse3.Shuffle(xmp2, smp21);
-      var vmp32 = Ssse3.Shuffle(xmp2, smp22);
-
-      var xmp3 = Sse2.Max(vmp31, vmp32);
-
-      // TODO is max(max(vm, vp), max_mp3) better?
-      var xmp4 = Sse2.Max(vm, xmp3);
-
-      var r = Sse2.Max(vp, xmp4); // Here we have the values for (0,0), (0,1) ... (1,3), (1,4) for m+p
     }
   }
 }
