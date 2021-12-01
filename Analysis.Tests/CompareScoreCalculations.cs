@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Spines.Mahjong.Analysis.Tests
 {
-  public class CompareYakuCalculations
+  public class CompareScoreCalculations
   {
     [Fact]
     public void CompareWithEvaluatedHands()

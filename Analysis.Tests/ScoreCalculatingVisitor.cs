@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Spines.Mahjong.Analysis.Replay;
 using Spines.Mahjong.Analysis.Score;
 using Spines.Mahjong.Analysis.Shanten;
@@ -8,118 +9,140 @@ namespace Spines.Mahjong.Analysis.Tests
 {
   internal class ScoreCalculatingVisitor : IReplayVisitor
   {
-    public ScoreCalculatingVisitor()
-    {
-      _wall = new FakeWall();
-      _board = new Board(_wall);
-    }
-
     public int CalculationCount { get; private set; }
 
     public int FailureCount { get; private set; }
 
-    public Yaku WeirdYakuCollector { get; private set; }
+    private readonly ProgressiveScoringData[] _scoring = { new(), new(), new(), new() };
+
+    private readonly int[][] _base5Hashes = { new int[4], new int[4], new int[4], new int[4] };
+
+    private TileType? _roundWind;
+
+    private int? _oyaSeatIndex;
 
     public void Seed(TileType roundWind, int honba, int riichiSticks, int dice0, int dice1, Tile doraIndicator)
     {
-      _wall = new FakeWall();
-      _wall.RevealDoraIndicator(doraIndicator);
-      _board = new Board(_wall);
-      _board.RoundWind = roundWind;
-      _board.Honba = honba;
-      _board.RiichiSticks = riichiSticks;
+      _roundWind = roundWind;
     }
 
     public void Haipai(int seatIndex, IEnumerable<Tile> tiles)
     {
-      var seat = _board.Seats[seatIndex];
-      seat.Init(tiles);
+      var hashes = _base5Hashes[seatIndex];
+      hashes[0] = 0;
+      hashes[1] = 0;
+      hashes[2] = 0;
+      hashes[3] = 0;
+
+      foreach (var tile in tiles)
+      {
+        hashes[tile.TileType.SuitId] += Base5.Table[tile.TileType.Index];
+      }
+
+      _scoring[seatIndex] = new ProgressiveScoringData();
+      _scoring[seatIndex].Init(hashes);
     }
 
     public void Dora(Tile tile)
     {
-      _wall.RevealDoraIndicator(tile);
     }
 
     public void Oya(int seatIndex)
     {
-      _board.SetSeatWinds(seatIndex);
+      _oyaSeatIndex = seatIndex;
     }
 
     public void Draw(int seatIndex, Tile tile)
     {
-      _board.ClearCurrentDiscard();
-      _board.ActiveSeatIndex = seatIndex;
-      _board.Seats[seatIndex].Draw(tile);
-
       _currentShouminkanTile = null;
+      _mostRecentDraw = tile;
+
+      var hashes = _base5Hashes[seatIndex];
+      var suitId = tile.TileType.SuitId;
+      hashes[suitId] += Base5.Table[tile.TileType.Index];
+
+      _scoring[seatIndex].Draw(suitId, hashes[suitId]);
     }
 
     public void Discard(int seatIndex, Tile tile)
     {
-      var seat = _board.Seats[seatIndex];
-      seat.Discard(tile);
+      _mostRecentDiscard = tile;
 
-      var hand = seat.Hand;
-      if (hand.Shanten == 0)
-      {
-        var ukeire = hand.GetUkeIreFor13();
-        for (var i = 0; i < ukeire.Length; i++)
-        {
-          if (ukeire[i] > 0)
-          {
-            var draw = TileType.FromTileTypeId(i);
-            var h = (HandCalculator) hand.WithTile(draw);
-            var roundWind = _board.RoundWind.Index;
-            var seatWind = seat.SeatWind.Index;
-            var wind = new WindScoringData(roundWind, seatWind);
-            var (tsumoYaku, tsumoFu) = ScoreCalculator.TsumoWithYaku(h.ScoringData, wind, draw);
-            var (ronYaku, ronFu) = ScoreCalculator.RonWithYaku(h.ScoringData, wind, draw);
-            WeirdYakuCollector ^= tsumoYaku | ronYaku;
-          }
-        }
-      }
+      var hashes = _base5Hashes[seatIndex];
+      var suitId = tile.TileType.SuitId;
+      hashes[suitId] -= Base5.Table[tile.TileType.Index];
+
+      _scoring[seatIndex].Discard(suitId, hashes[suitId]);
     }
 
     public void Ankan(int who, TileType tileType)
     {
-      _board.Seats[who].Ankan(tileType);
+      var hashes = _base5Hashes[who];
+      var suitId = tileType.SuitId;
+      hashes[suitId] -= 4 * Base5.Table[tileType.Index];
+      
+      _scoring[who].Ankan(suitId, tileType.Index);
+      _scoring[who].UpdateSuit(suitId, hashes[suitId]);
     }
 
     public void Chii(int who, int fromWho, Tile calledTile, Tile handTile0, Tile handTile1)
     {
-      _board.ClearCurrentDiscard();
-      _board.ActiveSeatIndex = who;
-      _board.Seats[who].Chii(calledTile, handTile0, handTile1);
+      var hashes = _base5Hashes[who];
+      var suitId = calledTile.TileType.SuitId;
+      hashes[suitId] -= Base5.Table[handTile0.TileType.Index];
+      hashes[suitId] -= Base5.Table[handTile1.TileType.Index];
+
+      var minIndex = Math.Min(Math.Min(calledTile.TileType.Index, handTile0.TileType.Index), handTile1.TileType.Index);
+      _scoring[who].Chii(suitId, minIndex);
+      _scoring[who].UpdateSuit(suitId, hashes[suitId]);
     }
 
     public void Pon(int who, int fromWho, Tile calledTile, Tile handTile0, Tile handTile1)
     {
-      _board.ClearCurrentDiscard();
-      _board.ActiveSeatIndex = who;
-      _board.Seats[who].Pon(calledTile, handTile0, handTile1);
+      var hashes = _base5Hashes[who];
+      var suitId = calledTile.TileType.SuitId;
+      var index = calledTile.TileType.Index;
+      hashes[suitId] -= 2 * Base5.Table[index];
+
+      _scoring[who].Pon(suitId, index);
+      _scoring[who].UpdateSuit(suitId, hashes[suitId]);
     }
 
     public void Daiminkan(int who, int fromWho, Tile calledTile, Tile handTile0, Tile handTile1, Tile handTile2)
     {
-      _board.ClearCurrentDiscard();
-      _board.ActiveSeatIndex = who;
-      _board.Seats[who].Daiminkan(calledTile);
+      var hashes = _base5Hashes[who];
+      var suitId = calledTile.TileType.SuitId;
+      var index = calledTile.TileType.Index;
+      hashes[suitId] -= 3 * Base5.Table[index];
+
+      _scoring[who].Daiminkan(suitId, index);
+      _scoring[who].UpdateSuit(suitId, hashes[suitId]);
     }
 
     public void Shouminkan(int who, int fromWho, Tile calledTile, Tile addedTile, Tile handTile0, Tile handTile1)
     {
       _currentShouminkanTile = addedTile;
-      _board.Seats[who].Shouminkan(addedTile);
+
+      var hashes = _base5Hashes[who];
+      var suitId = calledTile.TileType.SuitId;
+      var index = calledTile.TileType.Index;
+      hashes[suitId] -= Base5.Table[index];
+
+      _scoring[who].Shouminkan(calledTile.TileType);
+      _scoring[who].UpdateSuit(suitId, hashes[suitId]);
     }
 
     public void DeclareRiichi(int who)
     {
-      _board.Seats[who].DeclaredRiichi = true;
     }
 
     public void Ron(int who, int fromWho, PaymentInformation payment)
     {
+      if (_oyaSeatIndex == null || _roundWind == null || _mostRecentDiscard == null)
+      {
+        throw new InvalidOperationException();
+      }
+
       if ((payment.Yaku & ExternalYaku & YakumanFilter) != 0)
       {
         return;
@@ -127,51 +150,48 @@ namespace Spines.Mahjong.Analysis.Tests
 
       CalculationCount += 1;
 
-      var seat = _board.Seats[who];
+      var winningTile = _currentShouminkanTile ?? _mostRecentDiscard;
+
+      var hashes = _base5Hashes[who];
+      var winningSuitId = winningTile.TileType.SuitId;
+      hashes[winningSuitId] += Base5.Table[winningTile.TileType.Index];
+
+      _scoring[who].Draw(winningSuitId, hashes[winningSuitId]);
+
+      var seatWind = (who - _oyaSeatIndex.Value + 4) % 4;
+      var wind = new WindScoringData(_roundWind.Index, seatWind);
+
+      Yaku yaku;
+      int fu;
+
       if (_currentShouminkanTile == null)
       {
-        var discard = _board.CurrentDiscard!.TileType;
-        var hand = (HandCalculator) seat.Hand.WithTile(discard);
-        var roundWind = _board.RoundWind.Index;
-        var seatWind = seat.SeatWind.Index;
-        var wind = new WindScoringData(roundWind, seatWind);
-        var (yaku, fu) = ScoreCalculator.RonWithYaku(hand.ScoringData, wind, discard);
-
-        if (yaku != (payment.Yaku & YakuFilter))
-        {
-          FailureCount += 1;
-        }
-
-        var han = Han.Calculate(yaku);
-        if (han < 5 && fu != payment.Fu)
-        {
-          FailureCount += 1;
-        }
+        (yaku, fu) = ScoreCalculator.RonWithYaku(_scoring[who], wind, _mostRecentDiscard.TileType);
       }
       else
       {
-        var discard = _currentShouminkanTile.TileType;
-        var hand = (HandCalculator) seat.Hand.WithTile(discard);
-        var roundWind = _board.RoundWind.Index;
-        var seatWind = seat.SeatWind.Index;
-        var wind = new WindScoringData(roundWind, seatWind);
-        var (yaku, fu) = ScoreCalculator.ChankanWithYaku(hand.ScoringData, wind, discard);
+        (yaku, fu) = ScoreCalculator.ChankanWithYaku(_scoring[who], wind, _currentShouminkanTile.TileType);
+      }
 
-        if (yaku != (payment.Yaku & YakuFilter))
-        {
-          FailureCount += 1;
-        }
+      if (yaku != (payment.Yaku & YakuFilter))
+      {
+        FailureCount += 1;
+      }
 
-        var han = Han.Calculate(yaku);
-        if (han < 5 && fu != payment.Fu)
-        {
-          FailureCount += 1;
-        }
+      var han = Han.Calculate(yaku);
+      if (han < 5 && fu != payment.Fu)
+      {
+        FailureCount += 1;
       }
     }
 
     public void Tsumo(int who, PaymentInformation payment)
     {
+      if (_oyaSeatIndex == null || _roundWind == null || _mostRecentDraw == null)
+      {
+        throw new InvalidOperationException();
+      }
+
       if ((payment.Yaku & ExternalYaku & YakumanFilter) != 0)
       {
         return;
@@ -179,14 +199,10 @@ namespace Spines.Mahjong.Analysis.Tests
 
       CalculationCount += 1;
 
-      var seat = _board.Seats[who];
-      var hand = seat.Hand;
-      var draw = seat.CurrentDraw!.TileType;
-      var roundWind = _board.RoundWind.Index;
-      var seatWind = seat.SeatWind.Index;
-      var wind = new WindScoringData(roundWind, seatWind);
-      var (yaku, fu) = ScoreCalculator.TsumoWithYaku(hand.ScoringData, wind, draw);
-
+      var seatWind = (who - _oyaSeatIndex.Value + 4) % 4;
+      var wind = new WindScoringData(_roundWind.Index, seatWind);
+      var (yaku, fu) = ScoreCalculator.TsumoWithYaku(_scoring[who], wind, _mostRecentDraw.TileType);
+      
       if (yaku != (payment.Yaku & YakuFilter))
       {
         FailureCount += 1;
@@ -282,9 +298,9 @@ namespace Spines.Mahjong.Analysis.Tests
       Yaku.Chiihou |
       Yaku.Tenhou |
       Yaku.JunseiChuurenPoutou;
-
-    private Board _board;
+    
     private Tile? _currentShouminkanTile;
-    private FakeWall _wall;
+    private Tile? _mostRecentDiscard;
+    private Tile? _mostRecentDraw;
   }
 }
