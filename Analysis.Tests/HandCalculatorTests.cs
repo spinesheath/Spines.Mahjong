@@ -23,8 +23,7 @@ namespace Spines.Mahjong.Analysis.Tests
       var visitor = new ShantenEvaluatingVisitor();
       foreach (var file in files)
       {
-        using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
-        ReplayParser.Parse(fileStream, visitor);
+        ReplayParser.Parse(file, visitor);
       }
       
       Assert.Equal(0, visitor.ErrorCount);

@@ -12,7 +12,7 @@ namespace Spines.Mahjong.Analysis.Replay
 {
   public static class ReplayParser
   {
-    public static void Parse(Stream file, IReplayVisitor visitor)
+    public static void Parse(string path, IReplayVisitor visitor)
     {
       var haipai = new Tile[13];
       var scores = new int[4];
@@ -22,8 +22,9 @@ namespace Spines.Mahjong.Analysis.Replay
       var activePlayerId = 0;
 
       var indexInBlock = 0;
-      var block = new byte[1024];
-      var maxIndex = file.Read(block);
+      var block = File.ReadAllBytes(path);
+      var blockIndex = 0;
+      var maxIndex = block.Length;
 
 #if DEBUG
       var log = new StringBuilder();
@@ -34,8 +35,8 @@ namespace Spines.Mahjong.Analysis.Replay
         var action = block[indexInBlock++];
         if (action == 32)
         {
-          maxIndex = file.Read(block);
-          indexInBlock = 0;
+          blockIndex += 1;
+          indexInBlock = blockIndex * 1024;
 
 #if DEBUG
           log.AppendLine("block");
