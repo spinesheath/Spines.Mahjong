@@ -11,7 +11,7 @@ namespace Spines.Mahjong.Analysis.Tests
     [Fact]
     public void BundlesWithVisitor()
     {
-      var files = BundlesFolders.SelectMany(Directory.EnumerateFiles);
+      var files = Bundles.All.SelectMany(Directory.EnumerateFiles);
       var visitor = new Shanten5EvaluatingVisitor();
       foreach (var file in files)
       {
@@ -67,12 +67,5 @@ namespace Spines.Mahjong.Analysis.Tests
 
       Assert.Equal(expected, s);
     }
-
-    private static readonly string[] BundlesFolders = 
-    {
-      @"C:\tenhou\compressed3\2014\yonma",
-      @"C:\tenhou\compressed3\2015\yonma",
-      @"C:\tenhou\compressed3\2016\yonma"
-    };
   }
 }

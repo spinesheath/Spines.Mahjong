@@ -12,7 +12,7 @@ namespace Spines.Mahjong.Analysis.Tests
     [Fact]
     public void BundlesWithClassicVisitor()
     {
-      var files = BundlesFolders.SelectMany(Directory.EnumerateFiles);
+      var files = Bundles.All.SelectMany(Directory.EnumerateFiles);
       var visitor = new ClassicScoreCalculatingVisitor();
       foreach (var file in files)
       {
@@ -25,7 +25,7 @@ namespace Spines.Mahjong.Analysis.Tests
     [Fact]
     public void BundlesWithVisitor()
     {
-      var files = BundlesFolders.SelectMany(Directory.EnumerateFiles);
+      var files = Bundles.All.SelectMany(Directory.EnumerateFiles);
       var visitor = new ScoreCalculatingVisitor();
       foreach (var file in files)
       {
@@ -226,12 +226,5 @@ namespace Spines.Mahjong.Analysis.Tests
 
       Assert.Equal(expectedYaku, yaku);
     }
-
-    private static readonly string[] BundlesFolders =
-    {
-      @"C:\tenhou\compressed\2014\yonma\bundles",
-      @"C:\tenhou\compressed\2015\yonma\bundles",
-      @"C:\tenhou\compressed\2016\yonma\bundles"
-    };
   }
 }
