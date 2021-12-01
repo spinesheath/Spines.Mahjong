@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Xml;
 
 namespace CompressedReplayCreator
@@ -51,28 +50,14 @@ namespace CompressedReplayCreator
 
     public static void Convert()
     {
+      using var bundleWriter = new SanmaYonmaBundleWriter(_sanmaDirectory, _yonmaDirectory, 1000);
+
       var count = 0;
       var xmlReaderSettings = new XmlReaderSettings { NameTable = null };
-      foreach (var fileName in Directory.EnumerateFiles(_sourceDirectory).Take(10))
+      foreach (var fileName in Directory.EnumerateFiles(_sourceDirectory))
       {
         using var xmlReader = XmlReader.Create(fileName, xmlReaderSettings);
-        var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
-        var actionsFileName = Path.Combine(_targetDirectory, fileNameWithoutExtension + ".actions");
-
-        int playerCount;
-        using (var actionsFile = File.Create(actionsFileName))
-        {
-          playerCount = ReplayConverter.Compress(xmlReader, actionsFile);
-        }
-
-        if (playerCount == 3)
-        {
-          File.Move(actionsFileName, Path.Combine(_sanmaDirectory, fileNameWithoutExtension + ".actions"));
-        }
-        else if (playerCount == 4)
-        {
-          File.Move(actionsFileName, Path.Combine(_yonmaDirectory, fileNameWithoutExtension + ".actions"));
-        }
+        ReplayConverter.Compress(xmlReader, bundleWriter);
 
         count += 1;
         if (count % 1000 == 0)

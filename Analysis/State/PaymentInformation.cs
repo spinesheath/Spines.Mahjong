@@ -1,16 +1,18 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Spines.Mahjong.Analysis.Score;
 
 namespace Spines.Mahjong.Analysis.State
 {
   public class PaymentInformation
   {
-    public PaymentInformation(int fu, int score, IEnumerable<int> scoreChanges, Yaku yaku)
+    public PaymentInformation(int fu, int score, int[] scoreChanges, Yaku yaku)
     {
       Fu = fu;
       Score = score;
-      ScoreChanges = scoreChanges.ToList();
+      _scoreChanges[0] = scoreChanges[0];
+      _scoreChanges[1] = scoreChanges[1];
+      _scoreChanges[2] = scoreChanges[2];
+      _scoreChanges[3] = scoreChanges[3];
       Yaku = yaku;
     }
 
@@ -18,8 +20,10 @@ namespace Spines.Mahjong.Analysis.State
 
     public int Score { get; }
 
-    public IReadOnlyList<int> ScoreChanges { get; }
+    public IReadOnlyList<int> ScoreChanges => _scoreChanges;
 
     public Yaku Yaku { get; }
+
+    private readonly int[] _scoreChanges = new int[4];
   }
 }

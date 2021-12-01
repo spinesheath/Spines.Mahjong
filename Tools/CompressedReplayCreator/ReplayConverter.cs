@@ -10,16 +10,9 @@ namespace CompressedReplayCreator
 {
   internal class ReplayConverter
   {
-    /// <summary>
-    /// Compresses the replay from xml into actions.
-    /// </summary>
-    /// <returns>The player count</returns>
-    public static int Compress(XmlReader xml, Stream actions)
+    public static void Compress(XmlReader xml, SanmaYonmaBundleWriter writer)
     {
       string? queuedDraw = null;
-      var playerCount = 4;
-
-      var writer = new BlockWriter(actions);
 
       while (!xml.EOF)
       {
@@ -33,8 +26,7 @@ namespace CompressedReplayCreator
 
         if (queuedDraw != null && (name[1..] != queuedDraw[1..] || queuedDraw[0] - 'T' != name[0] - 'D'))
         {
-          var playerId = queuedDraw[0] - 'T';
-          writer.Draw(playerId, ToByte(queuedDraw[1..]));
+          writer.Draw(ToByte(queuedDraw[1..]));
           queuedDraw = null;
         }
 
@@ -73,7 +65,6 @@ namespace CompressedReplayCreator
             }
 
             var flags = (GameTypeFlag)ToInt(type);
-            playerCount = flags.HasFlag(GameTypeFlag.Sanma) ? 3 : 4;
             writer.Go(flags);
             break;
           }
@@ -99,7 +90,7 @@ namespace CompressedReplayCreator
           }
           case "INIT":
           {
-            WriteInit(xml, writer, playerCount);
+            WriteInit(xml, writer);
             break;
           }
           case "N":
@@ -122,11 +113,11 @@ namespace CompressedReplayCreator
               var tileTypeId = ToByte(name[1..]);
               if (queuedDraw != null && name[1..] == queuedDraw[1..] && queuedDraw[0] - 'T' == discardPlayerId)
               {
-                writer.Tsumogiri(discardPlayerId, tileTypeId);
+                writer.Tsumogiri(tileTypeId);
               }
               else
               {
-                writer.Discard(discardPlayerId, tileTypeId);
+                writer.Discard(tileTypeId);
               }
 
               queuedDraw = null;
@@ -138,11 +129,9 @@ namespace CompressedReplayCreator
           }
         }
       }
-
-      return playerCount;
     }
 
-    private static void WriteDora(XmlReader xml, BlockWriter writer)
+    private static void WriteDora(XmlReader xml, SanmaYonmaBundleWriter writer)
     {
       string? hai = null;
 
@@ -166,7 +155,7 @@ namespace CompressedReplayCreator
       writer.Dora(ToByte(hai));
     }
 
-    private static void WriteReach(XmlReader xml, BlockWriter writer)
+    private static void WriteReach(XmlReader xml, SanmaYonmaBundleWriter writer)
     {
       string? who = null;
       string? step = null;
@@ -210,7 +199,7 @@ namespace CompressedReplayCreator
       }
     }
 
-    private static void WriteNaki(XmlReader xml, BlockWriter writer)
+    private static void WriteNaki(XmlReader xml, SanmaYonmaBundleWriter writer)
     {
       string? who = null;
       string? m = null;
@@ -239,7 +228,7 @@ namespace CompressedReplayCreator
       writer.Meld(ToByte(who), xml.Value);
     }
 
-    private static void WriteInit(XmlReader xml, BlockWriter writer, int playerCount)
+    private static void WriteInit(XmlReader xml, SanmaYonmaBundleWriter writer)
     {
       string? seed = null;
       string? ten = null;
@@ -276,10 +265,10 @@ namespace CompressedReplayCreator
         throw new FormatException("missing attributes in INIT");
       }
 
-      writer.Init(ToBytes(seed), ToInts(ten), ToByte(oya), hai.Select(ToBytes).ToArray(), playerCount);
+      writer.Init(ToBytes(seed), ToInts(ten), ToByte(oya), hai.Select(ToBytes).ToArray());
     }
 
-    private static void WriteAgari(XmlReader xml, BlockWriter writer)
+    private static void WriteAgari(XmlReader xml, SanmaYonmaBundleWriter writer)
     {
       string? ba = null;
       string? hai = null;
@@ -379,7 +368,7 @@ namespace CompressedReplayCreator
         m);
     }
 
-    private static void WriteRyuukyoku(XmlReader xml, BlockWriter writer)
+    private static void WriteRyuukyoku(XmlReader xml, SanmaYonmaBundleWriter writer)
     {
       string? ba = null;
       string? sc = null;

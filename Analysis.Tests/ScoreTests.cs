@@ -16,8 +16,7 @@ namespace Spines.Mahjong.Analysis.Tests
       var visitor = new ClassicScoreCalculatingVisitor();
       foreach (var file in files)
       {
-        using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
-        ReplayParser.Parse(fileStream, visitor);
+        ReplayParser.Parse(file, visitor);
       }
 
       Assert.Equal(0, visitor.FailureCount);
@@ -30,8 +29,7 @@ namespace Spines.Mahjong.Analysis.Tests
       var visitor = new ScoreCalculatingVisitor();
       foreach (var file in files)
       {
-        using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.SequentialScan);
-        ReplayParser.Parse(fileStream, visitor);
+        ReplayParser.Parse(file, visitor);
       }
 
       Assert.Equal(0, visitor.FailureCount);

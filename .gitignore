@@ -338,5 +338,6 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
-/CompressedReplayCreator/Properties/launchSettings.json
-/ReplayBundleCreator/Properties/launchSettings.json
+
+launchSettings.json
+launchSettings.json
