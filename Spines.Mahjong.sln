@@ -31,8 +31,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenhouSplitter", "TenhouSpl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CompressedReplayCreator", "Tools\CompressedReplayCreator\CompressedReplayCreator.csproj", "{6CCE720D-0186-4DB0-B273-95CD5D42ABDC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReplayBundleCreator", "Tools\ReplayBundleCreator\ReplayBundleCreator.csproj", "{2EB5EA11-75BF-4E22-AB10-AEDDEFE303FC}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -187,18 +185,6 @@ Global
 		{6CCE720D-0186-4DB0-B273-95CD5D42ABDC}.Release|x64.Build.0 = Release|Any CPU
 		{6CCE720D-0186-4DB0-B273-95CD5D42ABDC}.Release|x86.ActiveCfg = Release|Any CPU
 		{6CCE720D-0186-4DB0-B273-95CD5D42ABDC}.Release|x86.Build.0 = Release|Any CPU
-		{2EB5EA11-75BF-4E22-AB10-AEDDEFE303FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2EB5EA11-75BF-4E22-AB10-AEDDEFE303FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2EB5EA11-75BF-4E22-AB10-AEDDEFE303FC}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{2EB5EA11-75BF-4E22-AB10-AEDDEFE303FC}.Debug|x64.Build.0 = Debug|Any CPU
-		{2EB5EA11-75BF-4E22-AB10-AEDDEFE303FC}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{2EB5EA11-75BF-4E22-AB10-AEDDEFE303FC}.Debug|x86.Build.0 = Debug|Any CPU
-		{2EB5EA11-75BF-4E22-AB10-AEDDEFE303FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2EB5EA11-75BF-4E22-AB10-AEDDEFE303FC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2EB5EA11-75BF-4E22-AB10-AEDDEFE303FC}.Release|x64.ActiveCfg = Release|Any CPU
-		{2EB5EA11-75BF-4E22-AB10-AEDDEFE303FC}.Release|x64.Build.0 = Release|Any CPU
-		{2EB5EA11-75BF-4E22-AB10-AEDDEFE303FC}.Release|x86.ActiveCfg = Release|Any CPU
-		{2EB5EA11-75BF-4E22-AB10-AEDDEFE303FC}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -210,7 +196,6 @@ Global
 		{B89B1568-580F-4E77-AF4E-8E6F1B181A3D} = {7183B3F5-016D-4CA3-A1E6-542C1ED46369}
 		{EA73778C-3742-43DF-8102-4D4D8CD670CE} = {4C139521-1C5B-4CCA-BA97-3C26623CE91F}
 		{6CCE720D-0186-4DB0-B273-95CD5D42ABDC} = {4C139521-1C5B-4CCA-BA97-3C26623CE91F}
-		{2EB5EA11-75BF-4E22-AB10-AEDDEFE303FC} = {4C139521-1C5B-4CCA-BA97-3C26623CE91F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DEE3A479-66FA-49B0-B1B8-BD9843DEA3D7}
