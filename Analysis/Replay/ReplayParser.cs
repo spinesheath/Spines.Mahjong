@@ -249,7 +249,7 @@ namespace Spines.Mahjong.Analysis.Replay
             indexInBlock += haiLength;
 
             var meldCount = block[indexInBlock++];
-            var isOpen = HasOpenMeld(block, indexInBlock);
+            var isOpen = HasOpenMeld(block, indexInBlock, meldCount);
             indexInBlock += meldCount * 7;
 
             var machi = Tile.FromTileId(block[indexInBlock++]); // machi
@@ -387,11 +387,11 @@ namespace Spines.Mahjong.Analysis.Replay
       return result;
     }
 
-    private static bool HasOpenMeld(byte[] meldBuffer, int offset)
+    private static bool HasOpenMeld(byte[] meldBuffer, int offset, byte meldCount)
     {
-      for (var i = 0; i < meldBuffer.Length; i += 7)
+      for (var i = 0; i < meldCount; i++)
       {
-        if (meldBuffer[offset + i] != 10)
+        if (meldBuffer[offset + i * 7] != 10)
         {
           return true;
         }
