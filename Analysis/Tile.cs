@@ -17,6 +17,7 @@ namespace Spines.Mahjong.Analysis
       IsAka = tileId == 16 || tileId == 52 || tileId == 88;
       SuitId = TileType.SuitId;
       Index = TileType.Index;
+      Base5Value = Base5.Table[Index];
     }
 
     /// <summary>
@@ -31,6 +32,8 @@ namespace Spines.Mahjong.Analysis
     public readonly int TileId;
 
     public readonly TileType TileType;
+
+    public readonly int Base5Value;
 
     public static Tile FromTileId(int tileId)
     {

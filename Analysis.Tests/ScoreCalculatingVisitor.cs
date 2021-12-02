@@ -36,7 +36,7 @@ namespace Spines.Mahjong.Analysis.Tests
       var t = tiles; // this variable improves performance. No idea why.
       for (var i = 0; i < t.Length; i++)
       {
-        hashes[t[i].SuitId] += Base5.Table[t[i].Index];
+        hashes[t[i].SuitId] += t[i].Base5Value;
       }
 
       _scoring[seatIndex] = new ProgressiveScoringData();
