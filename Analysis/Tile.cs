@@ -15,13 +15,27 @@ namespace Spines.Mahjong.Analysis
       TileId = tileId;
       TileType = TileType.FromTileId(tileId);
       IsAka = tileId == 16 || tileId == 52 || tileId == 88;
+      SuitId = TileType.SuitId;
+      Index = TileType.Index;
     }
 
+    /// <summary>
+    /// 0-8 for manzu, pinzu and souzu, 0-6 for jihai
+    /// </summary>
+    public int Index { get; }
+
     public bool IsAka { get; }
+
+    public int SuitId { get; }
 
     public int TileId { get; }
 
     public TileType TileType { get; }
+
+    public static Tile FromTileId(int tileId)
+    {
+      return ByTileId[tileId];
+    }
 
     public static Tile FromTileType(TileType tileType, int index)
     {
@@ -29,14 +43,9 @@ namespace Spines.Mahjong.Analysis
       return ByTileId[tileType.TileTypeId * 4 + index];
     }
 
-    public static Tile FromTileId(int tileId)
-    {
-      return ByTileId[tileId];
-    }
-
     public override string ToString()
     {
-      return IsAka ? $"0{"mps"[TileType.SuitId]}" : TileType.ToString();
+      return IsAka ? $"0{"mps"[SuitId]}" : TileType.ToString();
     }
 
     private static readonly Tile[] ByTileId;

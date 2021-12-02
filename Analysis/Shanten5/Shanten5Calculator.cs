@@ -43,11 +43,11 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
     public void Chii(Tile handTile0, Tile handTile1)
     {
-      _base5Hashes[handTile0.TileType.SuitId] -= Base5.Table[handTile0.TileType.Index];
-      _base5Hashes[handTile1.TileType.SuitId] -= Base5.Table[handTile1.TileType.Index];
+      _base5Hashes[handTile0.SuitId] -= Base5.Table[handTile0.Index];
+      _base5Hashes[handTile1.SuitId] -= Base5.Table[handTile1.Index];
       _meldCount += 1;
 
-      UpdateAb(handTile0.TileType.SuitId);
+      UpdateAb(handTile0.SuitId);
     }
 
     public void Daiminkan(TileType tileType)
@@ -76,7 +76,7 @@ namespace Spines.Mahjong.Analysis.Shanten5
     {
       foreach (var tile in tiles)
       {
-        _base5Hashes[tile.TileType.SuitId] += Base5.Table[tile.TileType.Index];
+        _base5Hashes[tile.SuitId] += Base5.Table[tile.Index];
       }
 
       _a = CalculateA(_base5Hashes);

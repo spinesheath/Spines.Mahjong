@@ -36,7 +36,7 @@ namespace Spines.Mahjong.Analysis.Tests
 
       foreach (var tile in tiles)
       {
-        hashes[tile.TileType.SuitId] += Base5.Table[tile.TileType.Index];
+        hashes[tile.SuitId] += Base5.Table[tile.Index];
       }
 
       _scoring[seatIndex] = new ProgressiveScoringData();
@@ -58,8 +58,8 @@ namespace Spines.Mahjong.Analysis.Tests
       _mostRecentDraw = tile;
 
       var hashes = _base5Hashes[seatIndex];
-      var suitId = tile.TileType.SuitId;
-      hashes[suitId] += Base5.Table[tile.TileType.Index];
+      var suitId = tile.SuitId;
+      hashes[suitId] += Base5.Table[tile.Index];
 
       _scoring[seatIndex].Draw(suitId, hashes[suitId]);
     }
@@ -69,8 +69,8 @@ namespace Spines.Mahjong.Analysis.Tests
       _mostRecentDiscard = tile;
 
       var hashes = _base5Hashes[seatIndex];
-      var suitId = tile.TileType.SuitId;
-      hashes[suitId] -= Base5.Table[tile.TileType.Index];
+      var suitId = tile.SuitId;
+      hashes[suitId] -= Base5.Table[tile.Index];
 
       _scoring[seatIndex].Discard(suitId, hashes[suitId]);
     }
@@ -88,11 +88,11 @@ namespace Spines.Mahjong.Analysis.Tests
     public void Chii(int who, int fromWho, Tile calledTile, Tile handTile0, Tile handTile1)
     {
       var hashes = _base5Hashes[who];
-      var suitId = calledTile.TileType.SuitId;
-      hashes[suitId] -= Base5.Table[handTile0.TileType.Index];
-      hashes[suitId] -= Base5.Table[handTile1.TileType.Index];
+      var suitId = calledTile.SuitId;
+      hashes[suitId] -= Base5.Table[handTile0.Index];
+      hashes[suitId] -= Base5.Table[handTile1.Index];
 
-      var minIndex = Math.Min(Math.Min(calledTile.TileType.Index, handTile0.TileType.Index), handTile1.TileType.Index);
+      var minIndex = Math.Min(Math.Min(calledTile.Index, handTile0.Index), handTile1.Index);
       _scoring[who].Chii(suitId, minIndex);
       _scoring[who].UpdateSuit(suitId, hashes[suitId]);
     }
@@ -100,8 +100,8 @@ namespace Spines.Mahjong.Analysis.Tests
     public void Pon(int who, int fromWho, Tile calledTile, Tile handTile0, Tile handTile1)
     {
       var hashes = _base5Hashes[who];
-      var suitId = calledTile.TileType.SuitId;
-      var index = calledTile.TileType.Index;
+      var suitId = calledTile.SuitId;
+      var index = calledTile.Index;
       hashes[suitId] -= 2 * Base5.Table[index];
 
       _scoring[who].Pon(suitId, index);
@@ -111,8 +111,8 @@ namespace Spines.Mahjong.Analysis.Tests
     public void Daiminkan(int who, int fromWho, Tile calledTile, Tile handTile0, Tile handTile1, Tile handTile2)
     {
       var hashes = _base5Hashes[who];
-      var suitId = calledTile.TileType.SuitId;
-      var index = calledTile.TileType.Index;
+      var suitId = calledTile.SuitId;
+      var index = calledTile.Index;
       hashes[suitId] -= 3 * Base5.Table[index];
 
       _scoring[who].Daiminkan(suitId, index);
@@ -124,8 +124,8 @@ namespace Spines.Mahjong.Analysis.Tests
       _currentShouminkanTile = addedTile;
 
       var hashes = _base5Hashes[who];
-      var suitId = calledTile.TileType.SuitId;
-      var index = calledTile.TileType.Index;
+      var suitId = calledTile.SuitId;
+      var index = calledTile.Index;
       hashes[suitId] -= Base5.Table[index];
 
       _scoring[who].Shouminkan(calledTile.TileType);
@@ -153,8 +153,8 @@ namespace Spines.Mahjong.Analysis.Tests
       var winningTile = _currentShouminkanTile ?? _mostRecentDiscard;
 
       var hashes = _base5Hashes[who];
-      var winningSuitId = winningTile.TileType.SuitId;
-      hashes[winningSuitId] += Base5.Table[winningTile.TileType.Index];
+      var winningSuitId = winningTile.SuitId;
+      hashes[winningSuitId] += Base5.Table[winningTile.Index];
 
       _scoring[who].Draw(winningSuitId, hashes[winningSuitId]);
 

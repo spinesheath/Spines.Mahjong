@@ -624,7 +624,7 @@ namespace Spines.Mahjong.Analysis.Score
         var counts = new int[9];
         foreach (var tile in _allTiles)
         {
-          counts[tile.TileType.Index] += 1;
+          counts[tile.Index] += 1;
         }
 
         var center = counts[1] * counts[2] * counts[3] * counts[4] * counts[5] * counts[6] * counts[7];
@@ -650,7 +650,7 @@ namespace Spines.Mahjong.Analysis.Score
       }
 
       var concealed = arrangement.Koutsus.Count(k => k.Suit == Suit.Jihai && k.Index < 4);
-      var melded = _melds.Count(m => m.LowestTile.TileType.Suit == Suit.Jihai && m.LowestTile.TileType.Index < 4);
+      var melded = _melds.Count(m => m.LowestTile.TileType.Suit == Suit.Jihai && m.LowestTile.Index < 4);
       var sum = concealed + melded;
       var pair = arrangement.Pair!.Suit == Suit.Jihai && arrangement.Pair.Index < 4;
 
@@ -719,7 +719,7 @@ namespace Spines.Mahjong.Analysis.Score
         return Yaku.None;
       }
 
-      var melded = _melds.Count(m => m.LowestTile.TileType.Suit == Suit.Jihai && m.LowestTile.TileType.Index > 3);
+      var melded = _melds.Count(m => m.LowestTile.TileType.Suit == Suit.Jihai && m.LowestTile.Index > 3);
       var closed = arrangement.Koutsus.Count(k => k.Suit == Suit.Jihai && k.Index > 3);
       var hasDragonPair = arrangement.Pair!.Suit == Suit.Jihai && arrangement.Pair.Index > 3;
       if (hasDragonPair && melded + closed == 2)

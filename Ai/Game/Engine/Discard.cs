@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Game.Shared;
 using Spines.Mahjong.Analysis;
-using Spines.Mahjong.Analysis.Score;
 using Spines.Mahjong.Analysis.State;
 
 namespace Game.Engine
@@ -28,7 +27,7 @@ namespace Game.Engine
 
     public override async Task Decide(Board board, Decider decider)
     {
-      if (_tile.TileType.Suit == Suit.Jihai && _tile.TileType.Index < 4 && board.IsFirstGoAround)
+      if (_tile.TileType.Suit == Suit.Jihai && _tile.Index < 4 && board.IsFirstGoAround)
       {
         if (board.Seats.SelectMany(s => s.Discards).Count(t => t.TileType == _tile.TileType) == 4)
         {
