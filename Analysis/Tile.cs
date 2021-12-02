@@ -22,15 +22,15 @@ namespace Spines.Mahjong.Analysis
     /// <summary>
     /// 0-8 for manzu, pinzu and souzu, 0-6 for jihai
     /// </summary>
-    public int Index { get; }
+    public readonly int Index;
 
-    public bool IsAka { get; }
+    public readonly bool IsAka;
 
-    public int SuitId { get; }
+    public readonly int SuitId;
 
-    public int TileId { get; }
+    public readonly int TileId;
 
-    public TileType TileType { get; }
+    public readonly TileType TileType;
 
     public static Tile FromTileId(int tileId)
     {
