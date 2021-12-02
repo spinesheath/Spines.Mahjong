@@ -19,7 +19,7 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
     public void Ankan(TileType tileType)
     {
-      _base5Hashes[tileType.SuitId] -= 4 * Base5.Table[tileType.Index];
+      _base5Hashes[tileType.SuitId] -= 4 * tileType.Base5Value;
       _meldCount += 1;
 
       UpdateAb(tileType.SuitId);
@@ -43,8 +43,8 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
     public void Chii(Tile handTile0, Tile handTile1)
     {
-      _base5Hashes[handTile0.SuitId] -= Base5.Table[handTile0.Index];
-      _base5Hashes[handTile1.SuitId] -= Base5.Table[handTile1.Index];
+      _base5Hashes[handTile0.SuitId] -= handTile0.Base5Value;
+      _base5Hashes[handTile1.SuitId] -= handTile1.Base5Value;
       _meldCount += 1;
 
       UpdateAb(handTile0.SuitId);
@@ -52,7 +52,7 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
     public void Daiminkan(TileType tileType)
     {
-      _base5Hashes[tileType.SuitId] -= 3 * Base5.Table[tileType.Index];
+      _base5Hashes[tileType.SuitId] -= 3 * tileType.Base5Value;
       _meldCount += 1;
 
       UpdateAb(tileType.SuitId);
@@ -60,14 +60,14 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
     public void Discard(TileType tileType)
     {
-      _base5Hashes[tileType.SuitId] -= Base5.Table[tileType.Index];
+      _base5Hashes[tileType.SuitId] -= tileType.Base5Value;
 
       UpdateAb(tileType.SuitId);
     }
 
     public void Draw(TileType tileType)
     {
-      _base5Hashes[tileType.SuitId] += Base5.Table[tileType.Index];
+      _base5Hashes[tileType.SuitId] += tileType.Base5Value;
 
       UpdateAb(tileType.SuitId);
     }
@@ -76,7 +76,7 @@ namespace Spines.Mahjong.Analysis.Shanten5
     {
       foreach (var tile in tiles)
       {
-        _base5Hashes[tile.SuitId] += Base5.Table[tile.Index];
+        _base5Hashes[tile.SuitId] += tile.Base5Value;
       }
 
       _a = CalculateA(_base5Hashes);
@@ -85,7 +85,7 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
     public void Pon(TileType tileType)
     {
-      _base5Hashes[tileType.SuitId] -= 2 * Base5.Table[tileType.Index];
+      _base5Hashes[tileType.SuitId] -= 2 * tileType.Base5Value;
       _meldCount += 1;
 
       UpdateAb(tileType.SuitId);
@@ -98,7 +98,7 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
     public void Shouminkan(TileType tileType)
     {
-      _base5Hashes[tileType.SuitId] -= Base5.Table[tileType.Index];
+      _base5Hashes[tileType.SuitId] -= tileType.Base5Value;
 
       UpdateAb(tileType.SuitId);
     }

@@ -22,6 +22,7 @@ namespace Spines.Mahjong.Analysis
       Suit = (Suit) SuitId;
       IsKyuuhai = Suit == Suit.Jihai || Index == 0 || Index == 8;
       KyuuhaiValue = IsKyuuhai ? 1 : 0;
+      Base5Value = Base5.Table[Index];
     }
 
     public int Index { get; }
@@ -85,5 +86,7 @@ namespace Spines.Mahjong.Analysis
     }
 
     private static readonly TileType[] ByTileType;
+
+    public readonly int Base5Value;
   }
 }

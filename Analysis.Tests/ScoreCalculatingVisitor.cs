@@ -59,7 +59,7 @@ namespace Spines.Mahjong.Analysis.Tests
 
       var hashes = _base5Hashes[seatIndex];
       var suitId = tile.SuitId;
-      hashes[suitId] += Base5.Table[tile.Index];
+      hashes[suitId] += tile.Base5Value;
 
       _scoring[seatIndex].Draw(suitId, hashes[suitId]);
     }
@@ -70,7 +70,7 @@ namespace Spines.Mahjong.Analysis.Tests
 
       var hashes = _base5Hashes[seatIndex];
       var suitId = tile.SuitId;
-      hashes[suitId] -= Base5.Table[tile.Index];
+      hashes[suitId] -= tile.Base5Value;
 
       _scoring[seatIndex].Discard(suitId, hashes[suitId]);
     }
@@ -79,7 +79,7 @@ namespace Spines.Mahjong.Analysis.Tests
     {
       var hashes = _base5Hashes[who];
       var suitId = tileType.SuitId;
-      hashes[suitId] -= 4 * Base5.Table[tileType.Index];
+      hashes[suitId] -= 4 * tileType.Base5Value;
       
       _scoring[who].Ankan(suitId, tileType.Index);
       _scoring[who].UpdateSuit(suitId, hashes[suitId]);
@@ -89,8 +89,8 @@ namespace Spines.Mahjong.Analysis.Tests
     {
       var hashes = _base5Hashes[who];
       var suitId = calledTile.SuitId;
-      hashes[suitId] -= Base5.Table[handTile0.Index];
-      hashes[suitId] -= Base5.Table[handTile1.Index];
+      hashes[suitId] -= handTile0.Base5Value;
+      hashes[suitId] -= handTile1.Base5Value;
 
       var minIndex = Math.Min(Math.Min(calledTile.Index, handTile0.Index), handTile1.Index);
       _scoring[who].Chii(suitId, minIndex);
@@ -101,10 +101,9 @@ namespace Spines.Mahjong.Analysis.Tests
     {
       var hashes = _base5Hashes[who];
       var suitId = calledTile.SuitId;
-      var index = calledTile.Index;
-      hashes[suitId] -= 2 * Base5.Table[index];
+      hashes[suitId] -= 2 * calledTile.Base5Value;
 
-      _scoring[who].Pon(suitId, index);
+      _scoring[who].Pon(suitId, calledTile.Index);
       _scoring[who].UpdateSuit(suitId, hashes[suitId]);
     }
 
@@ -112,10 +111,9 @@ namespace Spines.Mahjong.Analysis.Tests
     {
       var hashes = _base5Hashes[who];
       var suitId = calledTile.SuitId;
-      var index = calledTile.Index;
-      hashes[suitId] -= 3 * Base5.Table[index];
+      hashes[suitId] -= 3 * calledTile.Base5Value;
 
-      _scoring[who].Daiminkan(suitId, index);
+      _scoring[who].Daiminkan(suitId, calledTile.Index);
       _scoring[who].UpdateSuit(suitId, hashes[suitId]);
     }
 
@@ -125,8 +123,7 @@ namespace Spines.Mahjong.Analysis.Tests
 
       var hashes = _base5Hashes[who];
       var suitId = calledTile.SuitId;
-      var index = calledTile.Index;
-      hashes[suitId] -= Base5.Table[index];
+      hashes[suitId] -= calledTile.Base5Value;
 
       _scoring[who].Shouminkan(calledTile.TileType);
       _scoring[who].UpdateSuit(suitId, hashes[suitId]);
@@ -154,7 +151,7 @@ namespace Spines.Mahjong.Analysis.Tests
 
       var hashes = _base5Hashes[who];
       var winningSuitId = winningTile.SuitId;
-      hashes[winningSuitId] += Base5.Table[winningTile.Index];
+      hashes[winningSuitId] += winningTile.Base5Value;
 
       _scoring[who].Draw(winningSuitId, hashes[winningSuitId]);
 
