@@ -45,7 +45,7 @@ namespace Spines.Mahjong.Analysis.Replay
     {
     }
 
-    void Haipai(int seatIndex, IEnumerable<Tile> tiles)
+    void Haipai(int seatIndex, Tile[] tiles)
     {
     }
 

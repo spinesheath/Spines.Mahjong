@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Spines.Mahjong.Analysis.Replay;
 using Spines.Mahjong.Analysis.Score;
 using Spines.Mahjong.Analysis.Shanten;
@@ -26,7 +25,7 @@ namespace Spines.Mahjong.Analysis.Tests
       _roundWind = roundWind;
     }
 
-    public void Haipai(int seatIndex, IEnumerable<Tile> tiles)
+    public void Haipai(int seatIndex, Tile[] tiles)
     {
       var hashes = _base5Hashes[seatIndex];
       hashes[0] = 0;
@@ -34,9 +33,10 @@ namespace Spines.Mahjong.Analysis.Tests
       hashes[2] = 0;
       hashes[3] = 0;
 
-      foreach (var tile in tiles)
+      var t = tiles; // this variable improves performance. No idea why.
+      for (var i = 0; i < t.Length; i++)
       {
-        hashes[tile.SuitId] += Base5.Table[tile.Index];
+        hashes[t[i].SuitId] += Base5.Table[t[i].Index];
       }
 
       _scoring[seatIndex] = new ProgressiveScoringData();

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Spines.Mahjong.Analysis.Replay;
 using Spines.Mahjong.Analysis.Shanten5;
 
@@ -24,7 +23,7 @@ namespace Spines.Mahjong.Analysis.Tests
       _calculators[3] = new Shanten5Calculator();
     }
 
-    public void Haipai(int seatIndex, IEnumerable<Tile> tiles)
+    public void Haipai(int seatIndex, Tile[] tiles)
     {
       _calculators[seatIndex].Haipai(tiles);
       var shanten = _calculators[seatIndex].Shanten();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Spines.Mahjong.Analysis.Replay;
 using Spines.Mahjong.Analysis.State;
@@ -78,9 +79,9 @@ namespace Spines.Mahjong.Analysis.Tests
       _sb.AppendLine($"Dora {tile}");
     }
 
-    public void Haipai(int seatIndex, IEnumerable<Tile> tiles)
+    public void Haipai(int seatIndex, Tile[] tiles)
     {
-      _sb.AppendLine($"Haipai {seatIndex}: {string.Join("", tiles)}");
+      _sb.AppendLine($"Haipai {seatIndex}: {string.Join("", tiles.AsEnumerable())}");
     }
 
     public void Nuki(int who, Tile tile)
@@ -113,6 +114,6 @@ namespace Spines.Mahjong.Analysis.Tests
       _sb.AppendLine($"GameType {flags}");
     }
 
-    private readonly StringBuilder _sb = new StringBuilder();
+    private readonly StringBuilder _sb = new();
   }
 }

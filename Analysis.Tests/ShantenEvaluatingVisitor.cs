@@ -30,7 +30,7 @@ namespace Spines.Mahjong.Analysis.Tests
       }
     }
 
-    public void Haipai(int seatIndex, IEnumerable<Tile> tiles)
+    public void Haipai(int seatIndex, Tile[] tiles)
     {
       _shantenCalculators[seatIndex].Init(tiles.Select(t => t.TileType));
       var shanten = _shantenCalculators[seatIndex].Shanten;

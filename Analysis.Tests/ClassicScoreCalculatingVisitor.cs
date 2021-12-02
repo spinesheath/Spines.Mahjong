@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using Spines.Mahjong.Analysis.Replay;
 using Spines.Mahjong.Analysis.Score;
 using Spines.Mahjong.Analysis.State;
@@ -28,7 +27,7 @@ namespace Spines.Mahjong.Analysis.Tests
       _board.RiichiSticks = riichiSticks;
     }
 
-    public void Haipai(int seatIndex, IEnumerable<Tile> tiles)
+    public void Haipai(int seatIndex, Tile[] tiles)
     {
       var seat = _board.Seats[seatIndex];
       seat.Init(tiles);
