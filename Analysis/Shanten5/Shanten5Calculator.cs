@@ -105,19 +105,21 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
     private static readonly Vector128<byte>[] LookupSuit;
     private static readonly Vector128<byte>[] LookupHonor;
-    private static readonly Vector128<byte> KokushiPairSelector = Vector128.Create((byte) 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0);
-    private static readonly Vector128<byte> Phase1ShuffleA1 = Vector128.Create((byte) 1, 2, 3, 4, 1, 2, 3, 1, 1, 2, 1, 1, 2, 1, 13, 15);
-    private static readonly Vector128<byte> Phase1ShuffleB1 = Vector128.Create((byte) 8, 7, 6, 5, 7, 6, 5, 1, 6, 5, 5, 3, 2, 2, 13, 15);
-    private static readonly Vector128<byte> Phase1ShuffleA2 = Vector128.Create(5, 6, 7, 8, 5, 6, 7, 255, 5, 6, 5, 3, 255, 2, 255, 255);
-    private static readonly Vector128<byte> Phase1ShuffleB2 = Vector128.Create(4, 3, 2, 1, 3, 2, 1, 255, 2, 1, 1, 1, 255, 1, 255, 255);
-    private static readonly Vector128<byte> Phase1ShuffleAb11 = Vector128.Create(0, 1, 8, 10, 255, 11, 13, 7, 255, 255, 4, 6, 255, 255, 14, 15);
+    
+    private static readonly Vector128<byte> Phase1ShuffleA1 = Vector128.Create(1, 2, 3, 4, 1, 2, 3, 1, 1, 2, 1, 1, 2, 1, 13, 255);
+    private static readonly Vector128<byte> Phase1ShuffleB1 = Vector128.Create(8, 7, 6, 5, 7, 6, 5, 1, 6, 5, 5, 3, 2, 2, 14, 255);
+    private static readonly Vector128<byte> Phase1ShuffleA2 = Vector128.Create(5, 6, 7, 8, 5, 6, 7, 255, 5, 6, 5, 3, 255, 2, 14, 255);
+    private static readonly Vector128<byte> Phase1ShuffleB2 = Vector128.Create(4, 3, 2, 1, 3, 2, 1, 255, 2, 1, 1, 1, 255, 1, 13, 255);
+
+    private static readonly Vector128<byte> Phase1ShuffleAb11 = Vector128.Create(0, 1, 8, 10, 255, 11, 13, 7, 255, 255, 4, 6, 255, 255, 14, 255);
     private static readonly Vector128<byte> Phase1ShuffleAb12 = Vector128.Create(2, 3, 9, 255, 255, 12, 255, 255, 255, 255, 5, 255, 255, 255, 255, 255);
-    private static readonly Vector128<byte> Phase1ShuffleAb21 = Vector128.Create(255, 255, 7, 6, 5, 255, 3, 2, 10, 0, 15, 255, 255, 14, 255, 255);
+
+    private static readonly Vector128<byte> Phase1ShuffleAb21 = Vector128.Create(255, 255, 7, 6, 5, 255, 3, 2, 10, 0, 15, 255, 255, 255, 14, 255);
     private static readonly Vector128<byte> Phase1ShuffleAb22 = Vector128.Create(255, 255, 255, 255, 255, 255, 255, 255, 11, 1, 255, 255, 255, 255, 255, 255);
 
-    private static readonly Vector128<byte>[] MeldCountVectors =
+    private static readonly Vector128<byte>[] ReverseBVectors =
     {
-      Vector128.Create(9, 8, 7, 6, 5, 4, 3, 2, 1, 255, 10, 255, 255, 13, 255, 14),
+      Vector128.Create(9, 8, 7, 6, 5, 4, 3, 2, 1, 255, 255, 255, 255, 14, 13, 15),
       Vector128.Create(8, 7, 6, 5, 255, 3, 2, 1, 255, 255, 255, 255, 255, 255, 255, 255),
       Vector128.Create(7, 6, 5, 255, 255, 2, 1, 255, 255, 255, 255, 255, 255, 255, 255, 255),
       Vector128.Create(6, 5, 255, 255, 255, 1, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255),
@@ -126,8 +128,7 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
     private static readonly Vector128<byte>[] InversionVectors =
     {
-      // 254 is used for calculating kokushi pair count. If pair present there will be a 1 in the lowest bit which is then selected and subtracted.
-      Vector128.Create(14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 7, 255, 255, 14, 254, 254),
+      Vector128.Create(14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 255, 255, 255, 14, 14, 7),
       Vector128.Create(11, 11, 11, 11, 255, 11, 11, 11, 11, 255, 255, 255, 255, 255, 255, 255),
       Vector128.Create(8, 8, 8, 255, 255, 8, 8, 8, 255, 255, 255, 255, 255, 255, 255, 255),
       Vector128.Create(5, 5, 255, 255, 255, 5, 5, 255, 255, 255, 255, 255, 255, 255, 255, 255),
@@ -151,47 +152,82 @@ namespace Spines.Mahjong.Analysis.Shanten5
       }
     }
 
+    /// <summary>
+    /// Calculates shanten
+    /// </summary>
+    /// <param name="meldCount">How many melds have been made</param>
+    /// <param name="a">00,01,02,03,04,10,11,12,13,14,__,__,__,k0,k1,cc</param>
+    /// <param name="b">00,01,02,03,04,10,11,12,13,14,__,__,__,k0,k1,cc</param>
+    /// <returns></returns>
     private static int CalculateInternal(int meldCount, Vector128<byte> a, Vector128<byte> b)
     {
-      var b2 = Ssse3.Shuffle(b, MeldCountVectors[meldCount]);
+      var b2 = Ssse3.Shuffle(b, ReverseBVectors[meldCount]);
       var r = Sse2.Add(a, b2);
       var r1 = Sse2.Subtract(InversionVectors[meldCount], r);
       var r3 = Sse2.ShiftRightLogical(r1.AsInt16(), 8);
       var r4 = Sse2.Min(r1, r3.AsByte());
-      var k2 = Sse2.And(r4, KokushiPairSelector);
-      var k3 = Sse2.ShiftRightLogical(k2.AsUInt32(), 16);
-      var k4 = k3.AsByte();
-      var r5 = Sse2.Subtract(r4, k4);
-      var r6 = Sse41.MinHorizontal(r5.AsUInt16());
+      var r6 = Sse41.MinHorizontal(r4.AsUInt16());
       var r7 = (byte) Sse2.ConvertToInt32(r6.AsInt32());
       return r7 - 1;
     }
 
+    private static Vector128<byte> CalculateA(Span<int> base5Hashes)
+    {
+      var m = LookupSuitTempAdjusted(base5Hashes[0]);
+      var p = LookupSuitTempAdjusted(base5Hashes[1]);
+      var a = CalculatePhase1(m, p);
+      return a;
+    }
+
     private static Vector128<byte> CalculateB(Span<int> base5Hashes)
     {
-      var s = LookupSuit[base5Hashes[2]];
-      var z = LookupHonor[base5Hashes[3]];
+      var s = LookupSuitTempAdjusted(base5Hashes[2]);
+      var z = LookupHonorTempAdjusted(base5Hashes[3]);
       var b = CalculatePhase1(s, z);
       return b;
     }
 
-    private static Vector128<byte> CalculateA(Span<int> base5Hashes)
+    private static Vector128<byte> LookupHonorTempAdjusted(int hash)
     {
-      var m = LookupSuit[base5Hashes[0]];
-      var p = LookupSuit[base5Hashes[1]];
-      var a = CalculatePhase1(m, p);
-      //// TODO chiitoi is adding up with kokushi pair, fix that in lookup table and this insert can be removed
-      return Sse41.Insert(a, 0, 15);
+      var raw = LookupHonor[hash];
+
+      var kokushi1 = Sse41.Extract(raw, 13);
+      var kokushi2 = Sse41.Extract(raw, 14);
+
+      var kokushi3 = kokushi1 + kokushi2;
+      var adjusted = Sse41.Insert(raw, (byte)kokushi3, 14);
+
+      return adjusted;
+    }
+
+    private static Vector128<byte> LookupSuitTempAdjusted(int hash)
+    {
+      var raw = LookupSuit[hash];
+      
+      // 13 = kokushi1
+      // 14 = kokushi2
+      // 15 = chiitoi
+
+      var kokushi1 = Sse41.Extract(raw, 13);
+      var kokushi2 = Sse41.Extract(raw, 14);
+
+      var kokushi3 = kokushi1 + kokushi2;
+      var adjusted = Sse41.Insert(raw, (byte)kokushi3, 14);
+
+      // 13 = kokushi1
+      // 14 = kokushi2 + kokushi1
+      // 15 = chiitoi
+      
+      return adjusted;
     }
 
     /// <summary>
-    /// Combines the vectors into a single one with the same layout: values for (0,0), (0,1) ... (1,3), (1,4) with
-    /// (pair,groups)
+    /// Combines the vectors into a single one with the same layout:
+    /// values for (0,0), (0,1) ... (1,3), (1,4) with (pair,groups)
     /// </summary>
     private static Vector128<byte> CalculatePhase1(Vector128<byte> a, Vector128<byte> b)
     {
       // first calculate all the sums, then merge them down with repeated vertical max
-      // TODO load kokushi with and without pair from file, then combine into 2 values here, then same reverse/add as for regular shape in phase 2
 
       var va1 = Ssse3.Shuffle(a, Phase1ShuffleA1);
       var vb1 = Ssse3.Shuffle(b, Phase1ShuffleB1);
@@ -213,7 +249,12 @@ namespace Spines.Mahjong.Analysis.Shanten5
       var vab31 = Ssse3.Shuffle(xab2, Phase1ShuffleAb21);
       var vab32 = Ssse3.Shuffle(xab2, Phase1ShuffleAb22);
 
-      return Sse2.Max(Sse2.Max(a, b), Sse2.Max(vab31, vab32));
+      // calculates chiitoitsu sum and kokushi without pair sum
+      // barely not enough space in above calculation for these
+      var b2 = Sse2.And(b, Vector128.Create(0UL, 0xFF_00_FF_00_00_00_00_00UL).AsByte());
+      var a2 = Sse2.Add(a, b2);
+
+      return Sse2.Max(Sse2.Max(a2, b), Sse2.Max(vab31, vab32));
     }
   }
 }

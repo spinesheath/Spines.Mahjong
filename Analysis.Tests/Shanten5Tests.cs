@@ -19,7 +19,6 @@ namespace Spines.Mahjong.Analysis.Tests
       }
 
       Assert.Equal(0, visitor.ErrorCount);
-      Assert.Equal(1, visitor.EvaluationCount);
     }
 
     [Theory]
