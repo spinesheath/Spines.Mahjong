@@ -20,38 +20,18 @@ namespace Spines.Mahjong.Analysis.Shanten5
     public void Ankan(TileType tileType)
     {
       _base5Hashes[tileType.SuitId] -= 4 * tileType.Base5Value;
-      _meldCount += 1;
+      _reverseBVector = ReverseBVectors[++_meldCount];
+      _inversionVector = InversionVectors[_meldCount];
 
       UpdateAb(tileType.SuitId);
-    }
-
-    public static int Calculate(int[] tileCounts, int meldCount)
-    {
-      Span<int> base5Hashes = stackalloc int[4];
-      var tileTypeId = 0;
-      for (var suitId = 0; suitId < 4; suitId++)
-      {
-        for (var index = 0; index < 9 && tileTypeId < 34; index++)
-        {
-          base5Hashes[suitId] += Base5.Table[index] * tileCounts[tileTypeId];
-          tileTypeId += 1;
-        }
-      }
-
-      var m = LookupSuit[base5Hashes[0]];
-      var p = LookupSuit[base5Hashes[1]];
-      var a = CalculatePhase1(m, p);
-      var s = LookupSuit[base5Hashes[2]];
-      var z = LookupHonor[base5Hashes[3]];
-      var b = CalculatePhase1(s, z);
-      return CalculateInternal(meldCount, a, b);
     }
 
     public void Chii(Tile handTile0, Tile handTile1)
     {
       _base5Hashes[handTile0.SuitId] -= handTile0.Base5Value;
       _base5Hashes[handTile1.SuitId] -= handTile1.Base5Value;
-      _meldCount += 1;
+      _reverseBVector = ReverseBVectors[++_meldCount];
+      _inversionVector = InversionVectors[_meldCount];
 
       UpdateAb(handTile0.SuitId);
     }
@@ -59,7 +39,8 @@ namespace Spines.Mahjong.Analysis.Shanten5
     public void Daiminkan(TileType tileType)
     {
       _base5Hashes[tileType.SuitId] -= 3 * tileType.Base5Value;
-      _meldCount += 1;
+      _reverseBVector = ReverseBVectors[++_meldCount];
+      _inversionVector = InversionVectors[_meldCount];
 
       UpdateAb(tileType.SuitId);
     }
@@ -96,14 +77,51 @@ namespace Spines.Mahjong.Analysis.Shanten5
     public void Pon(TileType tileType)
     {
       _base5Hashes[tileType.SuitId] -= 2 * tileType.Base5Value;
-      _meldCount += 1;
+      _reverseBVector = ReverseBVectors[++_meldCount];
+      _inversionVector = InversionVectors[_meldCount];
 
       UpdateAb(tileType.SuitId);
     }
 
+    /// <summary>
+    /// Avoid this if the hand can be built progressively and shanten is calculated multiple times.
+    /// </summary>
+    public static int Shanten(int[] tileCounts, int meldCount)
+    {
+      var c = new Shanten5Calculator();
+      c._reverseBVector = ReverseBVectors[meldCount];
+      c._inversionVector = InversionVectors[meldCount];
+
+      Span<int> base5Hashes = stackalloc int[4];
+      var tileTypeId = 0;
+      for (var suitId = 0; suitId < 4; suitId++)
+      {
+        for (var index = 0; index < 9 && tileTypeId < 34; index++)
+        {
+          base5Hashes[suitId] += Base5.Table[index] * tileCounts[tileTypeId];
+          tileTypeId += 1;
+        }
+      }
+
+      var m = LookupSuit[base5Hashes[0]];
+      var p = LookupSuit[base5Hashes[1]];
+      c._a = CalculatePhase1(m, p);
+      var s = LookupSuit[base5Hashes[2]];
+      var z = LookupHonor[base5Hashes[3]];
+      c._b = CalculatePhase1(s, z);
+      return c.Shanten();
+    }
+
     public int Shanten()
     {
-      return CalculateInternal(_meldCount, _a, _b);
+      var b2 = Ssse3.Shuffle(_b, _reverseBVector);
+      var r0 = Sse2.Add(_a, b2);
+      var r1 = Sse2.Subtract(_inversionVector, r0);
+      var r3 = Sse2.ShiftRightLogical(r1.AsInt16(), 8);
+      var r4 = Sse2.Min(r1, r3.AsByte());
+      var r5 = Sse41.MinHorizontal(r4.AsUInt16());
+      var r6 = (byte) Sse2.ConvertToInt32(r5.AsInt32());
+      return r6 - 1;
     }
 
     public void Shouminkan(TileType tileType)
@@ -135,9 +153,15 @@ namespace Spines.Mahjong.Analysis.Shanten5
     };
 
     private readonly int[] _base5Hashes = new int[4];
+
+    // 00,01,02,03,04,10,11,12,13,14,__,__,__,k0,k1,cc
     private Vector128<byte> _a;
+
+    // 00,01,02,03,04,10,11,12,13,14,__,__,__,k0,k1,cc
     private Vector128<byte> _b;
+    private Vector128<byte> _inversionVector = InversionVectors[0];
     private int _meldCount;
+    private Vector128<byte> _reverseBVector = ReverseBVectors[0];
 
     private void UpdateAb(int suitId)
     {
@@ -156,25 +180,6 @@ namespace Spines.Mahjong.Analysis.Shanten5
     }
 
     /// <summary>
-    /// Calculates shanten
-    /// </summary>
-    /// <param name="meldCount">How many melds have been made</param>
-    /// <param name="a">00,01,02,03,04,10,11,12,13,14,__,__,__,k0,k1,cc</param>
-    /// <param name="b">00,01,02,03,04,10,11,12,13,14,__,__,__,k0,k1,cc</param>
-    /// <returns></returns>
-    private static int CalculateInternal(int meldCount, Vector128<byte> a, Vector128<byte> b)
-    {
-      var b2 = Ssse3.Shuffle(b, ReverseBVectors[meldCount]);
-      var r0 = Sse2.Add(a, b2);
-      var r1 = Sse2.Subtract(InversionVectors[meldCount], r0);
-      var r3 = Sse2.ShiftRightLogical(r1.AsInt16(), 8);
-      var r4 = Sse2.Min(r1, r3.AsByte());
-      var r5 = Sse41.MinHorizontal(r4.AsUInt16());
-      var r6 = (byte) Sse2.ConvertToInt32(r5.AsInt32());
-      return r6 - 1;
-    }
-
-    /// <summary>
     /// Combines the vectors into a single one with the same layout
     /// 00,01,02,03,04,10,11,12,13,14,__,__,__,k0,k1,cc
     /// </summary>
@@ -182,7 +187,7 @@ namespace Spines.Mahjong.Analysis.Shanten5
     {
       // first calculate all the sums, then merge them down with repeated vertical max
       // inlined vector creation is faster than static fields, if created from two 64 bit values
-      
+
       var va1 = Ssse3.Shuffle(a, Vector128.Create(0x01_03_02_01_04_03_02_01UL, 0xFF_0D_01_02_01_01_02_01UL).AsByte());
       var vb1 = Ssse3.Shuffle(b, Vector128.Create(0x01_05_06_07_05_06_07_08UL, 0xFF_0E_02_02_03_05_05_06UL).AsByte());
 
