@@ -115,17 +115,6 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
     private static readonly Vector128<byte>[] LookupSuit;
     private static readonly Vector128<byte>[] LookupHonor;
-    
-    private static readonly Vector128<byte> Phase1ShuffleA1 = Vector128.Create(1, 2, 3, 4, 1, 2, 3, 1, 1, 2, 1, 1, 2, 1, 13, 255);
-    private static readonly Vector128<byte> Phase1ShuffleB1 = Vector128.Create(8, 7, 6, 5, 7, 6, 5, 1, 6, 5, 5, 3, 2, 2, 14, 255);
-    private static readonly Vector128<byte> Phase1ShuffleA2 = Vector128.Create(5, 6, 7, 8, 5, 6, 7, 255, 5, 6, 5, 3, 255, 2, 14, 255);
-    private static readonly Vector128<byte> Phase1ShuffleB2 = Vector128.Create(4, 3, 2, 1, 3, 2, 1, 255, 2, 1, 1, 1, 255, 1, 13, 255);
-
-    private static readonly Vector128<byte> Phase1ShuffleAb11 = Vector128.Create(0, 1, 8, 10, 255, 11, 13, 7, 255, 255, 4, 6, 255, 255, 14, 255);
-    private static readonly Vector128<byte> Phase1ShuffleAb12 = Vector128.Create(2, 3, 9, 255, 255, 12, 255, 255, 255, 255, 5, 255, 255, 255, 255, 255);
-
-    private static readonly Vector128<byte> Phase1ShuffleAb21 = Vector128.Create(255, 255, 7, 6, 5, 255, 3, 2, 10, 0, 15, 255, 255, 255, 14, 255);
-    private static readonly Vector128<byte> Phase1ShuffleAb22 = Vector128.Create(255, 255, 255, 255, 255, 255, 255, 255, 11, 1, 255, 255, 255, 255, 255, 255);
 
     private static readonly Vector128<byte>[] ReverseBVectors =
     {
@@ -192,26 +181,26 @@ namespace Spines.Mahjong.Analysis.Shanten5
     private static Vector128<byte> CalculatePhase1(Vector128<byte> a, Vector128<byte> b)
     {
       // first calculate all the sums, then merge them down with repeated vertical max
-
-      var va1 = Ssse3.Shuffle(a, Phase1ShuffleA1);
-      var vb1 = Ssse3.Shuffle(b, Phase1ShuffleB1);
+      
+      var va1 = Ssse3.Shuffle(a, Vector128.Create(0x01_03_02_01_04_03_02_01UL, 0xFF_0D_01_02_01_01_02_01UL).AsByte());
+      var vb1 = Ssse3.Shuffle(b, Vector128.Create(0x01_05_06_07_05_06_07_08UL, 0xFF_0E_02_02_03_05_05_06UL).AsByte());
 
       var vab1 = Sse2.Add(va1, vb1);
 
-      var va2 = Ssse3.Shuffle(a, Phase1ShuffleA2);
-      var vb2 = Ssse3.Shuffle(b, Phase1ShuffleB2);
+      var va2 = Ssse3.Shuffle(a, Vector128.Create(0xFF_07_06_05_08_07_06_05UL, 0xFF_0E_02_FF_03_05_06_05UL).AsByte());
+      var vb2 = Ssse3.Shuffle(b, Vector128.Create(0xFF_01_02_03_01_02_03_04UL, 0xFF_0D_01_FF_01_01_01_02UL).AsByte());
 
       var vab2 = Sse2.Add(va2, vb2);
 
       var xab1 = Sse2.Max(vab1, vab2);
 
-      var vab21 = Ssse3.Shuffle(xab1, Phase1ShuffleAb11);
-      var vab22 = Ssse3.Shuffle(xab1, Phase1ShuffleAb12);
+      var vab21 = Ssse3.Shuffle(xab1, Vector128.Create(0x07_0D_0B_FF_0A_08_01_00UL, 0xFF_0E_FF_FF_06_04_FF_FFUL).AsByte());
+      var vab22 = Ssse3.Shuffle(xab1, Vector128.Create(0xFF_FF_0C_FF_FF_09_03_02UL, 0xFF_FF_FF_FF_FF_05_FF_FFUL).AsByte());
 
       var xab2 = Sse2.Max(vab21, vab22);
 
-      var vab31 = Ssse3.Shuffle(xab2, Phase1ShuffleAb21);
-      var vab32 = Ssse3.Shuffle(xab2, Phase1ShuffleAb22);
+      var vab31 = Ssse3.Shuffle(xab2, Vector128.Create(0x02_03_FF_05_06_07_FF_FFUL, 0xFF_0E_FF_FF_FF_0F_00_0AUL).AsByte());
+      var vab32 = Ssse3.Shuffle(xab2, Vector128.Create(0xFF_FF_FF_FF_FF_FF_FF_FFUL, 0xFF_FF_FF_FF_FF_FF_01_0BUL).AsByte());
 
       // calculates chiitoitsu sum and kokushi without pair sum
       // barely not enough space in above calculation for these
