@@ -38,7 +38,13 @@ namespace Spines.Mahjong.Analysis.Shanten5
         }
       }
 
-      return CalculateInternal(meldCount, CalculateA(base5Hashes), CalculateB(base5Hashes));
+      var m = LookupSuit[base5Hashes[0]];
+      var p = LookupSuit[base5Hashes[1]];
+      var a = CalculatePhase1(m, p);
+      var s = LookupSuit[base5Hashes[2]];
+      var z = LookupHonor[base5Hashes[3]];
+      var b = CalculatePhase1(s, z);
+      return CalculateInternal(meldCount, a, b);
     }
 
     public void Chii(Tile handTile0, Tile handTile1)
@@ -79,8 +85,12 @@ namespace Spines.Mahjong.Analysis.Shanten5
         _base5Hashes[tile.SuitId] += tile.Base5Value;
       }
 
-      _a = CalculateA(_base5Hashes);
-      _b = CalculateB(_base5Hashes);
+      var m = LookupSuit[_base5Hashes[0]];
+      var p = LookupSuit[_base5Hashes[1]];
+      _a = CalculatePhase1(m, p);
+      var s = LookupSuit[_base5Hashes[2]];
+      var z = LookupHonor[_base5Hashes[3]];
+      _b = CalculatePhase1(s, z);
     }
 
     public void Pon(TileType tileType)
@@ -144,11 +154,15 @@ namespace Spines.Mahjong.Analysis.Shanten5
     {
       if (suitId < 2)
       {
-        _a = CalculateA(_base5Hashes);
+        var m = LookupSuit[_base5Hashes[0]];
+        var p = LookupSuit[_base5Hashes[1]];
+        _a = CalculatePhase1(m, p);
       }
       else
       {
-        _b = CalculateB(_base5Hashes);
+        var s = LookupSuit[_base5Hashes[2]];
+        var z = LookupHonor[_base5Hashes[3]];
+        _b = CalculatePhase1(s, z);
       }
     }
 
@@ -169,22 +183,6 @@ namespace Spines.Mahjong.Analysis.Shanten5
       var r5 = Sse41.MinHorizontal(r4.AsUInt16());
       var r6 = (byte) Sse2.ConvertToInt32(r5.AsInt32());
       return r6 - 1;
-    }
-
-    private static Vector128<byte> CalculateA(Span<int> base5Hashes)
-    {
-      var m = LookupSuit[base5Hashes[0]];
-      var p = LookupSuit[base5Hashes[1]];
-      var a = CalculatePhase1(m, p);
-      return a;
-    }
-
-    private static Vector128<byte> CalculateB(Span<int> base5Hashes)
-    {
-      var s = LookupSuit[base5Hashes[2]];
-      var z = LookupHonor[base5Hashes[3]];
-      var b = CalculatePhase1(s, z);
-      return b;
     }
 
     /// <summary>
