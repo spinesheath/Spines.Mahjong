@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace Spines.Mahjong.Analysis
 {
@@ -18,6 +20,7 @@ namespace Spines.Mahjong.Analysis
       SuitId = TileType.SuitId;
       Index = TileType.Index;
       Base5Value = Base5.Table[Index];
+      Base5Vector = Sse41.Insert(Vector128<int>.Zero, Base5.Table[Index], (byte)SuitId);
     }
 
     /// <summary>
@@ -33,7 +36,15 @@ namespace Spines.Mahjong.Analysis
 
     public readonly TileType TileType;
 
+    /// <summary>
+    /// Pow(5, index)
+    /// </summary>
     public readonly int Base5Value;
+
+    /// <summary>
+    /// Base5Value in position SuitId, rest 0
+    /// </summary>
+    public readonly Vector128<int> Base5Vector;
 
     public static Tile FromTileId(int tileId)
     {

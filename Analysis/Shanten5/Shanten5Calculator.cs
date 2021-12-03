@@ -19,7 +19,7 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
     public void Ankan(TileType tileType)
     {
-      _base5Hashes[tileType.SuitId] -= 4 * tileType.Base5Value;
+      _base5Hashes = Sse2.Subtract(_base5Hashes, Sse41.MultiplyLow(tileType.Base5Vector, Vector128.Create(4)));
       _reverseBVector = ReverseBVectors[++_meldCount];
       _inversionVector = InversionVectors[_meldCount];
 
@@ -28,8 +28,7 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
     public void Chii(Tile handTile0, Tile handTile1)
     {
-      _base5Hashes[handTile0.SuitId] -= handTile0.Base5Value;
-      _base5Hashes[handTile1.SuitId] -= handTile1.Base5Value;
+      _base5Hashes = Sse2.Subtract(Sse2.Subtract(_base5Hashes, handTile0.Base5Vector), handTile1.Base5Vector);
       _reverseBVector = ReverseBVectors[++_meldCount];
       _inversionVector = InversionVectors[_meldCount];
 
@@ -38,7 +37,7 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
     public void Daiminkan(TileType tileType)
     {
-      _base5Hashes[tileType.SuitId] -= 3 * tileType.Base5Value;
+      _base5Hashes = Sse2.Subtract(_base5Hashes, Sse41.MultiplyLow(tileType.Base5Vector, Vector128.Create(3)));
       _reverseBVector = ReverseBVectors[++_meldCount];
       _inversionVector = InversionVectors[_meldCount];
 
@@ -47,36 +46,40 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
     public void Discard(TileType tileType)
     {
-      _base5Hashes[tileType.SuitId] -= tileType.Base5Value;
+      _base5Hashes = Sse2.Subtract(_base5Hashes, tileType.Base5Vector);
 
       UpdateAb(tileType.SuitId);
     }
 
     public void Draw(TileType tileType)
     {
-      _base5Hashes[tileType.SuitId] += tileType.Base5Value;
+      _base5Hashes = Sse2.Add(_base5Hashes, tileType.Base5Vector);
 
       UpdateAb(tileType.SuitId);
     }
 
     public void Haipai(IEnumerable<Tile> tiles)
     {
+      var hashes = Vector128<int>.Zero;
       foreach (var tile in tiles)
       {
-        _base5Hashes[tile.SuitId] += tile.Base5Value;
+        hashes = Sse2.Add(hashes, tile.Base5Vector);
       }
 
-      var m = LookupSuit[_base5Hashes[0]];
-      var p = LookupSuit[_base5Hashes[1]];
+      _base5Hashes = hashes;
+
+      var m = LookupSuit[Sse41.Extract(_base5Hashes, 0)];
+      var p = LookupSuit[Sse41.Extract(_base5Hashes, 1)];
       _a = CalculatePhase1(m, p);
-      var s = LookupSuit[_base5Hashes[2]];
-      var z = LookupHonor[_base5Hashes[3]];
+      var s = LookupSuit[Sse41.Extract(_base5Hashes, 2)];
+      var z = LookupHonor[Sse41.Extract(_base5Hashes, 3)];
       _b = CalculatePhase1(s, z);
     }
 
     public void Pon(TileType tileType)
     {
-      _base5Hashes[tileType.SuitId] -= 2 * tileType.Base5Value;
+      // TODO maybe just subtract twice?
+      _base5Hashes = Sse2.Subtract(_base5Hashes, Sse41.MultiplyLow(tileType.Base5Vector, Vector128.Create(2)));
       _reverseBVector = ReverseBVectors[++_meldCount];
       _inversionVector = InversionVectors[_meldCount];
 
@@ -126,7 +129,7 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
     public void Shouminkan(TileType tileType)
     {
-      _base5Hashes[tileType.SuitId] -= tileType.Base5Value;
+      _base5Hashes = Sse2.Subtract(_base5Hashes, tileType.Base5Vector);
 
       UpdateAb(tileType.SuitId);
     }
@@ -152,7 +155,7 @@ namespace Spines.Mahjong.Analysis.Shanten5
       Vector128.Create(2, 255, 255, 255, 255, 2, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255)
     };
 
-    private readonly int[] _base5Hashes = new int[4];
+    private Vector128<int> _base5Hashes = Vector128<int>.Zero;
 
     // 00,01,02,03,04,10,11,12,13,14,__,__,__,k0,k1,cc
     private Vector128<byte> _a;
@@ -167,14 +170,14 @@ namespace Spines.Mahjong.Analysis.Shanten5
     {
       if (suitId < 2)
       {
-        var m = LookupSuit[_base5Hashes[0]];
-        var p = LookupSuit[_base5Hashes[1]];
+        var m = LookupSuit[Sse41.Extract(_base5Hashes, 0)];
+        var p = LookupSuit[Sse41.Extract(_base5Hashes, 1)];
         _a = CalculatePhase1(m, p);
       }
       else
       {
-        var s = LookupSuit[_base5Hashes[2]];
-        var z = LookupHonor[_base5Hashes[3]];
+        var s = LookupSuit[Sse41.Extract(_base5Hashes, 2)];
+        var z = LookupHonor[Sse41.Extract(_base5Hashes, 3)];
         _b = CalculatePhase1(s, z);
       }
     }
