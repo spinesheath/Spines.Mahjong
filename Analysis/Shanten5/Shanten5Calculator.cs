@@ -175,12 +175,13 @@ namespace Spines.Mahjong.Analysis.Shanten5
     }
 
     /// <summary>
-    /// Combines the vectors into a single one with the same layout:
-    /// values for (0,0), (0,1) ... (1,3), (1,4) with (pair,groups)
+    /// Combines the vectors into a single one with the same layout
+    /// 00,01,02,03,04,10,11,12,13,14,__,__,__,k0,k1,cc
     /// </summary>
     private static Vector128<byte> CalculatePhase1(Vector128<byte> a, Vector128<byte> b)
     {
       // first calculate all the sums, then merge them down with repeated vertical max
+      // inlined vector creation is faster than static fields, if created from two 64 bit values
       
       var va1 = Ssse3.Shuffle(a, Vector128.Create(0x01_03_02_01_04_03_02_01UL, 0xFF_0D_01_02_01_01_02_01UL).AsByte());
       var vb1 = Ssse3.Shuffle(b, Vector128.Create(0x01_05_06_07_05_06_07_08UL, 0xFF_0E_02_02_03_05_05_06UL).AsByte());
