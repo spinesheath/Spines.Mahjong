@@ -68,11 +68,14 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
       _base5Hashes = hashes;
 
-      var m = LookupSuit[Sse41.Extract(_base5Hashes, 0)];
-      var p = LookupSuit[Sse41.Extract(_base5Hashes, 1)];
+      var a = Sse41.X64.Extract(_base5Hashes.AsUInt64(), 0);
+      var m = LookupSuit[a & 0xFFFFFFFF];
+      var p = LookupSuit[a >> 32];
       _a = CalculatePhase1(m, p);
-      var s = LookupSuit[Sse41.Extract(_base5Hashes, 2)];
-      var z = LookupHonor[Sse41.Extract(_base5Hashes, 3)];
+
+      var b = Sse41.X64.Extract(_base5Hashes.AsUInt64(), 1);
+      var s = LookupSuit[b & 0xFFFFFFFF];
+      var z = LookupHonor[b >> 32];
       _b = CalculatePhase1(s, z);
     }
 
