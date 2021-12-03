@@ -78,8 +78,7 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
     public void Pon(TileType tileType)
     {
-      // TODO maybe just subtract twice?
-      _base5Hashes = Sse2.Subtract(_base5Hashes, Sse41.MultiplyLow(tileType.Base5Vector, Vector128.Create(2)));
+      _base5Hashes = Sse2.Subtract(Sse2.Subtract(_base5Hashes, tileType.Base5Vector), tileType.Base5Vector);
       _reverseBVector = ReverseBVectors[++_meldCount];
       _inversionVector = InversionVectors[_meldCount];
 
