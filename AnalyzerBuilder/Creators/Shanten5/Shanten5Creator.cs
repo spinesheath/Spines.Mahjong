@@ -70,7 +70,7 @@ namespace AnalyzerBuilder.Creators.Shanten5
           GetHonorShantenValues(counts, row);
 
           row[13] = (byte) kokushi1;
-          row[14] = (byte) kokushi2;
+          row[14] = (byte) (kokushi1 + kokushi2);
           row[15] = (byte) chiitoi;
         }
 
@@ -120,7 +120,7 @@ namespace AnalyzerBuilder.Creators.Shanten5
           GetSuitShantenValues(counts, row);
 
           row[13] = (byte) kokushi1;
-          row[14] = (byte) kokushi2;
+          row[14] = (byte)(kokushi1 + kokushi2);
           row[15] = (byte) chiitoi;
         }
 

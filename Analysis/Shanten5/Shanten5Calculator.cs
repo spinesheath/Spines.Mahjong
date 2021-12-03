@@ -162,63 +162,29 @@ namespace Spines.Mahjong.Analysis.Shanten5
     private static int CalculateInternal(int meldCount, Vector128<byte> a, Vector128<byte> b)
     {
       var b2 = Ssse3.Shuffle(b, ReverseBVectors[meldCount]);
-      var r = Sse2.Add(a, b2);
-      var r1 = Sse2.Subtract(InversionVectors[meldCount], r);
+      var r0 = Sse2.Add(a, b2);
+      var r1 = Sse2.Subtract(InversionVectors[meldCount], r0);
       var r3 = Sse2.ShiftRightLogical(r1.AsInt16(), 8);
       var r4 = Sse2.Min(r1, r3.AsByte());
-      var r6 = Sse41.MinHorizontal(r4.AsUInt16());
-      var r7 = (byte) Sse2.ConvertToInt32(r6.AsInt32());
-      return r7 - 1;
+      var r5 = Sse41.MinHorizontal(r4.AsUInt16());
+      var r6 = (byte) Sse2.ConvertToInt32(r5.AsInt32());
+      return r6 - 1;
     }
 
     private static Vector128<byte> CalculateA(Span<int> base5Hashes)
     {
-      var m = LookupSuitTempAdjusted(base5Hashes[0]);
-      var p = LookupSuitTempAdjusted(base5Hashes[1]);
+      var m = LookupSuit[base5Hashes[0]];
+      var p = LookupSuit[base5Hashes[1]];
       var a = CalculatePhase1(m, p);
       return a;
     }
 
     private static Vector128<byte> CalculateB(Span<int> base5Hashes)
     {
-      var s = LookupSuitTempAdjusted(base5Hashes[2]);
-      var z = LookupHonorTempAdjusted(base5Hashes[3]);
+      var s = LookupSuit[base5Hashes[2]];
+      var z = LookupHonor[base5Hashes[3]];
       var b = CalculatePhase1(s, z);
       return b;
-    }
-
-    private static Vector128<byte> LookupHonorTempAdjusted(int hash)
-    {
-      var raw = LookupHonor[hash];
-
-      var kokushi1 = Sse41.Extract(raw, 13);
-      var kokushi2 = Sse41.Extract(raw, 14);
-
-      var kokushi3 = kokushi1 + kokushi2;
-      var adjusted = Sse41.Insert(raw, (byte)kokushi3, 14);
-
-      return adjusted;
-    }
-
-    private static Vector128<byte> LookupSuitTempAdjusted(int hash)
-    {
-      var raw = LookupSuit[hash];
-      
-      // 13 = kokushi1
-      // 14 = kokushi2
-      // 15 = chiitoi
-
-      var kokushi1 = Sse41.Extract(raw, 13);
-      var kokushi2 = Sse41.Extract(raw, 14);
-
-      var kokushi3 = kokushi1 + kokushi2;
-      var adjusted = Sse41.Insert(raw, (byte)kokushi3, 14);
-
-      // 13 = kokushi1
-      // 14 = kokushi2 + kokushi1
-      // 15 = chiitoi
-      
-      return adjusted;
     }
 
     /// <summary>
