@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Linq;
-using System.Runtime.Intrinsics;
-using System.Runtime.Intrinsics.X86;
 
 namespace Spines.Mahjong.Analysis
 {
@@ -25,7 +23,14 @@ namespace Spines.Mahjong.Analysis
       IsKyuuhai = Suit == Suit.Jihai || Index == 0 || Index == 8;
       KyuuhaiValue = IsKyuuhai ? 1 : 0;
       Base5Value = Base5.Table[Index];
-      Base5Vector = Sse41.Insert(Vector128<int>.Zero, Base5.Table[Index], (byte)SuitId);
+      if (SuitId < 2)
+      {
+        Base5ValueA = (ulong)Base5Value << (32 * SuitId);
+      }
+      else
+      {
+        Base5ValueB = (ulong)Base5Value << (32 * (SuitId - 2));
+      }
     }
 
     public int Index { get; }
@@ -96,8 +101,13 @@ namespace Spines.Mahjong.Analysis
     public readonly int Base5Value;
 
     /// <summary>
-    /// Base5Value in position SuitId, rest 0
+    /// Base5Value in lower/upper 32 bit if manzu/pinzu
     /// </summary>
-    public readonly Vector128<int> Base5Vector;
+    public readonly ulong Base5ValueA;
+
+    /// <summary>
+    /// Base5Value in lower/upper 32 bit if souzu/jihai
+    /// </summary>
+    public readonly ulong Base5ValueB;
   }
 }

@@ -19,7 +19,9 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
     public void Ankan(TileType tileType)
     {
-      _base5Hashes = Sse2.Subtract(_base5Hashes, Sse41.MultiplyLow(tileType.Base5Vector, Vector128.Create(4)));
+      _base5HashesA -= 4 * tileType.Base5ValueA;
+      _base5HashesB -= 4 * tileType.Base5ValueB;
+
       _reverseBVector = ReverseBVectors[++_meldCount];
       _inversionVector = InversionVectors[_meldCount];
 
@@ -28,7 +30,11 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
     public void Chii(Tile handTile0, Tile handTile1)
     {
-      _base5Hashes = Sse2.Subtract(Sse2.Subtract(_base5Hashes, handTile0.Base5Vector), handTile1.Base5Vector);
+      _base5HashesA -= handTile0.Base5ValueA;
+      _base5HashesB -= handTile0.Base5ValueB;
+      _base5HashesA -= handTile1.Base5ValueA;
+      _base5HashesB -= handTile1.Base5ValueB;
+
       _reverseBVector = ReverseBVectors[++_meldCount];
       _inversionVector = InversionVectors[_meldCount];
 
@@ -37,7 +43,9 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
     public void Daiminkan(TileType tileType)
     {
-      _base5Hashes = Sse2.Subtract(_base5Hashes, Sse41.MultiplyLow(tileType.Base5Vector, Vector128.Create(3)));
+      _base5HashesA -= 3 * tileType.Base5ValueA;
+      _base5HashesB -= 3 * tileType.Base5ValueB;
+      
       _reverseBVector = ReverseBVectors[++_meldCount];
       _inversionVector = InversionVectors[_meldCount];
 
@@ -46,42 +54,47 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
     public void Discard(TileType tileType)
     {
-      _base5Hashes = Sse2.Subtract(_base5Hashes, tileType.Base5Vector);
+      _base5HashesA -= tileType.Base5ValueA;
+      _base5HashesB -= tileType.Base5ValueB;
 
       UpdateAb(tileType.SuitId);
     }
 
     public void Draw(TileType tileType)
     {
-      _base5Hashes = Sse2.Add(_base5Hashes, tileType.Base5Vector);
+      _base5HashesA += tileType.Base5ValueA;
+      _base5HashesB += tileType.Base5ValueB;
 
       UpdateAb(tileType.SuitId);
     }
 
     public void Haipai(IEnumerable<Tile> tiles)
     {
-      var hashes = Vector128<int>.Zero;
+      var hashesA = 0UL;
+      var hashesB = 0UL;
       foreach (var tile in tiles)
       {
-        hashes = Sse2.Add(hashes, tile.Base5Vector);
+        hashesA += tile.Base5ValueA;
+        hashesB += tile.Base5ValueB;
       }
 
-      _base5Hashes = hashes;
+      _base5HashesA = hashesA;
+      _base5HashesB = hashesB;
 
-      var a = Sse41.X64.Extract(hashes.AsUInt64(), 0);
-      var m = LookupSuit[a & 0xFFFFFFFF];
-      var p = LookupSuit[a >> 32];
+      var m = LookupSuit[hashesA & 0xFFFFFFFF];
+      var p = LookupSuit[hashesA >> 32];
       _a = CalculatePhase1(m, p);
-
-      var b = Sse41.X64.Extract(hashes.AsUInt64(), 1);
-      var s = LookupSuit[b & 0xFFFFFFFF];
-      var z = LookupHonor[b >> 32];
+      
+      var s = LookupSuit[hashesB & 0xFFFFFFFF];
+      var z = LookupHonor[hashesB >> 32];
       _b = CalculatePhase1(s, z);
     }
 
     public void Pon(TileType tileType)
     {
-      _base5Hashes = Sse2.Subtract(Sse2.Subtract(_base5Hashes, tileType.Base5Vector), tileType.Base5Vector);
+      _base5HashesA -= 2 * tileType.Base5ValueA;
+      _base5HashesB -= 2 * tileType.Base5ValueB;
+      
       _reverseBVector = ReverseBVectors[++_meldCount];
       _inversionVector = InversionVectors[_meldCount];
 
@@ -131,8 +144,9 @@ namespace Spines.Mahjong.Analysis.Shanten5
 
     public void Shouminkan(TileType tileType)
     {
-      _base5Hashes = Sse2.Subtract(_base5Hashes, tileType.Base5Vector);
-
+      _base5HashesA -= tileType.Base5ValueA;
+      _base5HashesB -= tileType.Base5ValueB;
+      
       UpdateAb(tileType.SuitId);
     }
 
@@ -157,7 +171,8 @@ namespace Spines.Mahjong.Analysis.Shanten5
       Vector128.Create(2, 255, 255, 255, 255, 2, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255)
     };
 
-    private Vector128<int> _base5Hashes = Vector128<int>.Zero;
+    private ulong _base5HashesA;
+    private ulong _base5HashesB;
 
     // 00,01,02,03,04,10,11,12,13,14,__,__,__,k0,k1,cc
     private Vector128<byte> _a;
@@ -172,14 +187,14 @@ namespace Spines.Mahjong.Analysis.Shanten5
     {
       if (suitId < 2)
       {
-        var m = LookupSuit[Sse41.Extract(_base5Hashes, 0)];
-        var p = LookupSuit[Sse41.Extract(_base5Hashes, 1)];
+        var m = LookupSuit[_base5HashesA & 0xFFFFFFFF];
+        var p = LookupSuit[_base5HashesA >> 32];
         _a = CalculatePhase1(m, p);
       }
       else
       {
-        var s = LookupSuit[Sse41.Extract(_base5Hashes, 2)];
-        var z = LookupHonor[Sse41.Extract(_base5Hashes, 3)];
+        var s = LookupSuit[_base5HashesB & 0xFFFFFFFF];
+        var z = LookupHonor[_base5HashesB >> 32];
         _b = CalculatePhase1(s, z);
       }
     }
