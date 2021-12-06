@@ -3,9 +3,9 @@ using System.IO;
 using AnalyzerBuilder.Combinations;
 using Spines.Mahjong.Analysis;
 
-namespace AnalyzerBuilder.Creators.Shanten5
+namespace AnalyzerBuilder.Creators.B9Ukeire
 {
-  public static class Shanten5Creator
+  public class B9UkeireCreator
   {
     public static void Create(string directory)
     {
@@ -42,9 +42,9 @@ namespace AnalyzerBuilder.Creators.Shanten5
 
           GetHonorShantenValues(counts, row);
 
-          row[13] = (byte) kokushi1;
-          row[14] = (byte) (kokushi1 + kokushi2);
-          row[15] = (byte) chiitoi;
+          row[13] = (byte)kokushi1;
+          row[14] = (byte)(kokushi1 + kokushi2);
+          row[15] = (byte)chiitoi;
         }
 
         writer.Write(row);
@@ -92,9 +92,9 @@ namespace AnalyzerBuilder.Creators.Shanten5
 
           GetSuitShantenValues(counts, row);
 
-          row[13] = (byte) kokushi1;
+          row[13] = (byte)kokushi1;
           row[14] = (byte)(kokushi1 + kokushi2);
-          row[15] = (byte) chiitoi;
+          row[15] = (byte)chiitoi;
         }
 
         writer.Write(row);
@@ -125,7 +125,7 @@ namespace AnalyzerBuilder.Creators.Shanten5
       {
         var index = arrangement.HasJantou ? 5 : 0;
         index += arrangement.MentsuCount;
-        row[index] = (byte) Math.Max(row[index], arrangement.TotalValue);
+        row[index] = (byte)Math.Max(row[index], arrangement.TotalValue);
       }
 
       for (var i = 0; i < 4; i++)
@@ -144,7 +144,7 @@ namespace AnalyzerBuilder.Creators.Shanten5
       {
         var index = arrangement.HasJantou ? 5 : 0;
         index += arrangement.MentsuCount;
-        row[index] = (byte) Math.Max(row[index], arrangement.TotalValue);
+        row[index] = (byte)Math.Max(row[index], arrangement.TotalValue);
       }
 
       for (var i = 0; i < 4; i++)
