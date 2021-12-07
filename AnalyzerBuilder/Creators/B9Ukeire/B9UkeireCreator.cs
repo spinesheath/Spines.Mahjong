@@ -33,7 +33,7 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
 
         if (tileCount < 15)
         {
-          CalculateHonorShantenValues(counts, row);
+          CalculateHonorRow(counts, row);
         }
 
         for (var i = 0; i < row.Length; i++)
@@ -74,25 +74,13 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
 
         if (tileCount < 15)
         {
-          var kokushi1 = (counts[0] > 0 ? 1 : 0) + (counts[8] > 0 ? 1 : 0);
-          var kokushi2 = counts[0] > 1 || counts[8] > 1 ? 1 : 0;
-          var chiitoi = 0;
-          for (var i = 0; i < counts.Length; i++)
-          {
-            chiitoi += counts[i] > 1 ? 1 : 0;
-          }
-
-          CalculateSuitShantenValues(counts, row);
-
-          row[13] = (ushort)kokushi1;
-          row[14] = (ushort)(kokushi1 + kokushi2);
-          row[15] = (ushort)chiitoi;
+          CalculateSuitRow(counts, row);
         }
 
-        for (var i = 0; i < row.Length; i++)
-        {
-          writer.Write(row[i]);
-        }
+        //for (var i = 0; i < row.Length; i++)
+        //{
+        //  writer.Write(row[i]);
+        //}
 
         // move to next tile sequence
         counts[0] += 1;
@@ -112,7 +100,7 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
       }
     }
 
-    private static void CalculateSuitShantenValues(int[] counts, ushort[] row)
+    private static void CalculateSuitRow(int[] counts, ushort[] row)
     {
       var results = ProtoGroup.AnalyzeSuit(counts);
 
@@ -123,9 +111,21 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
       }
 
       CopyValuesFromLowerGroupCounts(row);
+
+      CalculateSuitChiitoiKokushi(counts, row);
+
+      for (var tileIndex = 0; tileIndex < counts.Length; tileIndex++)
+      {
+        var b9Results = AnalyzeSuitWithExtraTile(counts, tileIndex);
+
+        foreach (var arrangement in b9Results)
+        {
+          UpdateB9(row, tileIndex, arrangement);
+        }
+      }
     }
 
-    private static void CalculateHonorShantenValues(int[] counts, ushort[] row)
+    private static void CalculateHonorRow(int[] counts, ushort[] row)
     {
       var results = ProtoGroup.AnalyzeHonor(counts);
 
@@ -145,47 +145,86 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
 
         foreach (var arrangement in b9Results)
         {
-          var index = IndexInRow(arrangement);
-          var value = arrangement.TotalValue;
-
-          var targetValue = row[index] & 15;
-
-          if (targetValue >= value)
-          {
-            // tile i with this arrangement does not improve hand
-            continue;
-          }
-
-          var bit = (ushort) (1 << (tileIndex + B9Shift));
-          row[index] |= bit;
-          
-          for (var i = index; i < 4; i++)
-          {
-            if ((row[i + 1] & 15) == targetValue)
-            {
-              row[i + 1] |= bit;
-            }
-
-            if ((row[i + 5] & 15) == targetValue)
-            {
-              row[i + 5] |= bit;
-            }
-
-            if ((row[i + 6] & 15) == targetValue)
-            {
-              row[i + 6] |= bit;
-            }
-          }
-
-          for (var i = index; i > 4 && i < 9; i++)
-          {
-            if ((row[i + 1] & 15) == targetValue)
-            {
-              row[i + 1] |= bit;
-            }
-          }
+          UpdateB9(row, tileIndex, arrangement);
         }
       }
+    }
+
+    private static void UpdateB9(ushort[] row, int tileIndex, Arrangement arrangement)
+    {
+      var index = IndexInRow(arrangement);
+      var value = arrangement.TotalValue;
+
+      var targetValue = row[index] & 15;
+
+      if (targetValue >= value)
+      {
+        // tile does not improve hand with this arrangement
+        return;
+      }
+
+      var bit = (ushort)(1 << (tileIndex + B9Shift));
+      row[index] |= bit;
+
+      for (var i = index; i < 4; i++)
+      {
+        if ((row[i + 1] & 15) == targetValue)
+        {
+          row[i + 1] |= bit;
+        }
+
+        if ((row[i + 5] & 15) == targetValue)
+        {
+          row[i + 5] |= bit;
+        }
+
+        if ((row[i + 6] & 15) == targetValue)
+        {
+          row[i + 6] |= bit;
+        }
+      }
+
+      for (var i = index; i > 4 && i < 9; i++)
+      {
+        if ((row[i + 1] & 15) == targetValue)
+        {
+          row[i + 1] |= bit;
+        }
+      }
+    }
+
+    private static void CalculateSuitChiitoiKokushi(int[] counts, ushort[] row)
+    {
+      var c0 = counts[0];
+      var c8 = counts[8];
+
+      var kokushi0 = (c0 > 0 ? 1 : 0) + (c8 > 0 ? 1 : 0);
+      // any missing terminal is an ukeire for kokushi
+      var b9Kokushi0 = (c0 == 0 ? 1 : 0) | (c8 == 0 ? 1 << 8 : 0);
+
+      var kokushi1 = c0 > 1 || c8 > 1 ? 1 : 0;
+      // a single terminal can become a kokushi pair
+      var b9Kokushi1 = (c0 == 1 ? 1 : 0) | (c8 == 1 ? 1 << 8 : 0);
+
+      // if any terminal pair is present, no more ukeire for kokushi pairs
+      if (kokushi1 != 0)
+      {
+        b9Kokushi1 = 0;
+      }
+
+      var chiitoi = 0;
+      var b9Chiitoi = 0;
+
+      for (var i = 0; i < counts.Length; i++)
+      {
+        chiitoi += counts[i] > 1 ? 1 : 0;
+        // a single honor can become a chiitoi pair
+        b9Chiitoi |= counts[i] == 1 ? 1 << i : 0;
+      }
+
+      row[13] = (ushort)(kokushi0 | (b9Kokushi0 << B9Shift));
+      row[14] = (ushort)(kokushi0 + kokushi1 | ((b9Kokushi0 | b9Kokushi1) << B9Shift));
+      row[15] = (ushort)(chiitoi | (b9Chiitoi << B9Shift));
     }
 
     private static void CalculateHonorChiitoiKokushi(int[] counts, ushort[] row)
@@ -240,6 +279,18 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
       return ProtoGroup.AnalyzeHonor(t);
     }
 
+    private static List<Arrangement> AnalyzeSuitWithExtraTile(int[] counts, int tileIndex)
+    {
+      if (counts.Sum() == 14)
+      {
+        return new List<Arrangement>();
+      }
+
+      var t = counts.ToArray();
+      t[tileIndex] += 1;
+      return ProtoGroup.AnalyzeSuit(t);
+    }
+
     private static void CopyValuesFromLowerGroupCounts(ushort[] row)
     {
       for (var i = 0; i < 4; i++)
@@ -269,7 +320,8 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
       string[] configurations = { "00", "01", "02", "03", "04", "10", "11", "12", "13", "14", "__", "__", "__", "k0", "k1", "cc" };
 
       var sb = new StringBuilder();
-      sb.AppendLine("    hand: " + string.Join("", counts.Reverse()));
+      var hand = "hand: ".PadLeft(17 - counts.Length) + string.Join("", counts.Reverse());
+      sb.AppendLine(hand);
 
       for (var i = 0; i < row.Length; i++)
       {
