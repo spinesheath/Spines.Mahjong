@@ -1,8 +1,13 @@
 ﻿//#define Scoring
-#define Shanten5
+//#define Shanten5
+#define B9Ukeire
 
 using System;
 using System.IO;
+
+#if B9Ukeire
+using AnalyzerBuilder.Creators.B9Ukeire;
+#endif
 #if Scoring
 using AnalyzerBuilder.Creators.Scoring;
 #endif
@@ -19,12 +24,16 @@ namespace AnalyzerBuilder
       var resourcesDirectory = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "..", "..", "..", "..", "Analysis", "Resources"));
 
 #if Scoring
-      var scoringDirectory = Path.Combine(resourcesDirectory, "Scoring");
-      ScoringDataCreator.Create(workingDirectory);
+      var directory = Path.Combine(resourcesDirectory, "Scoring");
+      ScoringDataCreator.Create(directory);
 #endif
 #if Shanten5
-      var shanten5Directory = Path.Combine(resourcesDirectory, "Shanten5");
-      Shanten5Creator.Create(shanten5Directory);
+      var directory = Path.Combine(resourcesDirectory, "Shanten5");
+      Shanten5Creator.Create(directory);
+#endif
+#if B9Ukeire
+      var directory = Path.Combine(resourcesDirectory, "B9Ukeire");
+      B9UkeireCreator.Create(directory);
 #endif
     }
   }
