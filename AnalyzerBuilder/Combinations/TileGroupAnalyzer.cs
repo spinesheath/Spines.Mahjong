@@ -46,13 +46,11 @@ namespace AnalyzerBuilder.Combinations
     /// </summary>
     private TileGroupAnalyzer(Combination concealedTiles, Combination meldedTiles, int meldCount, bool allowShuntsu)
     {
-      Debug.Assert(concealedTiles != null);
-      Debug.Assert(meldedTiles != null);
       Debug.Assert(meldCount >= 0 && meldCount <= 4);
 
       _meldCount = meldCount;
-      _concealed = concealedTiles.Counts.ToList();
-      _used = meldedTiles.Counts.ToList();
+      _concealed = concealedTiles.Counts.Select(c => (byte)c).ToArray();
+      _used = meldedTiles.Counts.Select(c => (byte)c).ToArray();
       _tileTypeCount = concealedTiles.Counts.Count;
       _protoGroups = allowShuntsu ? SuitProtoGroups : HonorProtoGroups;
     }
@@ -83,13 +81,13 @@ namespace AnalyzerBuilder.Combinations
     };
 
     private readonly ISet<Arrangement> _arrangements = new HashSet<Arrangement>();
-    private readonly List<int> _concealed;
+    private readonly byte[] _concealed;
     private readonly int _meldCount;
 
     private readonly IReadOnlyList<ProtoGroup> _protoGroups;
     private readonly int _tileTypeCount;
 
-    private readonly List<int> _used;
+    private readonly byte[] _used;
     private int _jantouValue;
     private int _usedMelds;
 

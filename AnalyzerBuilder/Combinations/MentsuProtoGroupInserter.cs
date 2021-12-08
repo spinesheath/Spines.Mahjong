@@ -1,33 +1,33 @@
-﻿using System.Collections.Generic;
+﻿using System;
 
 namespace AnalyzerBuilder.Combinations
 {
   internal class MentsuProtoGroupInserter : IProtoGroupInserter
   {
-    public MentsuProtoGroupInserter(int required, int occupied)
+    public MentsuProtoGroupInserter(byte required, byte occupied)
     {
       _required = required;
       _occupied = occupied;
     }
 
-    public bool CanInsert(IReadOnlyList<int> concealedTiles, IReadOnlyList<int> usedTiles, int offset)
+    public bool CanInsert(Span<byte> concealedTiles, Span<byte> usedTiles, int offset)
     {
       return (concealedTiles[offset] == _required || concealedTiles[offset] > _occupied) && usedTiles[offset] <= 4 - _occupied;
     }
 
-    public void Insert(IList<int> concealedTiles, IList<int> usedTiles, int offset)
+    public void Insert(Span<byte> concealedTiles, Span<byte> usedTiles, int offset)
     {
       concealedTiles[offset] -= _required;
       usedTiles[offset] += _occupied;
     }
 
-    public void Remove(IList<int> concealedTiles, IList<int> usedTiles, int offset)
+    public void Remove(Span<byte> concealedTiles, Span<byte> usedTiles, int offset)
     {
       concealedTiles[offset] += _required;
       usedTiles[offset] -= _occupied;
     }
 
-    private readonly int _occupied;
-    private readonly int _required;
+    private readonly byte _occupied;
+    private readonly byte _required;
   }
 }

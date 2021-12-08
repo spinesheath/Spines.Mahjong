@@ -23,7 +23,7 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
       using var fileStream = File.Create(path);
       using var writer = new BinaryWriter(fileStream);
 
-      var counts = new int[7];
+      var counts = new byte[7];
       var tileCount = 0;
       var row = new ushort[16];
 
@@ -47,8 +47,8 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
         for (var j = 0; j < counts.Length - 1; j++)
         {
           var carry = counts[j] == 5 ? 1 : 0;
-          counts[j + 1] += carry;
-          counts[j] -= 5 * carry;
+          counts[j + 1] += (byte)carry;
+          counts[j] -= (byte)(5 * carry);
           tileCount -= 4 * carry;
         }
 
@@ -64,7 +64,7 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
       using var fileStream = File.Create(path);
       using var writer = new BinaryWriter(fileStream);
 
-      var counts = new int[9];
+      var counts = new byte[9];
       var tileCount = 0;
       var row = new ushort[16];
 
@@ -88,8 +88,8 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
         for (var j = 0; j < counts.Length - 1; j++)
         {
           var carry = counts[j] == 5 ? 1 : 0;
-          counts[j + 1] += carry;
-          counts[j] -= 5 * carry;
+          counts[j + 1] += (byte)carry;
+          counts[j] -= (byte)(5 * carry);
           tileCount -= 4 * carry;
         }
 
@@ -100,7 +100,7 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
       }
     }
 
-    private static void CalculateSuitRow(int[] counts, ushort[] row)
+    private static void CalculateSuitRow(byte[] counts, ushort[] row)
     {
       var results = ProtoGroup.AnalyzeSuit(counts);
 
@@ -125,7 +125,7 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
       }
     }
 
-    private static void CalculateHonorRow(int[] counts, ushort[] row)
+    private static void CalculateHonorRow(byte[] counts, ushort[] row)
     {
       var results = ProtoGroup.AnalyzeHonor(counts);
 
@@ -193,7 +193,7 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
       }
     }
 
-    private static void CalculateSuitChiitoiKokushi(int[] counts, ushort[] row)
+    private static void CalculateSuitChiitoiKokushi(byte[] counts, ushort[] row)
     {
       var c0 = counts[0];
       var c8 = counts[8];
@@ -227,7 +227,7 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
       row[15] = (ushort)(chiitoi | (b9Chiitoi << B9Shift));
     }
 
-    private static void CalculateHonorChiitoiKokushi(int[] counts, ushort[] row)
+    private static void CalculateHonorChiitoiKokushi(byte[] counts, ushort[] row)
     {
       var kokushi0 = 0;
       var b9Kokushi0 = 0;
@@ -267,9 +267,9 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
 
     private const int B9Shift = 4;
 
-    private static List<Arrangement> AnalyzeHonorsWithExtraTile(int[] counts, int tileIndex)
+    private static List<Arrangement> AnalyzeHonorsWithExtraTile(byte[] counts, int tileIndex)
     {
-      if (counts.Sum() == 14)
+      if (counts.Select(i => (int)i).Sum() == 14)
       {
         return new List<Arrangement>();
       }
@@ -279,9 +279,9 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
       return ProtoGroup.AnalyzeHonor(t);
     }
 
-    private static List<Arrangement> AnalyzeSuitWithExtraTile(int[] counts, int tileIndex)
+    private static List<Arrangement> AnalyzeSuitWithExtraTile(byte[] counts, int tileIndex)
     {
-      if (counts.Sum() == 14)
+      if (counts.Select(i => (int)i).Sum() == 14)
       {
         return new List<Arrangement>();
       }

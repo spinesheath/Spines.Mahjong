@@ -1,17 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
 
 namespace AnalyzerBuilder.Combinations
 {
   internal class ShuntsuProtoGroupInserter : IProtoGroupInserter
   {
-    public ShuntsuProtoGroupInserter(int requiredLeft, int requiredMiddle, int requiredRight)
+    public ShuntsuProtoGroupInserter(byte requiredLeft, byte requiredMiddle, byte requiredRight)
     {
       _requiredLeft = requiredLeft;
       _requiredMiddle = requiredMiddle;
       _requiredRight = requiredRight;
     }
 
-    public bool CanInsert(IReadOnlyList<int> concealedTiles, IReadOnlyList<int> usedTiles, int offset)
+    public bool CanInsert(Span<byte> concealedTiles, Span<byte> usedTiles, int offset)
     {
       if (offset > 6)
       {
@@ -26,7 +26,7 @@ namespace AnalyzerBuilder.Combinations
              AreBothZeroOrNeither(concealedTiles[offset + 2], _requiredRight);
     }
 
-    public void Insert(IList<int> concealedTiles, IList<int> usedTiles, int offset)
+    public void Insert(Span<byte> concealedTiles, Span<byte> usedTiles, int offset)
     {
       concealedTiles[offset + 0] -= _requiredLeft;
       concealedTiles[offset + 1] -= _requiredMiddle;
@@ -36,7 +36,7 @@ namespace AnalyzerBuilder.Combinations
       usedTiles[offset + 2] += 1;
     }
 
-    public void Remove(IList<int> concealedTiles, IList<int> usedTiles, int offset)
+    public void Remove(Span<byte> concealedTiles, Span<byte> usedTiles, int offset)
     {
       concealedTiles[offset + 0] += _requiredLeft;
       concealedTiles[offset + 1] += _requiredMiddle;
@@ -46,9 +46,9 @@ namespace AnalyzerBuilder.Combinations
       usedTiles[offset + 2] -= 1;
     }
 
-    private readonly int _requiredLeft;
-    private readonly int _requiredMiddle;
-    private readonly int _requiredRight;
+    private readonly byte _requiredLeft;
+    private readonly byte _requiredMiddle;
+    private readonly byte _requiredRight;
 
     /// <summary>
     /// True if either both values are 0 or both values are not 0.

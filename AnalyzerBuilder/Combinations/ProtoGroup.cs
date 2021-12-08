@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
 
 namespace AnalyzerBuilder.Combinations
 {
@@ -22,34 +22,40 @@ namespace AnalyzerBuilder.Combinations
     /// </summary>
     public int Value { get; }
 
-    public static List<Arrangement> AnalyzeHonor(int[] counts)
+    public static List<Arrangement> AnalyzeHonor(byte[] counts)
     {
+      Span<byte> used = stackalloc byte[7];
+      Span<byte> t = stackalloc byte[7];
+      counts.CopyTo(t);
       var results = new List<Arrangement>();
-      Analyze(Honor, counts.ToArray(), new int[7], new Arrangement(0, 0, 0), 0, 0, results);
+      Analyze(Honor, t, used, new Arrangement(0, 0, 0), 0, 0, results);
       return results;
     }
 
-    public static List<Arrangement> AnalyzeSuit(int[] counts)
+    public static List<Arrangement> AnalyzeSuit(byte[] counts)
     {
+      Span<byte> used = stackalloc byte[9];
+      Span<byte> t = stackalloc byte[9];
+      counts.CopyTo(t);
       var results = new List<Arrangement>();
-      Analyze(Suit, counts.ToArray(), new int[9], new Arrangement(0, 0, 0), 0, 0, results);
+      Analyze(Suit, t, used, new Arrangement(0, 0, 0), 0, 0, results);
       return results;
     }
 
     /// <summary>
     /// Can this ProtoGroup be used in an arrangement?
     /// </summary>
-    public bool CanInsert(IReadOnlyList<int> concealedTiles, IReadOnlyList<int> usedTiles, int offset)
+    public bool CanInsert(Span<byte> concealedTiles, Span<byte> usedTiles, int offset)
     {
       return _protoGroupInserter.CanInsert(concealedTiles, usedTiles, offset);
     }
 
-    public void Insert(IList<int> concealedTiles, IList<int> usedTiles, int offset)
+    public void Insert(Span<byte> concealedTiles, Span<byte> usedTiles, int offset)
     {
       _protoGroupInserter.Insert(concealedTiles, usedTiles, offset);
     }
 
-    public void Remove(IList<int> concealedTiles, IList<int> usedTiles, int offset)
+    public void Remove(Span<byte> concealedTiles, Span<byte> usedTiles, int offset)
     {
       _protoGroupInserter.Remove(concealedTiles, usedTiles, offset);
     }
@@ -144,7 +150,7 @@ namespace AnalyzerBuilder.Combinations
     /// </summary>
     private readonly IProtoGroupInserter _protoGroupInserter;
 
-    private static void Analyze(IReadOnlyList<ProtoGroup> protoGroups, int[] counts, int[] used, Arrangement arrangement, int currentTileType, int currentProtoGroup, List<Arrangement> results)
+    private static void Analyze(IReadOnlyList<ProtoGroup> protoGroups, Span<byte> counts, Span<byte> used, Arrangement arrangement, int currentTileType, int currentProtoGroup, List<Arrangement> results)
     {
       if (currentTileType >= counts.Length)
       {

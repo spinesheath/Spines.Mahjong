@@ -20,7 +20,7 @@ namespace AnalyzerBuilder.Creators.Shanten5
       using var fileStream = File.Create(path);
       using var writer = new BinaryWriter(fileStream);
 
-      var counts = new int[7];
+      var counts = new byte[7];
       var tileCount = 0;
       var row = new byte[16];
 
@@ -55,8 +55,8 @@ namespace AnalyzerBuilder.Creators.Shanten5
         for (var j = 0; j < counts.Length - 1; j++)
         {
           var carry = counts[j] == 5 ? 1 : 0;
-          counts[j + 1] += carry;
-          counts[j] -= 5 * carry;
+          counts[j + 1] += (byte)carry;
+          counts[j] -= (byte)(5 * carry);
           tileCount -= 4 * carry;
         }
 
@@ -72,7 +72,7 @@ namespace AnalyzerBuilder.Creators.Shanten5
       using var fileStream = File.Create(path);
       using var writer = new BinaryWriter(fileStream);
 
-      var counts = new int[9];
+      var counts = new byte[9];
       var tileCount = 0;
       var row = new byte[16];
 
@@ -105,8 +105,8 @@ namespace AnalyzerBuilder.Creators.Shanten5
         for (var j = 0; j < counts.Length - 1; j++)
         {
           var carry = counts[j] == 5 ? 1 : 0;
-          counts[j + 1] += carry;
-          counts[j] -= 5 * carry;
+          counts[j + 1] += (byte)carry;
+          counts[j] -= (byte)(5 * carry);
           tileCount -= 4 * carry;
         }
 
@@ -117,7 +117,7 @@ namespace AnalyzerBuilder.Creators.Shanten5
       }
     }
 
-    private static void GetSuitShantenValues(int[] counts, byte[] row)
+    private static void GetSuitShantenValues(byte[] counts, byte[] row)
     {
       var results = ProtoGroup.AnalyzeSuit(counts);
 
@@ -136,7 +136,7 @@ namespace AnalyzerBuilder.Creators.Shanten5
       }
     }
 
-    private static void GetHonorShantenValues(int[] counts, byte[] row)
+    private static void GetHonorShantenValues(byte[] counts, byte[] row)
     {
       var results = ProtoGroup.AnalyzeHonor(counts);
 
