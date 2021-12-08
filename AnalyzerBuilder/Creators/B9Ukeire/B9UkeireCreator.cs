@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using AnalyzerBuilder.Combinations;
-using Spines.Mahjong.Analysis;
+using AnalyzerBuilder.Creators.Shared;
 
 namespace AnalyzerBuilder.Creators.B9Ukeire
 {
@@ -23,39 +23,21 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
       using var fileStream = File.Create(path);
       using var writer = new BinaryWriter(fileStream);
 
-      var counts = new byte[7];
-      var tileCount = 0;
       var row = new ushort[16];
 
-      for (var base5Hash = 0; base5Hash < Base5.MaxFor7Digits; base5Hash++)
+      var it = new PartialHandIterator(7);
+      while (it.HasNext())
       {
         Array.Clear(row, 0, row.Length);
 
-        if (tileCount < 15)
+        if (it.TileCount < 15)
         {
-          CalculateHonorRow(counts, row);
+          CalculateHonorRow(it, row);
         }
 
-        for (var i = 0; i < row.Length; i++)
-        {
-          writer.Write(row[i]);
-        }
-
-        // move to next tile sequence
-        counts[0] += 1;
-        tileCount += 1;
-        for (var j = 0; j < counts.Length - 1; j++)
-        {
-          var carry = counts[j] == 5 ? 1 : 0;
-          counts[j + 1] += (byte)carry;
-          counts[j] -= (byte)(5 * carry);
-          tileCount -= 4 * carry;
-        }
-
-        if (base5Hash % 10000 == 9999)
-        {
-          Console.WriteLine($"{(double)base5Hash / Base5.MaxFor7Digits:P}");
-        }
+        Write(row, writer);
+        ReportProgress(it);
+        it.MoveNext();
       }
     }
 
@@ -64,44 +46,28 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
       using var fileStream = File.Create(path);
       using var writer = new BinaryWriter(fileStream);
 
-      var counts = new byte[9];
-      var tileCount = 0;
       var row = new ushort[16];
 
-      for (var base5Hash = 0; base5Hash < Base5.MaxFor9Digits; base5Hash++)
+      var it = new PartialHandIterator(9);
+      while (it.HasNext())
       {
         Array.Clear(row, 0, row.Length);
 
-        if (tileCount < 15)
+        if (it.TileCount < 15)
         {
-          CalculateSuitRow(counts, row);
+          CalculateSuitRow(it, row);
         }
 
-        for (var i = 0; i < row.Length; i++)
-        {
-          writer.Write(row[i]);
-        }
-
-        // move to next tile sequence
-        counts[0] += 1;
-        tileCount += 1;
-        for (var j = 0; j < counts.Length - 1; j++)
-        {
-          var carry = counts[j] == 5 ? 1 : 0;
-          counts[j + 1] += (byte)carry;
-          counts[j] -= (byte)(5 * carry);
-          tileCount -= 4 * carry;
-        }
-
-        if (base5Hash % 10000 == 9999)
-        {
-          Console.WriteLine($"{(double)base5Hash / Base5.MaxFor9Digits:P}");
-        }
+        Write(row, writer);
+        ReportProgress(it);
+        it.MoveNext();
       }
     }
 
-    private static void CalculateSuitRow(byte[] counts, ushort[] row)
+    private static void CalculateSuitRow(PartialHandIterator it, ushort[] row)
     {
+      var counts = it.Counts;
+
       var results = ProtoGroup.AnalyzeSuit(counts);
 
       foreach (var arrangement in results)
@@ -125,8 +91,10 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
       }
     }
 
-    private static void CalculateHonorRow(byte[] counts, ushort[] row)
+    private static void CalculateHonorRow(PartialHandIterator it, ushort[] row)
     {
+      var counts = it.Counts;
+
       var results = ProtoGroup.AnalyzeHonor(counts);
 
       foreach (var arrangement in results)
@@ -313,6 +281,22 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
     private static ushort Max(ushort a, ushort b, ushort c)
     {
       return Max(Max(a, b), c);
+    }
+
+    private static void ReportProgress(PartialHandIterator it)
+    {
+      if (it.Base5Hash % 10000 == 9999)
+      {
+        Console.WriteLine($"{(double)it.Base5Hash / it.Max:P}");
+      }
+    }
+
+    private static void Write(ushort[] row, BinaryWriter writer)
+    {
+      for (var i = 0; i < row.Length; i++)
+      {
+        writer.Write(row[i]);
+      }
     }
 
     private static string DebugString(int[] counts, ushort[] row)
