@@ -77,10 +77,10 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
           CalculateSuitRow(counts, row);
         }
 
-        //for (var i = 0; i < row.Length; i++)
-        //{
-        //  writer.Write(row[i]);
-        //}
+        for (var i = 0; i < row.Length; i++)
+        {
+          writer.Write(row[i]);
+        }
 
         // move to next tile sequence
         counts[0] += 1;
