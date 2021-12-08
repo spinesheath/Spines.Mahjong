@@ -20,6 +20,8 @@
 
   <ItemGroup>
     <None Remove="Resources\ArrangementTransitions.txt" />
+    <None Remove="Resources\B9Ukeire\honor.dat" />
+    <None Remove="Resources\B9Ukeire\suit.dat" />
     <None Remove="Resources\ProgressiveHonorStateMachine.txt" />
     <None Remove="Resources\Scoring\HonorOrLookup.dat" />
     <None Remove="Resources\Scoring\HonorSumLookup.dat" />
@@ -40,6 +42,8 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\ArrangementTransitions.txt" />
+    <EmbeddedResource Include="Resources\B9Ukeire\honor.dat" />
+    <EmbeddedResource Include="Resources\B9Ukeire\suit.dat" />
     <EmbeddedResource Include="Resources\ProgressiveHonorStateMachine.txt" />
     <EmbeddedResource Include="Resources\Scoring\HonorOrLookup.dat" />
     <EmbeddedResource Include="Resources\Scoring\HonorSumLookup.dat" />

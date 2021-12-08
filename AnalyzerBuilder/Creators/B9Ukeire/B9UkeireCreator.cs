@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -25,6 +24,7 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
 
       var row = new ushort[16];
 
+      var analyzer = new CachingAnalyzer(7);
       var it = new PartialHandIterator(7);
       while (it.HasNext())
       {
@@ -32,7 +32,7 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
 
         if (it.TileCount < 15)
         {
-          CalculateHonorRow(it, row);
+          CalculateHonorRow(row, it, analyzer);
         }
 
         Write(row, writer);
@@ -48,6 +48,7 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
 
       var row = new ushort[16];
 
+      var analyzer = new CachingAnalyzer(9);
       var it = new PartialHandIterator(9);
       while (it.HasNext())
       {
@@ -55,7 +56,7 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
 
         if (it.TileCount < 15)
         {
-          CalculateSuitRow(it, row);
+          CalculateSuitRow(row, it, analyzer);
         }
 
         Write(row, writer);
@@ -64,38 +65,11 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
       }
     }
 
-    private static void CalculateSuitRow(PartialHandIterator it, ushort[] row)
+    private static void CalculateHonorRow(ushort[] row, PartialHandIterator it, CachingAnalyzer analyzer)
     {
       var counts = it.Counts;
 
-      var results = ProtoGroup.AnalyzeSuit(counts);
-
-      foreach (var arrangement in results)
-      {
-        var index = IndexInRow(arrangement);
-        row[index] = (byte)Math.Max(row[index], arrangement.TotalValue);
-      }
-
-      CopyValuesFromLowerGroupCounts(row);
-
-      CalculateSuitChiitoiKokushi(counts, row);
-
-      for (var tileIndex = 0; tileIndex < counts.Length; tileIndex++)
-      {
-        var b9Results = AnalyzeSuitWithExtraTile(counts, tileIndex);
-
-        foreach (var arrangement in b9Results)
-        {
-          UpdateB9(row, tileIndex, arrangement);
-        }
-      }
-    }
-
-    private static void CalculateHonorRow(PartialHandIterator it, ushort[] row)
-    {
-      var counts = it.Counts;
-
-      var results = ProtoGroup.AnalyzeHonor(counts);
+      var results = analyzer.Analyze(it);
 
       foreach (var arrangement in results)
       {
@@ -109,7 +83,34 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
 
       for (var tileIndex = 0; tileIndex < counts.Length; tileIndex++)
       {
-        var b9Results = AnalyzeHonorsWithExtraTile(counts, tileIndex);
+        var b9Results = analyzer.AnalyzeWithExtraTile(it, tileIndex);
+
+        foreach (var arrangement in b9Results)
+        {
+          UpdateB9(row, tileIndex, arrangement);
+        }
+      }
+    }
+
+    private static void CalculateSuitRow(ushort[] row, PartialHandIterator it, CachingAnalyzer analyzer)
+    {
+      var counts = it.Counts;
+
+      var results = analyzer.Analyze(it);
+
+      foreach (var arrangement in results)
+      {
+        var index = IndexInRow(arrangement);
+        row[index] = (byte)Math.Max(row[index], arrangement.TotalValue);
+      }
+
+      CopyValuesFromLowerGroupCounts(row);
+
+      CalculateSuitChiitoiKokushi(counts, row);
+
+      for (var tileIndex = 0; tileIndex < counts.Length; tileIndex++)
+      {
+        var b9Results = analyzer.AnalyzeWithExtraTile(it, tileIndex);
 
         foreach (var arrangement in b9Results)
         {
@@ -235,30 +236,6 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
 
     private const int B9Shift = 4;
 
-    private static List<Arrangement> AnalyzeHonorsWithExtraTile(byte[] counts, int tileIndex)
-    {
-      if (counts.Select(i => (int)i).Sum() == 14)
-      {
-        return new List<Arrangement>();
-      }
-
-      var t = counts.ToArray();
-      t[tileIndex] += 1;
-      return ProtoGroup.AnalyzeHonor(t);
-    }
-
-    private static List<Arrangement> AnalyzeSuitWithExtraTile(byte[] counts, int tileIndex)
-    {
-      if (counts.Select(i => (int)i).Sum() == 14)
-      {
-        return new List<Arrangement>();
-      }
-
-      var t = counts.ToArray();
-      t[tileIndex] += 1;
-      return ProtoGroup.AnalyzeSuit(t);
-    }
-
     private static void CopyValuesFromLowerGroupCounts(ushort[] row)
     {
       for (var i = 0; i < 4; i++)
@@ -299,7 +276,7 @@ namespace AnalyzerBuilder.Creators.B9Ukeire
       }
     }
 
-    private static string DebugString(int[] counts, ushort[] row)
+    private static string DebugString(byte[] counts, ushort[] row)
     {
       string[] configurations = { "00", "01", "02", "03", "04", "10", "11", "12", "13", "14", "__", "__", "__", "k0", "k1", "cc" };
 

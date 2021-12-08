@@ -10,13 +10,17 @@ namespace AnalyzerBuilder.Creators.Shared
       Debug.Assert(length == 7 || length == 9);
 
       Max = length == 7 ? Base5.MaxFor7Digits : Base5.MaxFor9Digits;
+      SuitLength = length;
+      Counts = new byte[length];
     }
 
     public int Base5Hash { get; private set; }
 
-    public byte[] Counts { get; } = new byte[7];
+    public byte[] Counts { get; }
 
     public int Max { get; }
+
+    public int SuitLength { get; }
 
     public int TileCount { get; private set; }
 

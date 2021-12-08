@@ -132,7 +132,7 @@ namespace AnalyzerBuilder.Combinations
     /// <summary>
     /// Checks if the Arrangements are equal.
     /// </summary>
-    public static bool operator ==(Arrangement left, Arrangement right)
+    public static bool operator ==(Arrangement left, Arrangement? right)
     {
       return Equals(left, right);
     }
@@ -140,7 +140,7 @@ namespace AnalyzerBuilder.Combinations
     /// <summary>
     /// Checks if the Arrangements are not equal.
     /// </summary>
-    public static bool operator !=(Arrangement left, Arrangement right)
+    public static bool operator !=(Arrangement left, Arrangement? right)
     {
       return !Equals(left, right);
     }
@@ -165,7 +165,6 @@ namespace AnalyzerBuilder.Combinations
     /// <returns>An instance of Arrangement.</returns>
     public static Arrangement FromString(string arrangement)
     {
-      Debug.Assert(arrangement != null);
       if (arrangement.Length != 3)
       {
         throw new ArgumentException("s must be exactly three characters long.");
@@ -180,7 +179,6 @@ namespace AnalyzerBuilder.Combinations
     /// <returns>A sequence of arrangements.</returns>
     public static IEnumerable<Arrangement> MultipleFromString(string arrangements)
     {
-      Debug.Assert(arrangements != null);
       for (var i = 0; i < arrangements.Length; i += 3)
       {
         var arrangement = arrangements.Substring(i, 3);

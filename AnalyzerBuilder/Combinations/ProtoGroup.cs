@@ -22,22 +22,22 @@ namespace AnalyzerBuilder.Combinations
     /// </summary>
     public int Value { get; }
 
-    public static List<Arrangement> AnalyzeHonor(byte[] counts)
+    public static ISet<Arrangement> AnalyzeHonor(byte[] counts)
     {
       Span<byte> used = stackalloc byte[7];
       Span<byte> t = stackalloc byte[7];
       counts.CopyTo(t);
-      var results = new List<Arrangement>();
+      var results = new HashSet<Arrangement>();
       Analyze(Honor, t, used, new Arrangement(0, 0, 0), 0, 0, results);
       return results;
     }
 
-    public static List<Arrangement> AnalyzeSuit(byte[] counts)
+    public static ISet<Arrangement> AnalyzeSuit(byte[] counts)
     {
       Span<byte> used = stackalloc byte[9];
       Span<byte> t = stackalloc byte[9];
       counts.CopyTo(t);
-      var results = new List<Arrangement>();
+      var results = new HashSet<Arrangement>();
       Analyze(Suit, t, used, new Arrangement(0, 0, 0), 0, 0, results);
       return results;
     }
@@ -150,7 +150,7 @@ namespace AnalyzerBuilder.Combinations
     /// </summary>
     private readonly IProtoGroupInserter _protoGroupInserter;
 
-    private static void Analyze(IReadOnlyList<ProtoGroup> protoGroups, Span<byte> counts, Span<byte> used, Arrangement arrangement, int currentTileType, int currentProtoGroup, List<Arrangement> results)
+    private static void Analyze(IReadOnlyList<ProtoGroup> protoGroups, Span<byte> counts, Span<byte> used, Arrangement arrangement, int currentTileType, int currentProtoGroup, ISet<Arrangement> results)
     {
       if (currentTileType >= counts.Length)
       {
