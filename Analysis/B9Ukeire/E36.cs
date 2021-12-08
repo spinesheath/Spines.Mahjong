@@ -1,8 +1,8 @@
 ﻿using System.Linq;
 
-namespace Spines.Mahjong.Analysis.Tests.B9Ukeire
+namespace Spines.Mahjong.Analysis.B9Ukeire
 {
-  internal class E36
+  public class E36
   {
     public E36(byte[] v, ulong[] b)
     {

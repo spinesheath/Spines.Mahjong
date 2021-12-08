@@ -15,7 +15,7 @@ namespace Spines.Mahjong.Analysis.Shanten
       LookupSuitOr = Resource.LongLookup("Scoring", "SuitOrLookup.dat");
       LookupSuitWaitShift = Resource.LongLookup("Scoring", "SuitWaitShiftLookup.dat");
 
-      LookupFuFootprints = Resource.Lookup("Scoring", "SuitFu.dat");
+      LookupFuFootprints = Resource.ByteLookup("Scoring", "SuitFu.dat");
 
       SuitWaitShift0 = LookupSuitWaitShift[0];
       SuitOr0 = LookupSuitOr[0];

@@ -1,6 +1,6 @@
-﻿namespace Spines.Mahjong.Analysis.Tests.B9Ukeire
+﻿namespace Spines.Mahjong.Analysis.B9Ukeire
 {
-  internal class E18
+  public class E18
   {
     public E18(byte[] v, uint[] b)
     {

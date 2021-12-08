@@ -48,7 +48,7 @@ namespace Spines.Mahjong.Analysis.Resources
       return data;
     }
 
-    public static byte[] Lookup(string category, string resourceName)
+    public static byte[] ByteLookup(string category, string resourceName)
     {
       var fullResourceName = ResourceName(category, resourceName);
       var assembly = Assembly.GetExecutingAssembly();
@@ -60,6 +60,27 @@ namespace Spines.Mahjong.Analysis.Resources
 
       var data = new byte[stream.Length];
       stream.Read(data);
+      return data;
+    }
+
+    public static ushort[] UInt16Lookup(string category, string resourceName)
+    {
+      var fullResourceName = ResourceName(category, resourceName);
+      var assembly = Assembly.GetExecutingAssembly();
+      using var stream = assembly.GetManifestResourceStream(fullResourceName);
+      if (stream == null)
+      {
+        throw new FileNotFoundException($"Resource is missing: {category}/{resourceName}");
+      }
+
+      using var reader = new BinaryReader(stream);
+      var count = stream.Length / 2;
+      var data = new ushort[count];
+      for (var i = 0; i < count; i++)
+      {
+        data[i] = reader.ReadUInt16();
+      }
+
       return data;
     }
 
