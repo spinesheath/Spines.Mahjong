@@ -3,7 +3,7 @@ using Spines.Mahjong.Analysis.Resources;
 
 namespace Spines.Mahjong.Analysis.B9Ukeire
 {
-  public static class B9UkeireLookup
+  internal static class B9UkeireLookup
   {
     static B9UkeireLookup()
     {
