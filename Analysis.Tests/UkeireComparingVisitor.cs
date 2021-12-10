@@ -74,7 +74,18 @@ namespace Spines.Mahjong.Analysis.Tests
       _ukeire[seatIndex].Discard(tile.TileType);
 
       _tileCounts[seatIndex][tile.TileType.TileTypeId] -= 1;
-      // TODO compare
+
+      var ukeire = _ukeire[seatIndex].Ukeire();
+      var ukeire5 = Shanten5Ukeire(_shanten5[seatIndex], _tileCounts[seatIndex]);
+
+      if (ukeire != ukeire5)
+      {
+        var hand = CreateHandString(_tileCounts[seatIndex]);
+        var actual = CreateUkeireString(ukeire);
+        var expected = CreateUkeireString(ukeire5);
+
+        ErrorCount += 1;
+      }
 
       EvaluationCount += 1;
     }
@@ -110,7 +121,18 @@ namespace Spines.Mahjong.Analysis.Tests
       _ukeire[who].Shouminkan(handTile0.TileType);
 
       _tileCounts[who][addedTile.TileType.TileTypeId] -= 1;
-      // TODO compare
+      
+      var ukeire = _ukeire[who].Ukeire();
+      var ukeire5 = Shanten5Ukeire(_shanten5[who], _tileCounts[who]);
+
+      if (ukeire != ukeire5)
+      {
+        var hand = CreateHandString(_tileCounts[who]);
+        var actual = CreateUkeireString(ukeire);
+        var expected = CreateUkeireString(ukeire5);
+
+        ErrorCount += 1;
+      }
 
       EvaluationCount += 1;
     }
@@ -121,7 +143,18 @@ namespace Spines.Mahjong.Analysis.Tests
       _ukeire[who].Ankan(tileType);
 
       _tileCounts[who][tileType.TileTypeId] -= 4;
-      // TODO compare
+
+      var ukeire = _ukeire[who].Ukeire();
+      var ukeire5 = Shanten5Ukeire(_shanten5[who], _tileCounts[who]);
+
+      if (ukeire != ukeire5)
+      {
+        var hand = CreateHandString(_tileCounts[who]);
+        var actual = CreateUkeireString(ukeire);
+        var expected = CreateUkeireString(ukeire5);
+
+        ErrorCount += 1;
+      }
 
       EvaluationCount += 1;
     }
