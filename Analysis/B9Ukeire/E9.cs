@@ -10,8 +10,8 @@
 
     public E18 CombineWith(E9 other)
     {
-      var v = new byte[13];
-      var b = new uint[13];
+      var v = new byte[16];
+      var b = new uint[16];
 
       // 00 (is always nothing)
       Combine(v, b, 0, other, 0, 0);
@@ -67,24 +67,26 @@
       Combine(v, b, 8, other, 8, 0);
 
       // 14: 00+14, 01+13, 02+12, 03+11, 04+10, 10+04, 11+03, 12+02, 13+01, 14+00
-      Combine(v, b, 9, other, 0, 8);
-      Combine(v, b, 9, other, 1, 7);
-      Combine(v, b, 9, other, 2, 6);
-      Combine(v, b, 9, other, 3, 5);
-      Combine(v, b, 9, other, 5, 3);
-      Combine(v, b, 9, other, 6, 2);
-      Combine(v, b, 9, other, 7, 1);
-      Combine(v, b, 9, other, 8, 0);
-
-      // cc
-      Combine(v, b, 10, other, 10, 10);
+      Combine(v, b, 9, other, 0, 9);
+      Combine(v, b, 9, other, 1, 8);
+      Combine(v, b, 9, other, 2, 7);
+      Combine(v, b, 9, other, 3, 6);
+      Combine(v, b, 9, other, 4, 5);
+      Combine(v, b, 9, other, 5, 4);
+      Combine(v, b, 9, other, 6, 3);
+      Combine(v, b, 9, other, 7, 2);
+      Combine(v, b, 9, other, 8, 1);
+      Combine(v, b, 9, other, 9, 0);
 
       // k0
-      Combine(v, b, 11, other, 11, 11);
+      Combine(v, b, 13, other, 13, 13);
 
       // k1
-      Combine(v, b, 12, other, 11, 12);
-      Combine(v, b, 12, other, 12, 11);
+      Combine(v, b, 14, other, 13, 14);
+      Combine(v, b, 14, other, 14, 13);
+
+      // cc
+      Combine(v, b, 15, other, 15, 15);
 
       return new E18(v, b);
     }

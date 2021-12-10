@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text;
 
 namespace Spines.Mahjong.Analysis.B9Ukeire
@@ -11,6 +12,11 @@ namespace Spines.Mahjong.Analysis.B9Ukeire
       var e1 = B9UkeireLookup.Suit(hashes[1]);
       var e2 = B9UkeireLookup.Suit(hashes[2]);
       var e3 = B9UkeireLookup.Honor(hashes[3]);
+
+      var d0 = DebugString(e0);
+      var d1 = DebugString(e1);
+      var d2 = DebugString(e2);
+      var d3 = DebugString(e3);
 
       var em = new E9(ExtractV(e0), ExtractB9(e0));
       var ep = new E9(ExtractV(e1), ExtractB9(e1));
@@ -26,6 +32,22 @@ namespace Spines.Mahjong.Analysis.B9Ukeire
       var ukeire = r.Ukeire();
       Ukeire = ukeire;
       UkeireString = CreateUkeireString(ukeire);
+    }
+
+    private static string DebugString(ushort[] row)
+    {
+      string[] configurations = { "00", "01", "02", "03", "04", "10", "11", "12", "13", "14", "__", "__", "__", "k0", "k1", "cc" };
+
+      var sb = new StringBuilder();
+
+      for (var i = 0; i < row.Length; i++)
+      {
+        var b9 = Convert.ToString(row[i] >> 4, 2).PadLeft(9, '0');
+        var v = (row[i] & 15).ToString().PadLeft(2, ' ');
+        sb.AppendLine($"{configurations[i]}: {v}, {b9}");
+      }
+
+      return sb.ToString();
     }
 
     public int Shanten { get; }

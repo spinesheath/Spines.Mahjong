@@ -13,7 +13,8 @@ namespace Spines.Mahjong.Analysis.Tests
     [InlineData("123456789m13p11s", 0, "2p")]
     [InlineData("468m1156778p345s", 1, "57m69p")]
     [InlineData("123459m34079p45s", 2, "1234569m789p3456s")]
-    public void Experiments(string hand, int expectedShanten, string expectedUkeire)
+    [InlineData("12558m3477p8s457z", 4, "12356789m23457p6789s457z")]
+    public void SomeHands(string hand, int expectedShanten, string expectedUkeire)
     {
       var parser = new ShorthandParser(hand);
 

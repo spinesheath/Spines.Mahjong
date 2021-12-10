@@ -1,4 +1,7 @@
-﻿namespace Spines.Mahjong.Analysis.B9Ukeire
+﻿using System;
+using System.Text;
+
+namespace Spines.Mahjong.Analysis.B9Ukeire
 {
   public class E18
   {
@@ -14,8 +17,8 @@
 
     public E36 CombineWith(E18 other, int meldCount)
     {
-      var v = new byte[13];
-      var b = new ulong[13];
+      var v = new byte[16];
+      var b = new ulong[16];
 
       // meldCount = 0: 00+14, 01+13, 02+12, 03+11, 04+10, 10+04, 11+03, 12+02, 13+01, 14+00
       // meldCount = 1: 00+13, 01+12, 02+11, 03+10,        10+03, 11+02, 12+01, 13+00
@@ -30,18 +33,18 @@
 
       if (meldCount == 0)
       {
-        // cc+cc
-        Combine(v, b, 10, other, 10, 10);
-
         // k0+k1
-        Combine(v, b, 11, other, 11, 12);
+        Combine(v, b, 13, other, 13, 14);
 
         // k1+k0
-        Combine(v, b, 12, other, 12, 11);
+        Combine(v, b, 14, other, 14, 13);
+
+        // cc+cc
+        Combine(v, b, 15, other, 15, 15);
       }
 
       // invert
-      var r = new byte[13];
+      var r = new byte[16];
       for (var i = 0; i < r.Length; i++)
       {
         r[i] = (byte)(14 - 3 * meldCount - v[i]);
@@ -49,7 +52,7 @@
 
       if (meldCount == 0)
       {
-        r[10] -= 7;
+        r[15] -= 7;
       }
 
       return new E36(r, b);
