@@ -1,6 +1,8 @@
+using System.Linq;
 using System.Text;
 using Spines.Mahjong.Analysis.B9Ukeire;
 using Spines.Mahjong.Analysis.Replay;
+using Spines.Mahjong.Analysis.Shanten;
 using Spines.Mahjong.Analysis.Shanten5;
 
 namespace Spines.Mahjong.Analysis.Tests
@@ -13,7 +15,10 @@ namespace Spines.Mahjong.Analysis.Tests
 
     private readonly Shanten5Calculator[] _shanten5 = new Shanten5Calculator[4];
     private readonly ProgressiveUkeire[] _ukeire = new ProgressiveUkeire[4];
+    private readonly HandCalculator[] _handCalculators = new HandCalculator[4];
     private readonly byte[][] _tileCounts = new byte[4][];
+    private readonly byte[][] _meldedCounts = new byte[4][];
+    private readonly bool[] _hasPonKan = new bool[4];
 
     public void EndMatch()
     {
@@ -29,17 +34,30 @@ namespace Spines.Mahjong.Analysis.Tests
       _ukeire[1] = new ProgressiveUkeire();
       _ukeire[2] = new ProgressiveUkeire();
       _ukeire[3] = new ProgressiveUkeire();
+      _handCalculators[0] = new HandCalculator();
+      _handCalculators[1] = new HandCalculator();
+      _handCalculators[2] = new HandCalculator();
+      _handCalculators[3] = new HandCalculator();
       _tileCounts[0] = new byte[34];
       _tileCounts[1] = new byte[34];
       _tileCounts[2] = new byte[34];
       _tileCounts[3] = new byte[34];
+      _meldedCounts[0] = new byte[34];
+      _meldedCounts[1] = new byte[34];
+      _meldedCounts[2] = new byte[34];
+      _meldedCounts[3] = new byte[34];
+      _hasPonKan[0] = false;
+      _hasPonKan[1] = false;
+      _hasPonKan[2] = false;
+      _hasPonKan[3] = false;
     }
 
     public void Haipai(int seatIndex, Tile[] tiles)
     {
       _shanten5[seatIndex].Haipai(tiles);
       _ukeire[seatIndex].Haipai(tiles);
-      
+      _handCalculators[seatIndex].Init(tiles.Select(t => t.TileType));
+
       foreach (var tile in tiles)
       {
         _tileCounts[seatIndex][tile.TileType.TileTypeId] += 1;
@@ -47,7 +65,7 @@ namespace Spines.Mahjong.Analysis.Tests
 
       var ukeire = _ukeire[seatIndex].Ukeire();
       var ukeire5 = Shanten5Ukeire(_shanten5[seatIndex], _tileCounts[seatIndex]);
-
+      
       if (ukeire != ukeire5)
       {
         var hand = CreateHandString(_tileCounts[seatIndex]);
@@ -56,14 +74,68 @@ namespace Spines.Mahjong.Analysis.Tests
 
         ErrorCount += 1;
       }
+
+      var meldCorrectedUkeire = GetMeldCorrectedUkeire(ukeire, seatIndex);
+      var ukeireStandard = GetStandardUkeire(seatIndex);
+      if (meldCorrectedUkeire != ukeireStandard)
+      {
+        var hand = _handCalculators[seatIndex].ToString();
+        var actual = CreateUkeireString(meldCorrectedUkeire);
+        var expected = CreateUkeireString(ukeireStandard);
+      }
       
       EvaluationCount += 1;
+    }
+
+    private ulong GetMeldCorrectedUkeire(ulong ukeire, int who)
+    {
+      var r = ukeire;
+      var concealedCounts = _tileCounts[who];
+      var meldedCounts = _meldedCounts[who];
+      for (var i = 0; i < meldedCounts.Length; i++)
+      {
+        if (meldedCounts[i] + concealedCounts[i] == 4)
+        {
+          r &= ~(1ul << i);
+        }
+      }
+
+      //if (r == 0)
+      //{
+      //  var t = ~ukeire & 0x3FFFFFFFF;
+      //  for (var i = 0; i < meldedCounts.Length; i++)
+      //  {
+      //    if (meldedCounts[i] + concealedCounts[i] >= 3)
+      //    {
+      //      t &= ~(1ul << i);
+      //    }
+      //  }
+      //  return t;
+      //}
+
+      return r;
+    }
+
+    private ulong GetStandardUkeire(int seatIndex)
+    {
+      var ukeIreFor13 = _handCalculators[seatIndex].GetUkeIreFor13();
+      var r = 0ul;
+      for (var i = 0; i < ukeIreFor13.Length; i++)
+      {
+        if (ukeIreFor13[i] > 0)
+        {
+          r |= 1ul << i;
+        }
+      }
+
+      return r;
     }
 
     public void Draw(int seatIndex, Tile tile)
     {
       _shanten5[seatIndex].Draw(tile.TileType);
       _ukeire[seatIndex].Draw(tile.TileType);
+      _handCalculators[seatIndex].Draw(tile.TileType);
 
       _tileCounts[seatIndex][tile.TileType.TileTypeId] += 1;
     }
@@ -72,6 +144,7 @@ namespace Spines.Mahjong.Analysis.Tests
     {
       _shanten5[seatIndex].Discard(tile.TileType);
       _ukeire[seatIndex].Discard(tile.TileType);
+      _handCalculators[seatIndex].Discard(tile.TileType);
 
       _tileCounts[seatIndex][tile.TileType.TileTypeId] -= 1;
 
@@ -87,6 +160,15 @@ namespace Spines.Mahjong.Analysis.Tests
         ErrorCount += 1;
       }
 
+      var meldCorrectedUkeire = GetMeldCorrectedUkeire(ukeire, seatIndex);
+      var ukeireStandard = GetStandardUkeire(seatIndex);
+      if (meldCorrectedUkeire != ukeireStandard && !_hasPonKan[seatIndex])
+      {
+        var hand = _handCalculators[seatIndex].ToString();
+        var actual = CreateUkeireString(meldCorrectedUkeire);
+        var expected = CreateUkeireString(ukeireStandard);
+      }
+
       EvaluationCount += 1;
     }
 
@@ -94,34 +176,57 @@ namespace Spines.Mahjong.Analysis.Tests
     {
       _shanten5[who].Chii(handTile0, handTile1);
       _ukeire[who].Chii(handTile0, handTile1);
+      var lowest = calledTile;
+      if (handTile0.TileId < lowest.TileId)
+      {
+        lowest = handTile0;
+      }
+
+      if (handTile1.TileId < lowest.TileId)
+      {
+        lowest = handTile1;
+      }
+
+      _handCalculators[who].Chii(lowest.TileType, calledTile.TileType);
 
       _tileCounts[who][handTile0.TileType.TileTypeId] -= 1;
       _tileCounts[who][handTile1.TileType.TileTypeId] -= 1;
+      _meldedCounts[who][calledTile.TileType.TileTypeId] += 1;
+      _meldedCounts[who][handTile0.TileType.TileTypeId] += 1;
+      _meldedCounts[who][handTile1.TileType.TileTypeId] += 1;
     }
 
     public void Pon(int who, int fromWho, Tile calledTile, Tile handTile0, Tile handTile1)
     {
       _shanten5[who].Pon(handTile0.TileType);
       _ukeire[who].Pon(handTile0.TileType);
+      _handCalculators[who].Pon(calledTile.TileType);
 
       _tileCounts[who][handTile0.TileType.TileTypeId] -= 2;
+      _meldedCounts[who][handTile0.TileType.TileTypeId] += 3;
+      _hasPonKan[who] = true;
     }
 
     public void Daiminkan(int who, int fromWho, Tile calledTile, Tile handTile0, Tile handTile1, Tile handTile2)
     {
       _shanten5[who].Daiminkan(handTile0.TileType);
       _ukeire[who].Daiminkan(handTile0.TileType);
+      _handCalculators[who].Daiminkan(handTile0.TileType);
 
       _tileCounts[who][handTile0.TileType.TileTypeId] -= 3;
+      _meldedCounts[who][handTile0.TileType.TileTypeId] += 4;
+      _hasPonKan[who] = true;
     }
 
     public void Shouminkan(int who, int fromWho, Tile calledTile, Tile addedTile, Tile handTile0, Tile handTile1)
     {
       _shanten5[who].Shouminkan(handTile0.TileType);
       _ukeire[who].Shouminkan(handTile0.TileType);
+      _handCalculators[who].Shouminkan(handTile0.TileType);
 
       _tileCounts[who][addedTile.TileType.TileTypeId] -= 1;
-      
+      _meldedCounts[who][handTile0.TileType.TileTypeId] += 1;
+
       var ukeire = _ukeire[who].Ukeire();
       var ukeire5 = Shanten5Ukeire(_shanten5[who], _tileCounts[who]);
 
@@ -134,6 +239,15 @@ namespace Spines.Mahjong.Analysis.Tests
         ErrorCount += 1;
       }
 
+      var meldCorrectedUkeire = GetMeldCorrectedUkeire(ukeire, who);
+      var ukeireStandard = GetStandardUkeire(who);
+      if (meldCorrectedUkeire != ukeireStandard)
+      {
+        var hand = _handCalculators[who].ToString();
+        var actual = CreateUkeireString(meldCorrectedUkeire);
+        var expected = CreateUkeireString(ukeireStandard);
+      }
+
       EvaluationCount += 1;
     }
 
@@ -141,8 +255,11 @@ namespace Spines.Mahjong.Analysis.Tests
     {
       _shanten5[who].Ankan(tileType);
       _ukeire[who].Ankan(tileType);
+      _handCalculators[who].Ankan(tileType);
 
       _tileCounts[who][tileType.TileTypeId] -= 4;
+      _meldedCounts[who][tileType.TileTypeId] += 4;
+      _hasPonKan[who] = true;
 
       var ukeire = _ukeire[who].Ukeire();
       var ukeire5 = Shanten5Ukeire(_shanten5[who], _tileCounts[who]);
@@ -154,6 +271,15 @@ namespace Spines.Mahjong.Analysis.Tests
         var expected = CreateUkeireString(ukeire5);
 
         ErrorCount += 1;
+      }
+
+      var meldCorrectedUkeire = GetMeldCorrectedUkeire(ukeire, who);
+      var ukeireStandard = GetStandardUkeire(who);
+      if (meldCorrectedUkeire != ukeireStandard)
+      {
+        var hand = _handCalculators[who].ToString();
+        var actual = CreateUkeireString(meldCorrectedUkeire);
+        var expected = CreateUkeireString(ukeireStandard);
       }
 
       EvaluationCount += 1;

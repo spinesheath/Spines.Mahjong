@@ -12,12 +12,7 @@ namespace Spines.Mahjong.Analysis.B9Ukeire
       var e1 = B9UkeireLookup.Suit(hashes[1]);
       var e2 = B9UkeireLookup.Suit(hashes[2]);
       var e3 = B9UkeireLookup.Honor(hashes[3]);
-
-      var d0 = DebugString(e0);
-      var d1 = DebugString(e1);
-      var d2 = DebugString(e2);
-      var d3 = DebugString(e3);
-
+      
       var em = new E9(ExtractV(e0), ExtractB9(e0));
       var ep = new E9(ExtractV(e1), ExtractB9(e1));
       var es = new E9(ExtractV(e2), ExtractB9(e2));
