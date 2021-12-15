@@ -1,10 +1,26 @@
-﻿using Spines.Mahjong.Analysis.Shanten;
+﻿using System.IO;
+using System.Linq;
+using Spines.Mahjong.Analysis.Replay;
+using Spines.Mahjong.Analysis.Shanten;
 using Xunit;
 
 namespace Spines.Mahjong.Analysis.Tests
 {
-  public class UkeIreTests
+  public class UkeireTests
   {
+    [Fact]
+    public void BundlesWithVisitor()
+    {
+      var files = Bundles.All.SelectMany(Directory.EnumerateFiles);
+      var visitor = new UkeireEvaluatingVisitor();
+      foreach (var file in files.Take(100))
+      {
+        ReplayParser.Parse(file, visitor);
+      }
+
+      Assert.Equal(0, visitor.ErrorCount);
+    }
+
     [Theory]
     [InlineData("123456789m12345s", "1s")]
     [InlineData("468m11156778p345s", "4m")]
